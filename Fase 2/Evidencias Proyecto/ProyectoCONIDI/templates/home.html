@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<h1>Bienvenido al sistema CESFAM</h1>
+
+{% if request.user.is_authenticated %}
+    <p>Hola, {{ request.user.nombre_completo }}!</p>
+    <ul>
+        {% if es_admin %}
+            <li><a href="{% url 'crear_usuario' %}">Crear usuario</a></li>
+        {% elif request.user.tipo_usuario.nombre|lower == 'profesional' %}
+            <li><a href="{% url 'crear_usuario' %}">Crear tutor</a> (solo puede crear tutores)</li>
+        {% endif %}
+        <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+    </ul>
+{% else %}
+    <p>Por favor <a href="{% url 'login' %}">inicia sesión</a> para acceder a más funciones.</p>
+{% endif %}
+{% if request.user.clave_temporal %}
+  <script>
+    window.location.href = "{% url 'cambiar_clave_temporal' %}";
+  </script>
+{% endif %}
+{% endblock %}

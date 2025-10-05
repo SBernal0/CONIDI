@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Login - CESFAM{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+
+{% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
+
+<form method="post" class="w-50">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="rut" class="form-label">RUT</label>
+        <input type="text" name="rut" id="rut" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" name="password" id="password" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+</form>
+{% if request.user.clave_temporal %}
+  <script>
+    window.location.href = "{% url 'cambiar_clave_temporal' %}";
+  </script>
+{% endif %}
+{% endblock %}
+
