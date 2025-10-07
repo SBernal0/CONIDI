@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Página de inicio{% endblock %}
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .control-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .realizado {
+            border-left: 5px solid green;
+        }
+        .pendiente {
+            border-left: 5px solid red;
+        }
+    </style>
+{% block content %}
+
+    <h1>Bienvenido a mi página Django</h1>
+    <p>Esta es una página creada desde una plantilla.</p>
+
+    <div class="container">
+    <h1>Controles de {{ nino.nombre }}</h1>
+    <p>Fecha de nacimiento: {{ nino.fecha_nacimiento }}</p>
+    <hr>
+    {% for control in controles %}
+        <div class="control-card {% if control.realizado %}realizado{% else %}pendiente{% endif %}">
+            <h3>{{ control.nombre }}</h3>
+            <p><strong>Fecha programada:</strong> {{ control.fecha_programada }}</p>
+            <p><strong>Estado:</strong> 
+                {% if control.realizado %}
+                    ✅ Realizado
+                {% else %}
+                    ❌ Pendiente
+                {% endif %}
+            </p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
