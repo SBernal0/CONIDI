@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Crear Usuario{% endblock %}
+
+{% block content %}
+<h2>Crear Usuario</h2>
+
+{% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
+
+<form method="post" class="w-50" id="form-crear-usuario">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>RUT</label>
+        <input type="text" name="rut" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Nombre completo</label>
+        <input type="text" name="nombre_completo" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Correo electrónico</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
+
+    <!-- Contraseña visible solo para admins o cuando se seleccione rol diferente a Tutor -->
+    <div class="mb-3" id="div-clave" {% if request.user.tipo_usuario.nombre|lower != 'administrador' %}style="display:none"{% endif %}>
+        <label>Contraseña</label>
+        <input type="password" name="clave" id="clave" class="form-control">
+    </div>
+    <div class="mb-3" id="div-confirmar-clave" {% if request.user.tipo_usuario.nombre|lower != 'administrador' %}style="display:none"{% endif %}>
+        <label>Confirmar contraseña</label>
+        <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control">
+        <small id="msg-clave" class="text-danger"></small>
+    </div>
+
+    <div class="mb-3">
+        <label>Rol</label>
+        <select name="tipo_usuario" class="form-select" id="select-rol" required>
+            {% for tipo in tipos %}
+                {% if request.user.tipo_usuario.nombre|lower == 'profesional' and tipo.nombre|lower != 'tutor' %}
+                    {# Profesional solo puede crear tutores #}
+                {% else %}
+                    <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Crear Usuario</button>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const claveDiv = document.getElementById("div-clave");
+    const confirmarDiv = document.getElementById("div-confirmar-clave");
+    const clave = document.getElementById("clave");
+    const confirmarClave = document.getElementById("confirmar_clave");
+    const mensaje = document.getElementById("msg-clave");
+    const formulario = document.getElementById("form-crear-usuario");
+    const selectRol = document.getElementById("select-rol");
+
+    function validarCoincidencia() {
+        if (!confirmarClave) return;
+        if (confirmarClave.value === "") {
+            mensaje.textContent = "";
+            confirmarClave.classList.remove("is-invalid", "is-valid");
+            return;
+        }
+        if (clave.value === confirmarClave.value) {
+            mensaje.textContent = "Las contraseñas coinciden ✅";
+            mensaje.classList.remove("text-danger");
+            mensaje.classList.add("text-success");
+            confirmarClave.classList.remove("is-invalid");
+            confirmarClave.classList.add("is-valid");
+        } else {
+            mensaje.textContent = "Las contraseñas no coinciden ❌";
+            mensaje.classList.remove("text-success");
+            mensaje.classList.add("text-danger");
+            confirmarClave.classList.remove("is-valid");
+            confirmarClave.classList.add("is-invalid");
+        }
+    }
+
+    if (clave && confirmarClave) {
+        clave.addEventListener("input", validarCoincidencia);
+        confirmarClave.addEventListener("input", validarCoincidencia);
+    }
+
+    formulario.addEventListener("submit", (e) => {
+        if (clave && confirmarClave && clave.value !== confirmarClave.value) {
+            e.preventDefault();
+            alert("Las contraseñas no coinciden. Corrige antes de continuar.");
+        }
+    });
+
+    // Mostrar/ocultar contraseña según el rol seleccionado
+    selectRol.addEventListener("change", () => {
+        const rolSeleccionado = selectRol.options[selectRol.selectedIndex].text.toLowerCase();
+        if (rolSeleccionado === "tutor" && "{{ request.user.tipo_usuario.nombre|lower }}" !== "administrador") {
+            claveDiv.style.display = "none";
+            confirmarDiv.style.display = "none";
+            clave.required = false;
+            confirmarClave.required = false;
+        } else {
+            claveDiv.style.display = "block";
+            confirmarDiv.style.display = "block";
+            clave.required = true;
+            confirmarClave.required = true;
+        }
+    });
+});
+</script>
+{% endblock %}
