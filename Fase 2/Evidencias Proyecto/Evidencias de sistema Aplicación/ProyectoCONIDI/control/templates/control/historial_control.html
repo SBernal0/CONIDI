@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de Cambios{% endblock %}
+
+{% block content %}
+<h2>Historial de Cambios: {{ control.nombre_control }}</h2>
+<p>
+    <strong>Niño/a:</strong> {{ control.nino.nombre }} {{ control.nino.ap_paterno }}
+</p>
+<hr>
+
+{% for version in historial %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <span>
+            <strong>
+                {% if version.history_type == '+' %}
+                    Creado
+                {% elif version.history_type == '~' %}
+                    Modificado
+                {% elif version.history_type == '-' %}
+                    Eliminado
+                {% endif %}
+            </strong>
+            por 
+            <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
+        </span>
+        <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
+    </div>
+    <div class="card-body">
+        {% if version.cambios_calculados %}
+            <h6>Cambios realizados en esta versión:</h6>
+            <ul>
+                {% for cambio in version.cambios_calculados %}
+                    <li>
+                        <strong>{{ cambio.field }}:</strong>
+                        <span class="text-danger"><del>{{ cambio.old }}</del></span> → 
+                        <span class="text-success">{{ cambio.new }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif version.history_type == '+' %}
+            <p class="text-muted">Registro inicial creado.</p>
+        {% else %}
+             <p class="text-muted">No se detectaron cambios de campos en esta versión.</p>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-info">
+    No hay historial de cambios para este registro.
+</div>
+{% endfor %}
+
+<a href="{% url 'ver_control' control.id %}" class="btn btn-secondary mt-3">Volver al Detalle del Control</a>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Niños{% endblock %}
+
+{% block content %}
+<h2>Lista de Niños</h2>
+<hr>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>RUT</th>
+                        <th>Fecha de Nacimiento</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nino in ninos %}
+                    <tr>
+                        <td>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</td>
+                        <td>{{ nino.rut_nino }}</td>
+                        <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-sm btn-primary">Ver Controles</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No hay niños para mostrar.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

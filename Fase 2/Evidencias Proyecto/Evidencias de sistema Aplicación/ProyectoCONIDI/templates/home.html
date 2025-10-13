@@ -1,26 +1,53 @@
 {% extends 'base.html' %}
-
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-<h1>Bienvenido al sistema CESFAM</h1>
+<h1>Bienvenido al sistema CESFAM, {{ request.user.nombre_completo }}</h1>
+<p>Tu rol es: <strong>{{ request.user.rol.nombre_rol }}</strong></p>
+<hr>
 
-{% if request.user.is_authenticated %}
-    <p>Hola, {{ request.user.nombre_completo }}!</p>
-    <ul>
-        {% if es_admin %}
-            <li><a href="{% url 'crear_usuario' %}">Crear usuario</a></li>
-        {% elif request.user.tipo_usuario.nombre|lower == 'profesional' %}
-            <li><a href="{% url 'crear_usuario' %}">Crear tutor</a> (solo puede crear tutores)</li>
-        {% endif %}
-        <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
-    </ul>
-{% else %}
-    <p>Por favor <a href="{% url 'login' %}">inicia sesión</a> para acceder a más funciones.</p>
-{% endif %}
-{% if request.user.clave_temporal %}
-  <script>
-    window.location.href = "{% url 'cambiar_clave_temporal' %}";
-  </script>
-{% endif %}
+<div class="list-group">
+    
+    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+        <a href="{% url 'listar_ninos' %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">Ver Lista de Niños</h5>
+            <p class="mb-1">Accede al listado de niños registrados en el sistema.</p>
+        </a>
+    {% endif %}
+
+
+    {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+        <a href="{% url 'listar_usuarios' %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">Gestionar Cuentas de Usuario</h5>
+            <p class="mb-1">Edita y elimina las cuentas de usuario del sistema.</p>
+        </a>
+        <a href="{% url 'configurar_periodos' %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">Configurar Períodos de Control</h5>
+            <p class="mb-1">Define los meses y los márgenes de alerta para los controles de niño sano.</p>
+        </a>
+    {% endif %}
+    
+    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+        <a href="{% url 'crear_usuario' %}" class="list-group-item list-group-item-action">
+            {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+                <h5 class="mb-1">Crear Nuevo Usuario</h5>
+                <p class="mb-1">Crea cuentas para Administradores/Profesionales o activa cuentas de Tutor.</p>
+            {% else %}
+                <h5 class="mb-1">Crear / Activar Cuenta de Tutor</h5>
+                <p class="mb-1">Busca un tutor existente para activarle su cuenta de acceso.</p>
+            {% endif %}
+        </a>
+
+    {% elif request.user.rol.nombre_rol|lower == 'tutor' %}
+        <a href="{% url 'listar_ninos' %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">Ver Mis Niños Asignados</h5>
+            <p class="mb-1">Revisa el estado de los controles de los niños a tu cargo.</p>
+        </a>
+    {% endif %}
+
+    <a href="{% url 'cambiar_clave' %}" class="list-group-item list-group-item-action">
+        <h5 class="mb-1">Cambiar mi Contraseña</h5>
+        <p class="mb-1">Actualiza tu contraseña de acceso.</p>
+    </a>
+</div>
 {% endblock %}

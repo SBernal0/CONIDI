@@ -4,8 +4,10 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from login.models import Usuario, TipoUsuario
+from login.models import Usuario, Usuario, Rol, Tutor, Profesional
 from login.decorators import rol_requerido, clave_no_temporal
+from django.shortcuts import get_object_or_404 # <- Asegúrate de que este import esté arriba
+from django.db.models import Q
 
 from django.contrib.auth.hashers import make_password
 import re
@@ -13,11 +15,15 @@ import random
 import string
 
 
+# login/views.py
+
 def login_user(request):
     if request.method == "POST":
-        rut = request.POST.get('rut')
+        # Obtenemos el RUT y lo convertimos a mayúsculas INMEDIATAMENTE
+        rut = request.POST.get('rut', '').upper() # <-- CAMBIO CLAVE
         password = request.POST.get('password')
 
+        # Ahora, 'authenticate' siempre recibirá el RUT con la 'K' en mayúscula
         user = authenticate(request, username=rut, password=password)
 
         if user is not None:
@@ -31,66 +37,123 @@ def login_user(request):
     return render(request, 'authentication/login.html')
 
 
-@clave_no_temporal
 @login_required
+@clave_no_temporal
 @rol_requerido(['Administrador', 'Profesional'])
 def crear_usuario(request):
-    tipos = TipoUsuario.objects.all()
-    user_type_allowed = ['Administrador', 'Profesional'] if request.user.tipo_usuario.nombre.lower() == 'administrador' else ['Tutor']
+    current_user_rol = request.user.rol.nombre_rol.lower()
+    
+    contexto = {
+        'roles_para_crear': Rol.objects.none(),
+        'tutores_para_activar': Tutor.objects.none(),
+    }
 
-    tipos = tipos.filter(nombre__in=user_type_allowed)
+    if current_user_rol == 'administrador':
+        contexto['roles_para_crear'] = Rol.objects.filter(nombre_rol__in=['Administrador', 'Profesional'])
+        contexto['tutores_para_activar'] = Tutor.objects.filter(usuario__isnull=True)
+    elif current_user_rol == 'profesional':
+        contexto['tutores_para_activar'] = Tutor.objects.filter(usuario__isnull=True)
 
     if request.method == 'POST':
-        rut = request.POST.get('rut')
-        nombre_completo = request.POST.get('nombre_completo')
-        tipo_id = request.POST.get('tipo_usuario')
+        action = request.POST.get('action')
 
-        if not (rut and nombre_completo and tipo_id):
-            messages.error(request, "Todos los campos son obligatorios.")
-        elif not validar_rut(rut):
-            messages.error(request, "El RUT ingresado no es válido.")
-        else:
-            tipo = TipoUsuario.objects.get(id=tipo_id)
+        if action == 'create_new':
+            rut = request.POST.get('rut')
+            nombre = request.POST.get('nombre_completo')
+            email = request.POST.get('email')
+            rol_id = request.POST.get('rol_id')
+            nueva_clave = request.POST.get('nueva_clave')
 
-            usuario, creado = Usuario.objects.get_or_create(
-                rut=rut,
-                defaults={'nombre_completo': nombre_completo, 'tipo_usuario': tipo}
-            )
+            has_error = False
+            # --- VALIDACIÓN DE RUT AÑADIDA ---
+            if not validar_rut(rut):
+                messages.error(request, f"El RUT '{rut}' no es válido.")
+                has_error = True
+            # ------------------------------------
+            elif Usuario.objects.filter(rut=rut).exists() or Profesional.objects.filter(rut=rut).exists() or Tutor.objects.filter(rut=rut).exists():
+                messages.error(request, f"El RUT {rut} ya está registrado en el sistema.")
+                has_error = True
 
-            if creado:
-                # Si el creador es profesional y crea un tutor, generar clave automática
-                if request.user.tipo_usuario.nombre.lower() == 'profesional' and tipo.nombre.lower() == 'tutor':
-                    codigo_temporal = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-                    usuario.set_password(codigo_temporal)
-                    usuario.clave_temporal = True  # <--- Aquí marcas que es clave temporal
+            if nueva_clave != request.POST.get('confirmar_clave'):
+                messages.error(request, "Las contraseñas no coinciden.")
+                has_error = True
 
-                    usuario.save()
-                    messages.success(request, f"Tutor creado correctamente. Código de acceso: {codigo_temporal}")
-                else:
-                    clave = request.POST.get('clave')
-                    usuario.set_password(clave)
-                    usuario.save()
-                    messages.success(request, f"Usuario {nombre_completo} creado correctamente.")
+            if has_error:
+                contexto['form_data'] = request.POST
+                return render(request, 'authentication/crear_usuario.html', contexto)
+            
+            try:
+                rol_obj = Rol.objects.get(id=rol_id)
+                user = Usuario.objects.create_user(
+                    rut=rut, email=email, nombre_completo=nombre,
+                    rol=rol_obj, password=nueva_clave, clave_temporal=False
+                )
+                if rol_obj.nombre_rol == 'Profesional':
+                    Profesional.objects.create(rut=rut, nombre_completo=nombre, email=email, usuario=user)
+                
+                messages.success(request, f"Usuario '{nombre}' creado con éxito.")
+            except Exception as e:
+                messages.error(request, f"Ocurrió un error al guardar el usuario: {e}")
 
-                return redirect('crear_usuario')
-            else:
-                messages.error(request, "El usuario con ese RUT ya existe.")
 
-    return render(request, 'authentication/crear_usuario.html', {'tipos': tipos})
+        # --- Flujo 2: Activación de cuenta para Tutores existentes ---
+        elif action == 'activate_tutor':
+            tutor_rut = request.POST.get('tutor_rut')
+            try:
+                tutor = Tutor.objects.get(rut=tutor_rut, usuario__isnull=True)
+                rol_tutor = Rol.objects.get(nombre_rol='Tutor')
+                
+                clave_temp = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                
+                user = Usuario.objects.create_user(
+                    rut=tutor.rut,
+                    email=tutor.email,
+                    nombre_completo=tutor.nombre_completo,
+                    rol=rol_tutor,
+                    password=clave_temp,
+                    clave_temporal=True
+                )
+                
+                tutor.usuario = user
+                tutor.save()
+                
+                messages.success(request, f"Cuenta para '{tutor.nombre_completo}' activada. Contraseña temporal: {clave_temp}")
 
+            except Tutor.DoesNotExist:
+                messages.error(request, "El tutor seleccionado no existe o ya tiene una cuenta.")
+            except Rol.DoesNotExist:
+                messages.error(request, "El rol 'Tutor' no existe. Ejecuta el script para poblar datos.")
+        
+        return redirect('crear_usuario')
+
+    # --- Lógica para la petición GET (no cambia) ---
+    contexto = {
+        'roles_para_crear': Rol.objects.none(),
+        'tutores_para_activar': Tutor.objects.none(),
+    }
+    
+    if current_user_rol == 'administrador':
+        contexto['roles_para_crear'] = Rol.objects.filter(nombre_rol__in=['Administrador', 'Profesional'])
+        contexto['tutores_para_activar'] = Tutor.objects.filter(usuario__isnull=True)
+    
+    elif current_user_rol == 'profesional':
+        contexto['tutores_para_activar'] = Tutor.objects.filter(usuario__isnull=True)
+
+    return render(request, 'authentication/crear_usuario.html', contexto)
 
 def validar_rut(rut):
-    rut = rut.replace(".", "").replace("-", "").upper()
+    rut = rut.upper().replace(".", "").replace("-", "")
     if not re.match(r'^\d{7,8}[0-9K]$', rut):
         return False
     cuerpo = rut[:-1]
     dv = rut[-1]
-
+    
     suma = 0
     multiplo = 2
     for c in reversed(cuerpo):
         suma += int(c) * multiplo
         multiplo = 2 if multiplo == 7 else multiplo + 1
+
 
     dv_calculado = 11 - (suma % 11)
     if dv_calculado == 11:
@@ -99,18 +162,14 @@ def validar_rut(rut):
         dv_calculado = 'K'
     else:
         dv_calculado = str(dv_calculado)
-
+        
     return dv_calculado == dv
 
-@clave_no_temporal
-@login_required
-def home(request):
-    # Determinar si el usuario logeado es admin
-    es_admin = False
-    if request.user.is_authenticated and request.user.tipo_usuario.nombre.lower() == 'administrador':
-        es_admin = True
 
-    return render(request, 'home.html', {'es_admin': es_admin})
+@login_required
+@clave_no_temporal
+def home(request):
+    return render(request, 'home.html')
 
 def logout_user(request):
     logout(request)
@@ -158,3 +217,64 @@ def cambiar_clave_temporal(request):
             return redirect('home')
 
     return render(request, 'authentication/cambiar_clave_temporal.html')
+
+
+@login_required
+@rol_requerido(['Administrador']) # Solo los administradores pueden ver esta página
+def listar_usuarios(request):
+    # Obtenemos todos los usuarios y usamos 'select_related' para optimizar la consulta
+    # pidiendo que también traiga los datos del 'rol' en una sola vez.
+    usuarios = Usuario.objects.select_related('rol').all().order_by('nombre_completo')
+    
+    contexto = {
+        'usuarios': usuarios
+    }
+    return render(request, 'authentication/listar_usuarios.html', contexto)
+
+
+@login_required
+@rol_requerido(['Administrador'])
+def editar_usuario(request, pk):
+    # Usamos get_object_or_404 para obtener el usuario o mostrar un error 404 si no existe
+    usuario = get_object_or_404(Usuario, pk=pk)
+    roles = Rol.objects.all()
+
+    if request.method == 'POST':
+        # Obtenemos los datos del formulario enviado
+        usuario.nombre_completo = request.POST.get('nombre_completo')
+        usuario.email = request.POST.get('email')
+        rol_id = request.POST.get('rol')
+        usuario.rol = Rol.objects.get(id=rol_id)
+        
+        # Para los checkboxes, si no están marcados no se envían en el POST
+        usuario.activo = 'activo' in request.POST
+
+        usuario.save()
+        messages.success(request, f'El usuario {usuario.nombre_completo} ha sido actualizado correctamente.')
+        return redirect('listar_usuarios')
+
+    # Si el método es GET, simplemente mostramos el formulario con los datos del usuario
+    contexto = {
+        'usuario': usuario,
+        'roles': roles,
+    }
+    return render(request, 'authentication/editar_usuario.html', contexto)
+
+
+@login_required
+@rol_requerido(['Administrador'])
+def eliminar_usuario(request, pk):
+    usuario = get_object_or_404(Usuario, pk=pk)
+    
+    # Si el formulario de confirmación es enviado...
+    if request.method == 'POST':
+        nombre_usuario = usuario.nombre_completo
+        usuario.delete()
+        messages.success(request, f'El usuario {nombre_usuario} ha sido eliminado permanentemente.')
+        return redirect('listar_usuarios')
+        
+    # Si se accede a la URL por primera vez (GET), muestra la página de confirmación
+    contexto = {
+        'usuario': usuario
+    }
+    return render(request, 'authentication/eliminar_usuario.html', contexto)

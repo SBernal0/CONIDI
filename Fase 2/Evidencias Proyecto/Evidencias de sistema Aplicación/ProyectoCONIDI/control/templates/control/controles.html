@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Controles de {{ nino.nombre }}{% endblock %}
+
+{% block content %}
+<h2>Calendario de Controles de Niño Sano</h2>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</h5>
+        <p class="card-text">
+            <strong>RUT:</strong> {{ nino.rut_nino }} <br>
+            <strong>Fecha de Nacimiento:</strong> {{ nino.fecha_nacimiento|date:"d/m/Y" }}
+        </p>
+    </div>
+</div>
+
+<h4>Próximos Controles</h4>
+<div class="list-group">
+    {% for control in controles %}
+    <div class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ control.nombre_control }}</h5>
+            <span class="badge {{ control.estado_css_class }} rounded-pill p-2">
+                {{ control.estado_alerta }}
+            </span>
+        </div>
+        <p class="mb-1">
+            <strong>Fecha Programada:</strong> {{ control.fecha_control_programada|date:"d/m/Y" }}
+        </p>
+
+        {% if control.estado_alerta == "Realizado" %}
+            <div class="mt-2">
+                <a href="{% url 'ver_control' control.id %}" class="btn btn-sm btn-info">Ver Registro</a>
+                {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+                    <a href="{% url 'editar_control' control.id %}" class="btn btn-sm btn-warning">Editar</a>
+                {% endif %}
+            </div>
+            <small class="text-success">Realizado el: {{ control.fecha_realizacion_control|date:"d/m/Y" }}</small>
+        {% elif request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+            <div class="mt-2">
+                <a href="{% url 'registrar_control' control.id %}" class="btn btn-sm btn-success">Registrar Control</a>
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

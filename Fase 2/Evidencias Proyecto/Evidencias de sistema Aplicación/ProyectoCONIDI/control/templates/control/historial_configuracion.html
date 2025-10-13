@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de Configuración de Controles{% endblock %}
+
+{% block content %}
+<h2>Historial de Cambios en la Configuración de Controles</h2>
+<p>Aquí se registran todas las modificaciones hechas a los períodos de control.</p>
+<hr>
+<a href="{% url 'configurar_periodos' %}" class="btn btn-secondary mt-3">Volver a la Configuración</a>
+
+{% for version in historial %}
+
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+
+
+        <span>
+            <strong>{{ version.nombre_mes_control }}</strong> fue 
+            <strong>
+                {% if version.history_type == '~' %}modificado{% elif version.history_type == '+' %}creado{% endif %}
+            </strong>
+             por 
+            <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
+        </span>
+        <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
+    </div>
+    <div class="card-body">
+        {% if version.cambios_calculados %}
+            <h6>Cambios realizados en esta versión:</h6>
+            <ul>
+                {% for cambio in version.cambios_calculados %}
+                    <li>
+                        <strong>{{ cambio.field }}:</strong>
+                        <span class="text-danger"><del>{{ cambio.old }}</del></span> → 
+                        <span class="text-success">{{ cambio.new }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif version.history_type == '+' %}
+            <p class="text-muted">Registro inicial creado.</p>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-info">No hay historial de cambios.</div>
+{% endfor %}
+
+{% endblock %}

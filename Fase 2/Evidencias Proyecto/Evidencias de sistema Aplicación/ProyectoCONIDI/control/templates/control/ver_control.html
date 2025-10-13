@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle del Control{% endblock %}
+
+{% block content %}
+<h2>Detalle: {{ control.nombre_control }}</h2>
+<p>
+    <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }} <br>
+    <strong>Fecha de Realización:</strong> {{ control.fecha_realizacion_control|date:"d/m/Y" }}
+</p>
+<hr>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Resumen del Control</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Datos Antropométricos</h6>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Peso:</strong> {{ control.pesokg }} kg</li>
+                    <li class="list-group-item"><strong>Talla:</strong> {{ control.talla_cm }} cm</li>
+                    <li class="list-group-item"><strong>IMC:</strong> {{ control.imc }}</li>
+                    <li class="list-group-item"><strong>Perímetro Craneal:</strong> {{ control.pc_cm }} cm</li>
+                </ul>
+            </div>
+            <div class="col-md-6 mt-3 mt-md-0">
+                <h6>Calificaciones y Diagnósticos</h6>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Nutricional:</strong> {{ control.calificacion_nutricional }}</li>
+                    <li class="list-group-item"><strong>Estatural:</strong> {{ control.get_calificacion_estatural_display }}</li>
+                    <li class="list-group-item"><strong>P/CE:</strong> {{ control.get_calificacion_pce_display }}</li>
+                    <li class="list-group-item"><strong>P. Arterial:</strong> {{ control.get_dig_pa_display }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <hr>
+        <h6>Diagnóstico, Observaciones e Indicaciones</h6>
+        <p><strong>Diagnóstico Desarrollo Integral:</strong> {{ control.diag_des_integral|linebreaksbr }}</p>
+        <p><strong>Observaciones Desarrollo Integral:</strong> {{ control.obs_desarrollo_integral|linebreaksbr }}</p>
+        <p><strong>Observaciones Generales:</strong> {{ control.observaciones|linebreaksbr }}</p>
+        <p><strong>Indicaciones:</strong> {{ control.indicaciones|linebreaksbr }}</p>
+
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Derivaciones</h6>
+                <ul>
+                    <li><strong>Requiere Derivación:</strong> {% if control.derivacion %}Sí{% else %}No{% endif %}</li>
+                    <li><strong>Consulta Dental Realizada:</strong> {% if control.consulta_dental_realizada %}Sí{% else %}No{% endif %}</li>
+                    <li><strong>Derivación a Dentista:</strong> {% if control.derivacion_dentista %}Sí{% else %}No{% endif %}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Profesional a Cargo</h6>
+                <p>{{ control.profesional.usuario.nombre_completo|default:"No asignado" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Volver a la Lista de Controles</a>
+        {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+                <a href="{% url 'historial_control' control.id %}" class="btn btn-info">Ver Historial de Cambios</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

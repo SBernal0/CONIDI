@@ -4,9 +4,7 @@
 {% block content %}
 <h2>Login</h2>
 
-{% for message in messages %}
-  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-{% endfor %}
+
 
 <form method="post" class="w-50">
     {% csrf_token %}
@@ -20,6 +18,24 @@
     </div>
     <button type="submit" class="btn btn-primary">Iniciar sesión</button>
 </form>
+
+<div class="alert alert-warning mt-4">
+    <strong>Cuentas</strong><br>
+    Cuenta de admin: 11111111-1  
+    <br>
+    clave de admin: 123456 
+    <br>
+    Cuenta de profesional: 22222222-2  
+    <br>
+    clave de profesional: 123456 
+    <br>
+    Cuenta de tutor: 17555666-k  
+    <br>
+    clave de profesional: 123456 
+
+
+</div>
+
 {% if request.user.clave_temporal %}
   <script>
     window.location.href = "{% url 'cambiar_clave_temporal' %}";

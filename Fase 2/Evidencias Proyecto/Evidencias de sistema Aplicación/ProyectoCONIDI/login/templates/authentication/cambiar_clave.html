@@ -5,9 +5,7 @@
 {% block content %}
 <h2>Cambiar Contraseña</h2>
 
-{% for message in messages %}
-  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-{% endfor %}
+
 
 <form method="post" class="w-50" id="form-cambiar-clave">
     {% csrf_token %}

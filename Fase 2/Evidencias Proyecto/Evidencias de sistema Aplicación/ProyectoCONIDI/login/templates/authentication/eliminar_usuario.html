@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h3>Confirmar Eliminación de Usuario</h3>
+    </div>
+    <div class="card-body">
+        <p class="fs-5">¿Estás seguro de que deseas eliminar permanentemente al usuario?</p>
+        
+        <div class="alert alert-secondary">
+            <strong>RUT:</strong> {{ usuario.rut }}<br>
+            <strong>Nombre:</strong> {{ usuario.nombre_completo }}<br>
+            <strong>Rol:</strong> {{ usuario.rol.nombre_rol }}
+        </div>
+
+        <p class="text-danger fw-bold">
+            <i class="bi bi-exclamation-triangle-fill"></i> ¡Esta acción no se puede deshacer!
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar permanentemente</button>
+            <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
