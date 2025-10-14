@@ -1,0 +1,491 @@
+/* ===========================
+   HOME.CSS - Página de Inicio
+   Estilos específicos para el dashboard principal
+   =========================== */
+
+/* ===========================
+   HERO / BIENVENIDA
+   =========================== */
+
+.hero-welcome {
+    background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,51,102,0.2);
+}
+
+.hero-welcome::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 8s ease-in-out infinite;
+}
+
+.hero-welcome::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 6s ease-in-out infinite reverse;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-welcome h1 {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-welcome .role-badge {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.hero-welcome .role-badge i {
+    margin-right: 0.5rem;
+    font-size: 1.2em;
+}
+
+.hero-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.hero-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* ===========================
+   SECCIÓN DE ACCIONES
+   =========================== */
+
+.section-title {
+    color: #003366;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #003366 0%, #0066cc 100%);
+    border-radius: 2px;
+}
+
+.section-title i {
+    margin-right: 0.75rem;
+    color: #0066cc;
+}
+
+/* ===========================
+   CARDS DE ACCIÓN
+   =========================== */
+
+.action-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    height: 100%;
+    position: relative;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #003366 0%, #0066cc 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(0,51,102,0.15);
+}
+
+.action-card:hover::before {
+    transform: scaleX(1);
+}
+
+.action-card .card-body {
+    padding: 2rem 1.5rem;
+    display: flex;
+    align-items: start;
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.25rem;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .action-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Colores específicos por tipo de acción */
+.action-icon.icon-primary {
+    background: linear-gradient(135deg, #e7f1ff 0%, #cce4ff 100%);
+    color: #003366;
+}
+
+.action-icon.icon-success {
+    background: linear-gradient(135deg, #d1f4e0 0%, #b8edd3 100%);
+    color: #0f5132;
+}
+
+.action-icon.icon-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+    color: #664d03;
+}
+
+.action-icon.icon-info {
+    background: linear-gradient(135deg, #cff4fc 0%, #9eeaf9 100%);
+    color: #055160;
+}
+
+.action-icon.icon-purple {
+    background: linear-gradient(135deg, #e7d6f5 0%, #d4bbeb 100%);
+    color: #59359a;
+}
+
+.action-icon i {
+    font-size: 1.75rem;
+}
+
+.action-content h5 {
+    color: #003366;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.action-card:hover .action-content h5 {
+    color: #0066cc;
+}
+
+.action-content p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* ===========================
+   LINK WRAPPER
+   =========================== */
+
+.action-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.action-link:hover {
+    color: inherit;
+}
+
+/* ===========================
+   GRID DE ACCIONES
+   =========================== */
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* ===========================
+   BADGE DE DESTACADO
+   =========================== */
+
+.badge-featured {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #664d03;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+    z-index: 2;
+}
+
+/* ===========================
+   INFORMACIÓN ADICIONAL
+   =========================== */
+
+.info-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #0066cc;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-box i {
+    font-size: 2rem;
+    color: #0066cc;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.info-box-content h6 {
+    color: #003366;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.info-box-content p {
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* ===========================
+   ACCESOS RÁPIDOS (Alternativo)
+   =========================== */
+
+.quick-actions {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.quick-action-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: #495057;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.quick-action-btn:hover {
+    border-color: #0066cc;
+    background: #f8f9fa;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,102,204,0.15);
+    color: #003366;
+}
+
+.quick-action-btn i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #0066cc;
+}
+
+.quick-action-btn span {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 991.98px) {
+    .hero-welcome {
+        padding: 2rem 1.5rem;
+    }
+    
+    .hero-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .hero-icon i {
+        font-size: 2rem;
+    }
+    
+    .hero-welcome h1 {
+        font-size: 1.75rem;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .hero-welcome {
+        padding: 1.5rem 1rem;
+    }
+    
+    .hero-welcome h1 {
+        font-size: 1.5rem;
+    }
+    
+    .action-card .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        margin-right: 1rem;
+    }
+    
+    .action-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ===========================
+   ANIMACIONES ADICIONALES
+   =========================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-delay-1 {
+    animation-delay: 0.1s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.animate-delay-2 {
+    animation-delay: 0.2s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.animate-delay-3 {
+    animation-delay: 0.3s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.animate-delay-4 {
+    animation-delay: 0.4s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+/* ===========================
+   EFECTOS ESPECIALES
+   =========================== */
+
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    to {
+        left: 100%;
+    }
+}

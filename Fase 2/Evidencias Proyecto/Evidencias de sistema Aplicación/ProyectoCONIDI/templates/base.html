@@ -4,36 +4,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Sistema CESFAM{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Sistema CESFAM - Control Niño Sano. Gestión integral de controles pediátricos.">
+    <meta name="keywords" content="CESFAM, Control Niño Sano, Pediatría, Salud Infantil">
+    <meta name="author" content="Ministerio de Salud de Chile">
+    
+    <title>{% block title %}Sistema CESFAM - Control Niño Sano{% endblock %}</title>
+    
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- CSS Personalizado Principal -->
+    <link rel="stylesheet" href="{% static 'css/estilobase.css' %}">
+    
+    <!-- CSS Extra por página -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003366;">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">CESFAM</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+    
+    <!-- ===========================
+         NAVBAR PRINCIPAL
+         =========================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-cesfam sticky-top">
+        <div class="container-fluid px-4">
+            <!-- Logo y Marca -->
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <div class="logo-icon">
+                    <i class="bi bi-hospital text-white fs-4"></i>
+                </div>
+                <div>
+                    <span>CESFAM</span>
+                    <small class="d-block" style="font-size: 0.65rem; font-weight: 400; opacity: 0.9;">
+                        Control Niño Sano
+                    </small>
+                </div>
+            </a>
+            
+            <!-- Botón móvil -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNav" aria-controls="navbarNav"
                     aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+                <span class="navbar-toggler-icon"></span>
             </button>
+            
+            <!-- Navegación -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active text-white" href="{% url 'home' %}">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'cambiar_clave' %}">Cambiar contraseña</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#">Profesionales</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#">Contacto</a></li>
-                    {% if request.user.is_authenticated %}
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                        <a class="nav-link active" href="{% url 'home' %}">
+                            <i class="bi bi-house-door"></i>Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-people"></i>Profesionales
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-envelope"></i>Contacto
+                        </a>
+                    </li>
+                    
+                    {% if request.user.is_authenticated %}
+                    <!-- Usuario autenticado -->
+                    <li class="nav-item dropdown ms-lg-2">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
+                           id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar">
+                                {{ request.user.nombre_completo|first|upper }}
+                            </div>
+                            <div class="d-none d-lg-block text-start">
+                                <small class="d-block" style="line-height: 1.2;">
+                                    {{ request.user.nombre_completo|truncatewords:2 }}
+                                </small>
+                                <small style="font-size: 0.75rem; opacity: 0.8;">
+                                    {{ request.user.rol.nombre_rol }}
+                                </small>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="bi bi-person-circle"></i> Mi Cuenta
+                                </h6>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person"></i>Mi Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'cambiar_clave' %}">
+                                    <i class="bi bi-key"></i>Cambiar Contraseña
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-gear"></i>Configuración
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+                    <!-- Usuario no autenticado -->
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-light btn-sm" href="{% url 'login' %}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
@@ -41,32 +134,135 @@
         </div>
     </nav>
 
-    <main class="container mt-4 mb-5">
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- ===========================
+         CONTENIDO PRINCIPAL
+         =========================== -->
+    <main class="main-container container-fluid px-4">
+        
+        <!-- Mensajes del Sistema -->
+        {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'success' %}
+                            <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                        {% elif message.tags == 'danger' or message.tags == 'error' %}
+                            <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="bi bi-exclamation-circle-fill fs-5 me-3"></i>
+                        {% elif message.tags == 'info' %}
+                            <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-    {% endif %}
+        </div>
+        {% endif %}
 
-    {% block content %}
-    {% endblock %}
+        <!-- Breadcrumb (opcional) -->
+        {% block breadcrumb %}{% endblock %}
+
+        <!-- Contenido de las páginas hijas -->
+        {% block content %}
+        {% endblock %}
+        
     </main>
 
-    <footer class="footer bg-dark text-white text-center py-3 mt-auto" >
+    <!-- ===========================
+         FOOTER
+         =========================== -->
+    <footer class="footer-cesfam text-white py-4">
         <div class="container">
-            <p class="mb-1 fw-bold">Ministerio de Salud de Chile</p>
-            <p class="mb-0">Sistema CESFAM — &copy; 2025 Todos los derechos reservados</p>
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <i class="bi bi-hospital-fill fs-2 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Sistema CESFAM</h6>
+                            <small style="opacity: 0.8;">Control Niño Sano</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <img src="https://www.minsal.cl/wp-content/themes/minsal/assets/img/logo-minsal.png" 
+                         alt="Ministerio de Salud" 
+                         class="logo-minsal"
+                         style="max-height: 40px; filter: brightness(0) invert(1); opacity: 0.9;">
+                </div>
+                
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="social-links mb-2">
+                        <a href="#" class="text-white text-decoration-none me-3" aria-label="Facebook">
+                            <i class="bi bi-facebook fs-5"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none me-3" aria-label="Twitter">
+                            <i class="bi bi-twitter fs-5"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none" aria-label="Instagram">
+                            <i class="bi bi-instagram fs-5"></i>
+                        </a>
+                    </div>
+                    <small style="opacity: 0.8;">
+                        <i class="bi bi-telephone me-1"></i> +56 9 1234 5678
+                    </small>
+                </div>
+            </div>
+            
+            <div class="footer-divider"></div>
+            
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-1">
+                        <strong>Ministerio de Salud de Chile</strong>
+                    </p>
+                    <small style="opacity: 0.7;">
+                        &copy; 2025 Todos los derechos reservados | 
+                        <a href="#" class="text-white text-decoration-none">Términos de Uso</a> | 
+                        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+                    </small>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- ===========================
+         SPINNER DE CARGA
+         =========================== -->
+    <div class="spinner-overlay" id="loadingSpinner">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+
+    <!-- ===========================
+         SCRIPTS
+         =========================== -->
+    
+    <!-- jQuery (requerido por Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" 
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    
+    <!-- Bootstrap 5 JS Bundle (incluye Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     
+    <!-- JavaScript Principal Personalizado -->
+    <script src="{% static 'js/mainbase.js' %}"></script>
+    
+    <!-- JavaScript Extra por página -->
     {% block extra_js %}
     {% endblock extra_js %}
 

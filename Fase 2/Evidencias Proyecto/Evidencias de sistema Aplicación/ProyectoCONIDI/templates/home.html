@@ -1,53 +1,203 @@
 {% extends 'base.html' %}
-{% block title %}Inicio{% endblock %}
+{% load static %}
+
+{% block title %}Inicio - Sistema CESFAM{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estilohome.css' %}">
+{% endblock %}
 
 {% block content %}
-<h1>Bienvenido al sistema CESFAM, {{ request.user.nombre_completo }}</h1>
-<p>Tu rol es: <strong>{{ request.user.rol.nombre_rol }}</strong></p>
-<hr>
 
-<div class="list-group">
-    
-    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-        <a href="{% url 'listar_ninos' %}" class="list-group-item list-group-item-action">
-            <h5 class="mb-1">Ver Lista de Niños</h5>
-            <p class="mb-1">Accede al listado de niños registrados en el sistema.</p>
-        </a>
-    {% endif %}
-
-
-    {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-        <a href="{% url 'listar_usuarios' %}" class="list-group-item list-group-item-action">
-            <h5 class="mb-1">Gestionar Cuentas de Usuario</h5>
-            <p class="mb-1">Edita y elimina las cuentas de usuario del sistema.</p>
-        </a>
-        <a href="{% url 'configurar_periodos' %}" class="list-group-item list-group-item-action">
-            <h5 class="mb-1">Configurar Períodos de Control</h5>
-            <p class="mb-1">Define los meses y los márgenes de alerta para los controles de niño sano.</p>
-        </a>
-    {% endif %}
-    
-    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-        <a href="{% url 'crear_usuario' %}" class="list-group-item list-group-item-action">
-            {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                <h5 class="mb-1">Crear Nuevo Usuario</h5>
-                <p class="mb-1">Crea cuentas para Administradores/Profesionales o activa cuentas de Tutor.</p>
-            {% else %}
-                <h5 class="mb-1">Crear / Activar Cuenta de Tutor</h5>
-                <p class="mb-1">Busca un tutor existente para activarle su cuenta de acceso.</p>
-            {% endif %}
-        </a>
-
-    {% elif request.user.rol.nombre_rol|lower == 'tutor' %}
-        <a href="{% url 'listar_ninos' %}" class="list-group-item list-group-item-action">
-            <h5 class="mb-1">Ver Mis Niños Asignados</h5>
-            <p class="mb-1">Revisa el estado de los controles de los niños a tu cargo.</p>
-        </a>
-    {% endif %}
-
-    <a href="{% url 'cambiar_clave' %}" class="list-group-item list-group-item-action">
-        <h5 class="mb-1">Cambiar mi Contraseña</h5>
-        <p class="mb-1">Actualiza tu contraseña de acceso.</p>
-    </a>
+<!-- Bienvenida -->
+<div class="hero-welcome animate-fade-in-up">
+    <div class="hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mb-3 mb-lg-0">
+                <h1>¡Bienvenido, {{ request.user.nombre_completo }}!</h1>
+                <p class="text-white mb-3" style="opacity: 0.95; font-size: 1.1rem;">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    {% now "l, j \d\e F \d\e Y" %}
+                </p>
+                <div class="role-badge">
+                    <i class="bi bi-person-badge"></i>
+                    {{ request.user.rol.nombre_rol }}
+                </div>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end">
+                <div class="hero-icon d-inline-flex">
+                    <i class="bi bi-hospital-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Sección Principal de Acciones -->
+<div class="mb-4">
+    <h2 class="section-title">
+        <i class="bi bi-grid-3x3-gap"></i>
+        Acciones Disponibles
+    </h2>
+</div>
+
+<div class="actions-grid">
+    
+    <!-- ACCIONES PARA ADMINISTRADOR Y PROFESIONAL -->
+    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+        <a href="{% url 'listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
+            <div class="action-card">
+                <div class="card-body">
+                    <div class="action-icon icon-primary">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="action-content">
+                        <h5>Lista de Niños</h5>
+                        <p>Accede al listado completo de niños registrados en el sistema y gestiona sus controles.</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+
+    <!-- ACCIONES EXCLUSIVAS DE ADMINISTRADOR -->
+    {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+        <a href="{% url 'listar_usuarios' %}" class="action-link animate-fade-in-up animate-delay-2">
+            <div class="action-card">
+                <div class="action-icon icon-success">
+                    <i class="bi bi-person-gear"></i>
+                </div>
+                <div class="action-content">
+                    <h5>Gestionar Usuarios</h5>
+                    <p>Administra las cuentas de usuario: edita, elimina y controla los accesos al sistema.</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'configurar_periodos' %}" class="action-link animate-fade-in-up animate-delay-3">
+            <div class="action-card">
+                <span class="badge-featured">
+                    <i class="bi bi-star-fill me-1"></i>Importante
+                </span>
+                <div class="card-body">
+                    <div class="action-icon icon-warning">
+                        <i class="bi bi-calendar-range"></i>
+                    </div>
+                    <div class="action-content">
+                        <h5>Configurar Períodos</h5>
+                        <p>Define los meses y márgenes de alerta para los controles de niño sano del sistema.</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+
+    <!-- CREAR USUARIO / ACTIVAR TUTOR -->
+    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+        <a href="{% url 'crear_usuario' %}" class="action-link animate-fade-in-up animate-delay-4">
+            <div class="action-card">
+                <div class="card-body">
+                    <div class="action-icon icon-info">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <div class="action-content">
+                        {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+                            <h5>Crear Nuevo Usuario</h5>
+                            <p>Registra nuevas cuentas para Administradores, Profesionales o activa cuentas de Tutores.</p>
+                        {% else %}
+                            <h5>Activar Cuenta de Tutor</h5>
+                            <p>Busca un tutor existente en el sistema y actívale su cuenta de acceso.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+
+    <!-- ACCIONES PARA TUTOR -->
+    {% if request.user.rol.nombre_rol|lower == 'tutor' %}
+        <a href="{% url 'listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
+            <div class="action-card">
+                <div class="card-body">
+                    <div class="action-icon icon-primary">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <div class="action-content">
+                        <h5>Mis Niños Asignados</h5>
+                        <p>Revisa el estado de salud y controles de los niños que están bajo tu cuidado.</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+
+    <!-- CAMBIAR CONTRASEÑA (TODOS) -->
+    <a href="{% url 'cambiar_clave' %}" class="action-link animate-fade-in-up animate-delay-4">
+        <div class="action-card">
+            <div class="card-body">
+                <div class="action-icon icon-purple">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="action-content">
+                    <h5>Cambiar Contraseña</h5>
+                    <p>Actualiza tu contraseña de acceso para mantener la seguridad de tu cuenta.</p>
+                </div>
+            </div>
+        </div>
+    </a>
+
+</div>
+
+<!-- Información Adicional -->
+<div class="info-box animate-fade-in-up">
+    <i class="bi bi-info-circle-fill"></i>
+    <div class="info-box-content">
+        <h6>¿Necesitas ayuda?</h6>
+        <p>
+            Si tienes alguna duda o problema con el sistema, contacta al administrador o consulta el manual de usuario.
+            También puedes comunicarte al <strong>+56 9 1234 5678</strong> o al correo <strong>soporte@cesfam.cl</strong>
+        </p>
+    </div>
+</div>
+
+<!-- Accesos Rápidos Adicionales (Opcional) -->
+{% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+<div class="quick-actions animate-fade-in-up">
+    <h5 class="mb-3" style="color: #003366; font-weight: 600;">
+        <i class="bi bi-lightning-fill me-2" style="color: #ffc107;"></i>
+        Accesos Rápidos
+    </h5>
+    <div class="quick-actions-grid">
+        <a href="{% url 'listar_ninos' %}" class="quick-action-btn">
+            <i class="bi bi-search"></i>
+            <span>Buscar Niño</span>
+        </a>
+        <a href="#" class="quick-action-btn">
+            <i class="bi bi-file-earmark-medical"></i>
+            <span>Nuevo Control</span>
+        </a>
+        <a href="#" class="quick-action-btn">
+            <i class="bi bi-calendar-event"></i>
+            <span>Calendario</span>
+        </a>
+        <a href="#" class="quick-action-btn">
+            <i class="bi bi-graph-up"></i>
+            <span>Estadísticas</span>
+        </a>
+        <a href="#" class="quick-action-btn">
+            <i class="bi bi-file-text"></i>
+            <span>Informes</span>
+        </a>
+        <a href="#" class="quick-action-btn">
+            <i class="bi bi-printer"></i>
+            <span>Imprimir</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/home.js' %}"></script>
 {% endblock %}
