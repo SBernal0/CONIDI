@@ -1,39 +1,85 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Login - CESFAM{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estilologin.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Login</h2>
+<div class="container login-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-8 col-lg-6 col-xl-5">
 
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="icon-wrapper">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h2>Iniciar Sesión</h2>
+                </div>
+                <div class="login-body">
+                    <form method="post">
+                        {% csrf_token %}
 
+                        <div class="mb-3">
+                            <label for="rut" class="form-label">RUT</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" name="rut" id="rut" class="form-control" placeholder="Ej: 12345678-9" required>
+                            </div>
+                        </div>
 
-<form method="post" class="w-50">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="rut" class="form-label">RUT</label>
-        <input type="text" name="rut" id="rut" class="form-control" required>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-login">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert credentials-alert mt-4">
+              <strong class="d-block mb-2">Cuentas de prueba:</strong>
+              <div class="credential-entry">
+                <span>Admin:</span>
+                <code>11111111-1</code>
+                <span class="ms-2">Clave:</span>
+                <code>123456</code>
+              </div>
+            </div>
+
+            <div class="alert credentials-alert mt-4">
+              <strong class="d-block mb-2">Cuentas de prueba:</strong>
+              <div class="credential-entry">
+                <span>Profesional:</span>
+                <code>22222222-2</code>
+                <span class="ms-2">Clave:</span>
+                <code>123456</code>
+              </div>
+            </div>
+            
+            <div class="alert credentials-alert mt-4">
+              <strong class="d-block mb-2">Cuentas de prueba:</strong>
+              <div class="credential-entry">
+                <span>Tutor:</span>
+                <code>17555666-k</code>
+                <span class="ms-2">Clave:</span>
+                <code>123456</code>
+              </div>
+            </div>
+
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" name="password" id="password" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Iniciar sesión</button>
-</form>
-
-<div class="alert alert-warning mt-4">
-    <strong>Cuentas</strong><br>
-    Cuenta de admin: 11111111-1  
-    <br>
-    clave de admin: 123456 
-    <br>
-    Cuenta de profesional: 22222222-2  
-    <br>
-    clave de profesional: 123456 
-    <br>
-    Cuenta de tutor: 17555666-k  
-    <br>
-    clave de profesional: 123456 
-
-
 </div>
 
 {% if request.user.clave_temporal %}
@@ -42,4 +88,3 @@
   </script>
 {% endif %}
 {% endblock %}
-

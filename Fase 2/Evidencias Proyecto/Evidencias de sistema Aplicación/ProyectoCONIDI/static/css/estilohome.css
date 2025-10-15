@@ -15,6 +15,7 @@
     position: relative;
     overflow: hidden;
     box-shadow: 0 8px 24px rgba(0,51,102,0.2);
+    animation: fadeInUp 0.6s ease-out; /* Animación de entrada para todo el bloque */
 }
 
 .hero-welcome::before {
@@ -53,6 +54,15 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.hero-welcome h1, .hero-welcome p {
+    animation: fadeInUp 0.5s ease-out 0.3s backwards; /* Animación para el texto */
+}
+
+.hero-welcome p {
+    animation-delay: 0.4s; /* Retraso adicional para el párrafo */
+}
+
+
 .hero-welcome .role-badge {
     background: rgba(255,255,255,0.2);
     backdrop-filter: blur(10px);
@@ -64,6 +74,7 @@
     align-items: center;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInRight 0.6s ease-out 0.5s backwards;
 }
 
 .hero-welcome .role-badge i {
@@ -87,6 +98,7 @@
 .hero-icon i {
     font-size: 2.5rem;
     color: white;
+    animation: bounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
 }
 
 @keyframes pulse {
@@ -279,6 +291,20 @@
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(255,193,7,0.3);
     z-index: 2;
+    position: relative; 
+    overflow: hidden;  
+}
+
+.badge-featured::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 3s infinite;
+    animation-delay: 1s;
 }
 
 /* ===========================
@@ -293,6 +319,12 @@
     margin-bottom: 2rem;
     display: flex;
     align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,102,204,0.1);
 }
 
 .info-box i {
@@ -325,6 +357,12 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     margin-bottom: 2rem;
 }
+
+.quick-action-btn:active {
+    transform: translateY(0) scale(0.95); /* NUEVO: Feedback de click */
+    transition-duration: 0.1s;
+}
+
 
 .quick-actions-grid {
     display: grid;
@@ -489,3 +527,42 @@
         left: 100%;
     }
 }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* NUEVO: Animación para el badge del rol */
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* NUEVO: Animación para el icono del hospital */
+@keyframes bounceIn {
+    0%   { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+    50%  { transform: scale(1.05) rotate(5deg); }
+    70%  { transform: scale(0.9) rotate(-2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* NUEVO: Keyframe para el efecto de brillo */
+@keyframes shimmer {
+    to { left: 150%; }
+}
+
+.animate-fade-in-up {
+    /* Esta animación ahora se usará para la entrada escalonada de las tarjetas */
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Los delays ya estaban bien definidos, no necesitan cambios */
+.animate-delay-1, .animate-delay-2, .animate-delay-3, .animate-delay-4 {
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }

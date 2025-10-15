@@ -1,0 +1,155 @@
+/* ===========================
+   LOGIN.CSS - Página de Inicio de Sesión
+   Estilos para el formulario de acceso
+   =========================== */
+
+:root {
+    --cesfam-primary: #003366;
+    --cesfam-secondary: #0066cc;
+}
+
+/* Contenedor principal para centrar el formulario */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+/* La tarjeta principal del login */
+.login-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 51, 102, 0.15);
+    overflow: hidden;
+    animation: fadeInUp 0.7s ease-out;
+    width: 100%;
+}
+
+/* Cabecera de la tarjeta */
+.login-header {
+    background: linear-gradient(135deg, var(--cesfam-primary) 0%, var(--cesfam-secondary) 100%);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: white;
+}
+
+.login-header .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem auto;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    animation: bounceIn 0.8s ease-out 0.3s backwards;
+}
+
+.login-header h2 {
+    font-weight: 700;
+    margin: 0;
+    animation: fadeInUp 0.6s ease-out 0.5s backwards;
+}
+
+/* Cuerpo del formulario */
+.login-body {
+    padding: 2rem 2.5rem;
+}
+
+/* Estilo para los grupos de input con íconos */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+    color: var(--cesfam-secondary);
+}
+
+.form-control {
+    border-left: none;
+    padding-left: 0.5rem;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.15);
+    border-color: #ced4da;
+    border-left: none;
+}
+
+/* Animación escalonada para los elementos del formulario */
+.login-body .form-label {
+    animation: fadeInUp 0.6s ease-out 0.6s backwards;
+}
+.login-body .input-group {
+    animation: fadeInUp 0.6s ease-out 0.7s backwards;
+}
+.login-body .btn {
+    animation: fadeInUp 0.6s ease-out 0.8s backwards;
+}
+
+/* Botón de login */
+.btn-login {
+    background: linear-gradient(135deg, var(--cesfam-primary) 0%, var(--cesfam-secondary) 100%);
+    border: none;
+    padding: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 51, 102, 0.3);
+}
+
+/* Caja de alerta con credenciales de prueba */
+.credentials-alert {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #0066cc;
+    animation: fadeInUp 0.6s ease-out 1s backwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    text-align: left;
+    font-size: 0.875rem; /* Un poco más pequeño para que encaje mejor */
+    line-height: 1.6;
+}
+.credentials-alert strong {
+    color: var(--cesfam-primary);
+}
+
+/* Estilo para cada línea de credencial */
+.credential-entry {
+    display: flex;
+    align-items: center;
+
+    gap: 0.75rem; /* Espacio horizontal consistente entre elementos */
+    margin-bottom: 0.5rem;
+}
+
+.credential-entry:last-child {
+    margin-bottom: 0;
+}
+
+
+
+/* Estilo para los códigos (RUT y clave) */
+.credential-entry code {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+/* Keyframes para las animaciones */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+    0%   { opacity: 0; transform: scale(0.5); }
+    60%  { opacity: 1; transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
