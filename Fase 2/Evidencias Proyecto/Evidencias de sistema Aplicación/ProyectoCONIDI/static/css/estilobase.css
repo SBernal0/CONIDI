@@ -1,7 +1,4 @@
-/* ===========================
-   BASE.CSS - Sistema CESFAM
-   Estilos globales y componentes
-   =========================== */
+/*  ESTILOS GLOBALES Y COMPONENTES */
 
 :root {
     --cesfam-primary: #003366;
@@ -10,9 +7,7 @@
     --cesfam-dark: #001a33;
 }
 
-/* ===========================
-   LAYOUT PRINCIPAL
-   =========================== */
+/* LAYOUT PRINCIPAL */
 
 body {
     display: flex;
@@ -26,9 +21,7 @@ main {
     flex: 1;
 }
 
-/* ===========================
-   NAVBAR CESFAM
-   =========================== */
+/* NAVBAR CESFAM */
 
 .navbar-cesfam {
     background: linear-gradient(135deg, var(--cesfam-primary) 0%, #004080 100%);
@@ -61,7 +54,7 @@ main {
     transform: scale(1.05) rotate(-5deg); 
 }
 
-/* Navegación */
+/* NAVEGACIÓN */
 .navbar-nav .nav-link {
     color: rgba(255,255,255,0.85) !important;
     font-weight: 500;
@@ -101,9 +94,7 @@ main {
     vertical-align: middle;
 }
 
-/* ===========================
-   DROPDOWN EN NAVBAR
-   =========================== */
+/* DROPDOWN EN NAVBAR */
 
 .navbar .dropdown-menu {
     border: none;
@@ -144,9 +135,7 @@ main {
     margin: 0.5rem 0;
 }
 
-/* ===========================
-   USUARIO AVATAR
-   =========================== */
+/* USUARIO AVATAR */
 
 .user-avatar {
     width: 36px;
@@ -168,9 +157,7 @@ main {
     transform: scale(1.1);
 }
 
-/* ===========================
-   MENSAJES Y ALERTAS
-   =========================== */
+/* MENSAJES Y ALERTAS */
 
 .alert {
     border: none;
@@ -210,9 +197,7 @@ main {
     color: #055160;
 }
 
-/* ===========================
-   FOOTER CESFAM
-   =========================== */
+/* FOOTER CESFAM */
 
 .footer-cesfam {
     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
@@ -250,9 +235,7 @@ main {
     color: var(--cesfam-light);
 }
 
-/* ===========================
-   CONTENEDOR PRINCIPAL
-   =========================== */
+/* CONTENEDOR PRINCIPAL */
 
 .main-container {
     padding-top: 2rem;
@@ -277,9 +260,7 @@ main {
     color: #6c757d;
 }
 
-/* ===========================
-   CARDS MEJORADOS
-   =========================== */
+/* CARDS MEJORADOS */
 
 .card {
     border: none;
@@ -300,9 +281,7 @@ main {
     border-radius: 10px 10px 0 0 !important;
 }
 
-/* ===========================
-   BOTONES PERSONALIZADOS
-   =========================== */
+/* BOTONES PERSONALIZADOS */
 
 .btn-cesfam {
     background: linear-gradient(135deg, var(--cesfam-primary) 0%, var(--cesfam-secondary) 100%);
@@ -324,9 +303,7 @@ main {
     transform: translateY(0);
 }
 
-/* ===========================
-   SPINNER DE CARGA
-   =========================== */
+/* SPINNER DE CARGA */
 
 .spinner-overlay {
     position: fixed;
@@ -352,9 +329,7 @@ main {
     border-width: 0.3rem;
 }
 
-/* ===========================
-   FORMULARIOS
-   =========================== */
+/* FORMULARIOS */
 
 .form-control:focus,
 .form-select:focus {
@@ -373,9 +348,7 @@ main {
     color: #dc3545;
 }
 
-/* ===========================
-   TABLAS
-   =========================== */
+/* TABLAS*/
 
 .table {
     background-color: white;
@@ -403,9 +376,7 @@ main {
     transform: scale(1.005);
 }
 
-/* ===========================
-   BADGES
-   =========================== */
+/* BADGES */
 
 .badge {
     font-weight: 500;
@@ -413,9 +384,7 @@ main {
     border-radius: 6px;
 }
 
-/* ===========================
-   ANIMACIONES
-   =========================== */
+/* ANIMACIONES */
 
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-15px); }
@@ -452,9 +421,7 @@ main {
     animation: fadeIn 0.5s ease;
 }
 
-/* ===========================
-   UTILIDADES
-   =========================== */
+/* UTILIDADES */
 
 .text-cesfam {
     color: var(--cesfam-primary) !important;
@@ -472,9 +439,7 @@ main {
     border-color: var(--cesfam-primary) !important;
 }
 
-/* ===========================
-   RESPONSIVE - MOBILE
-   =========================== */
+/* RESPONSIVE - MOBILE*/
 
 @media (max-width: 991.98px) {
     .navbar-nav {
@@ -523,9 +488,7 @@ main {
     }
 }
 
-/* ===========================
-   UTILIDADES ADICIONALES
-   =========================== */
+/* UTILIDADES ADICIONALES */
 
 .shadow-cesfam {
     box-shadow: 0 4px 12px rgba(0,51,102,0.15) !important;

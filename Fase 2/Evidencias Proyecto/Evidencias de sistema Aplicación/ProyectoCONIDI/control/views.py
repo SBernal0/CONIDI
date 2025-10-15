@@ -9,6 +9,7 @@ from .models import Control, PeriodoControl
 from login.decorators import rol_requerido
 from django.core.management import call_command
 from simple_history.admin import SimpleHistoryAdmin
+from django.db.models import Q
 
 
 @login_required
@@ -42,24 +43,41 @@ def controles(request, nino_rut):
 def listar_ninos(request):
     user = request.user
     rol_usuario = user.rol.nombre_rol.lower()
-    
+
+    # --- Capturamos los datos del formulario de filtros ---
+    nombre_query = request.GET.get('nombre', '')
+    rut_query = request.GET.get('rut', '')
+
+    # Tu lógica original para obtener la lista base de niños
     lista_ninos = Nino.objects.none() # Por defecto, una lista vacía
 
     if rol_usuario in ['administrador', 'profesional']:
-        # Si es admin o profesional, muestra todos los niños
-        lista_ninos = Nino.objects.all().order_by('nombre', 'ap_paterno')
+        # Si es admin o profesional, la lista base son todos los niños
+        lista_ninos = Nino.objects.all()
     
     elif rol_usuario == 'tutor':
-        # Si es tutor, intenta obtener su perfil y muestra solo sus niños asignados
+        # Si es tutor, la lista base son solo sus niños asignados
         try:
-            # Usamos el 'related_name' que definimos en el OneToOneField
-            lista_ninos = user.perfil_tutor.ninos.all().order_by('nombre', 'ap_paterno')
+            lista_ninos = user.perfil_tutor.ninos.all()
         except Tutor.DoesNotExist:
-            # En caso de que un usuario con rol 'Tutor' no tenga un perfil Tutor asociado (poco probable)
             lista_ninos = Nino.objects.none()
 
+    # --- Aplicamos los filtros sobre la lista base que obtuvimos ---
+    if nombre_query:
+        # Si se buscó un nombre, filtramos la lista usando Q para buscar en múltiples campos
+        lista_ninos = lista_ninos.filter(
+            Q(nombre__icontains=nombre_query) |
+            Q(ap_paterno__icontains=nombre_query) |
+            Q(ap_materno__icontains=nombre_query)
+        )
+
+    if rut_query:
+        # Si se buscó un RUT, filtramos la lista (que ya podría estar filtrada por nombre)
+        lista_ninos = lista_ninos.filter(rut_nino__icontains=rut_query)
+
+    # Enviamos la lista final (ya filtrada y ordenada) al contexto
     contexto = {
-        'ninos': lista_ninos
+        'ninos': lista_ninos.order_by('nombre', 'ap_paterno')
     }
     return render(request, 'control/listar_ninos.html', contexto)
 

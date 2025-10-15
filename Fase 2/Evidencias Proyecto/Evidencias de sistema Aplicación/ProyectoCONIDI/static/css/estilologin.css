@@ -142,6 +142,7 @@
     font-weight: 600;
 }
 
+
 /* Keyframes para las animaciones */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(25px); }

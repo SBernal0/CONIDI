@@ -1,37 +1,89 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Lista de Niños{% endblock %}
 
-{% block content %}
-<h2>Lista de Niños</h2>
-<hr>
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos para listas y tablas #}
+    <link rel="stylesheet" href="{% static 'css/estilolistas.css' %}">
+{% endblock %}
 
-<div class="card">
+{% block content %}
+
+<nav aria-label="breadcrumb" class="animate-fade-in-up">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Lista de Niños</li>
+    </ol>
+</nav>
+
+<div class="page-header mb-4">
+    <h2><i class="bi bi-person-lines-fill me-2"></i>Lista de Niños Registrados</h2>
+</div>
+
+<div class="card filter-card mb-4">
     <div class="card-body">
+        <form method="get" action="">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="nombre" class="form-label">Buscar por Nombre o Apellido</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Ej: Juan Pérez" value="{{ request.GET.nombre }}">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label for="rut" class="form-label">Buscar por RUT</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" name="rut" id="rut" class="form-control" placeholder="Ej: 12345678-9" value="{{ request.GET.rut }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-cesfam">
+                            <i class="bi bi-funnel-fill me-1"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover">
-                <thead class="table-dark">
+                <thead>
                     <tr>
                         <th>Nombre Completo</th>
                         <th>RUT</th>
                         <th>Fecha de Nacimiento</th>
-                        <th>Acciones</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for nino in ninos %}
-                    <tr>
-                        <td>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</td>
-                        <td>{{ nino.rut_nino }}</td>
-                        <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
-                        <td>
-                            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-sm btn-primary">Ver Controles</a>
-                        </td>
-                    </tr>
+                        {# Animación de entrada escalonada para cada fila #}
+                        <tr class="animate-row" style="--i: {{ forloop.counter0 }};">
+                            <td><strong>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</strong></td>
+                            <td>{{ nino.rut_nino }}</td>
+                            <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
+                            <td class="text-center">
+                                <div class="action-buttons justify-content-center">
+                                    <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye-fill me-1"></i> Ver Controles
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center">No hay niños para mostrar.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="4" class="text-center p-4">
+                                No se encontraron niños con los filtros aplicados.
+                            </td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -1,0 +1,122 @@
+
+:root {
+    --cesfam-primary: #003366;
+    --cesfam-secondary: #0066cc;
+}
+
+/* Cabecera de la página (Título y botón) */
+.page-header {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.page-header h2 {
+    color: var(--cesfam-primary);
+    font-weight: 700;
+}
+
+/* Tarjeta para los filtros de búsqueda */
+.filter-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 16px rgba(0, 51, 102, 0.08);
+    animation: fadeInUp 0.5s ease-out 0.1s backwards;
+}
+
+/* Tarjeta que contiene la tabla */
+.table-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 51, 102, 0.1);
+    overflow: hidden; /* Oculta el borde de la tabla para que se ajuste a la tarjeta */
+    animation: fadeInUp 0.5s ease-out 0.2s backwards;
+}
+
+/* Estilos para la tabla */
+.table {
+    margin-bottom: 0; /* Elimina el margen inferior para que se ajuste a la tarjeta */
+}
+
+/* Cabecera de la tabla */
+.table thead th {
+    background-color: var(--cesfam-primary);
+    color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    border: none;
+}
+
+/* Filas de la tabla */
+.table tbody tr {
+    transition: all 0.25s ease-in-out;
+}
+
+/* Efecto hover para las filas */
+.table-hover tbody tr:hover {
+    background-color: #e7f1ff;
+    transform: scale(1.015); /* Efecto de zoom sutil */
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.1);
+    z-index: 2;
+    position: relative;
+}
+
+/* Celdas de la tabla */
+.table tbody td {
+    vertical-align: middle; /* Alinea verticalmente el contenido de las celdas */
+    padding: 0.9rem;
+}
+
+
+
+/* Badges de estado y rol personalizados */
+.badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 50px;
+}
+
+/* Colores semánticos para los badges */
+.badge-admin { background-color: #6f42c1; color: white; }
+.badge-profesional { background-color: #0d6efd; color: white; }
+.badge-tutor { background-color: #6c757d; color: white; }
+.badge-activo { background-color: #198754; color: white; }
+.badge-inactivo { background-color: #dc3545; color: white; }
+
+
+/* Contenedor para los botones de acción */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem; /* Espacio entre botones */
+}
+
+.action-buttons .btn {
+    transition: all 0.2s ease;
+}
+
+/* Efecto hover para los botones de acción */
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Animación de entrada escalonada para las filas de la tabla */
+.animate-row {
+    animation: slideInUp 0.6s ease-out;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(var(--i) * 0.05s);
+}
+
+/* Keyframes (Definiciones de las animaciones) */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
