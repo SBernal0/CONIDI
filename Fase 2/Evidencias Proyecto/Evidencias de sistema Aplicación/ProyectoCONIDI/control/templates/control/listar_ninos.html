@@ -61,13 +61,14 @@
                         <th>RUT</th>
                         <th>Fecha de Nacimiento</th>
                         <th class="text-center">Acciones</th>
+                        <th class="text-center">Detalles</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for nino in ninos %}
                         {# Animación de entrada escalonada para cada fila #}
-                        <tr class="animate-row" style="--i: {{ forloop.counter0 }};">
-                            <td><strong>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</strong></td>
+                        <tr class="animate-row" style="--i: {{ forloop.counter0 }};" id="nino-{{ nino.rut_nino }}">
+                            <td><strong>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }} {{tutor.}}</strong></td>
                             <td>{{ nino.rut_nino }}</td>
                             <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
                             <td class="text-center">
@@ -75,6 +76,27 @@
                                     <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye-fill me-1"></i> Ver Controles
                                     </a>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons justify-content-center">
+                                    <!-- Segundo botón, ahora para abrir el modal -->
+                                    {% with relacion=nino.ninotutor_set.first %}
+                                    <button type="button" class="btn btn-sm btn-info"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detalleModal"
+                                            data-nombre="{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}"
+                                            data-rut="{{ nino.rut_nino }}"
+                                            data-fecha="{{ nino.fecha_nacimiento|date:"d/m/Y" }}"
+                                            {# Si existe una relación con tutor, pasamos los datos del tutor #}
+                                            {% if relacion and relacion.tutor %}
+                                            data-nombre-tutor="{{ relacion.tutor.nombre_completo }}"
+                                            data-parentesco="{{ relacion.get_parentesco_display }}"
+                                            data-correo-tutor="{{ relacion.tutor.email }}"
+                                            {% endif %}>
+                                        <i class="bi bi-info-circle me-1"></i> Ver Detalles
+                                    </button>
+                                    {% endwith %}
                                 </div>
                             </td>
                         </tr>
@@ -90,4 +112,67 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detalleModalLabel">Detalles del Niño</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Aquí se inyectarán los datos dinámicos -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre completo:</strong> <span id="modal-nombre"></span></p>
+                        <p><strong>RUT:</strong> <span id="modal-rut"></span></p>
+                        <p><strong>Fecha de nacimiento:</strong> <span id="modal-fecha"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Nombre tutor: </strong> <span id="modal-nombre-tutor"></span></p>
+                        <p><strong>Parentesco: </strong> <span id="modal-parentesco"></span></p>
+                        <p><strong>Correo tutor: </strong> <span id="modal-correo-tutor"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var detalleModal = document.getElementById('detalleModal');
+    detalleModal.addEventListener('show.bs.modal', function (event) {
+        // Botón que abrió el modal
+        var button = event.relatedTarget;
+
+        // Extraer información de los atributos data-*
+        var nombre = button.getAttribute('data-nombre');
+        var rut = button.getAttribute('data-rut');
+        var fecha = button.getAttribute('data-fecha');
+        var nombreTutor = button.getAttribute('data-nombre-tutor') || 'No asignado';
+        var parentesco = button.getAttribute('data-parentesco') || 'No asignado';
+        var correoTutor = button.getAttribute('data-correo-tutor') || 'No asignado';
+
+        // Actualizar el contenido del modal
+        var modalNombre = detalleModal.querySelector('#modal-nombre');
+        var modalRut = detalleModal.querySelector('#modal-rut');
+        var modalFecha = detalleModal.querySelector('#modal-fecha');
+        var modalNombreTutor = detalleModal.querySelector('#modal-nombre-tutor');
+        var modalParentesco = detalleModal.querySelector('#modal-parentesco');
+        var modalCorreoTutor = detalleModal.querySelector('#modal-correo-tutor');
+
+        modalNombre.textContent = nombre;
+        modalRut.textContent = rut;
+        modalFecha.textContent = fecha;
+        modalNombreTutor.textContent = nombreTutor;
+        modalParentesco.textContent = parentesco;
+        modalCorreoTutor.textContent = correoTutor;
+    });
+});
+</script>
 {% endblock %}

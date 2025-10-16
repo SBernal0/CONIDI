@@ -55,12 +55,12 @@ def listar_ninos(request):
 
     if rol_usuario in ['administrador', 'profesional']:
         # Si es admin o profesional, la lista base son todos los niños
-        lista_ninos = Nino.objects.all()
+        lista_ninos = Nino.objects.prefetch_related('ninotutor_set__tutor').all()
     
     elif rol_usuario == 'tutor':
         # Si es tutor, la lista base son solo sus niños asignados
         try:
-            lista_ninos = user.perfil_tutor.ninos.all()
+            lista_ninos = user.perfil_tutor.ninos.prefetch_related('ninotutor_set__tutor').all()
         except Tutor.DoesNotExist:
             lista_ninos = Nino.objects.none()
 
@@ -79,7 +79,8 @@ def listar_ninos(request):
 
     # Enviamos la lista final (ya filtrada y ordenada) al contexto
     contexto = {
-        'ninos': lista_ninos.order_by('nombre', 'ap_paterno')
+        # Aseguramos el orden después de todos los filtros
+        'ninos': lista_ninos.order_by('nombre', 'ap_paterno'),
     }
     return render(request, 'control/listar_ninos.html', contexto)
 
