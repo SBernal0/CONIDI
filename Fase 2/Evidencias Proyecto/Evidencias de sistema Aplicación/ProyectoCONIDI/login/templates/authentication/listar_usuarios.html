@@ -35,7 +35,7 @@
                 <tbody>
                     {% for usuario in usuarios %}
                         {# Se añade una animación escalonada a cada fila #}
-                        <tr class="animate-row" style="animation-delay: {{ forloop.counter0|mult:0.05 }}s;">
+                        <tr class="animate-row" style="--i: {{ forloop.counter0 }};">
                             <td><strong>{{ usuario.rut }}</strong></td>
                             <td>{{ usuario.nombre_completo }}</td>
                             <td>
