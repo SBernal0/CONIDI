@@ -1,16 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect   
 from datetime import date, timedelta
-from .models import Nino
+
+from django.urls import reverse
+from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, Alergias, RegistroAlergias
 from django.contrib.auth.decorators import login_required
-from login.models import Tutor # <- Importamos el modelo Tutor
-from django.core.exceptions import PermissionDenied # <-- AÑADE ESTE IMPORT
+from login.models import Tutor 
+from django.core.exceptions import PermissionDenied 
 from django.contrib import messages
-from .models import Control, PeriodoControl
 from login.decorators import rol_requerido
 from django.core.management import call_command
 from simple_history.admin import SimpleHistoryAdmin
 from django.db.models import Q
-
+from django.db import IntegrityError
 
 @login_required
 def controles(request, nino_rut):
@@ -18,24 +19,25 @@ def controles(request, nino_rut):
     nino = get_object_or_404(Nino, pk=nino_rut)
     user = request.user
     
-    # --- NUEVA VERIFICACIÓN DE PERMISOS ---
-    # Si el usuario es un tutor, verificamos que el niño le pertenezca
+    # --- Verificación de permisos (sin cambios) ---
     if user.rol.nombre_rol.lower() == 'tutor':
-        # Chequeamos si el niño solicitado está en la lista de niños del tutor.
-        # user.perfil_tutor.ninos.filter(pk=nino.pk) intenta encontrar al niño dentro de la lista del tutor.
-        # .exists() devuelve True si lo encuentra, False si no.
         if not user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
-            # Si el niño no está en su lista, lanzamos un error de Permiso Denegado (403 Forbidden).
             raise PermissionDenied
     
-    # Si el usuario es Admin/Profesional, o si es un Tutor y la verificación anterior pasó,
-    # la vista continúa ejecutándose normalmente.
-    
+    # --- Obtención de datos ---
+    # 1. Obtenemos los controles de niño sano (sin cambios)
     lista_controles = nino.controles.all().order_by('fecha_control_programada')
 
+    # 2. OBTENEMOS LAS VACUNAS APLICADAS AL NIÑO 💉
+    vacunas_aplicadas = nino.vacunas_aplicadas.all().order_by('-fecha_aplicacion')
+    # 3. Obtenemos las alergias we 
+    alergias_registradas = nino.alergias_registradas.all().order_by('-fecha_aparicion')
+    # --- Preparamos el contexto para la plantilla ---
     contexto = {
         "nino": nino,
-        "controles": lista_controles
+        "controles": lista_controles,
+        "vacunas_aplicadas": vacunas_aplicadas,
+        "alergias_registradas": alergias_registradas, # <-- AÑADIMOS LAS VACUNAS AL CONTEXTO
     }
     return render(request, 'control/controles.html', context=contexto)
 
@@ -300,3 +302,365 @@ def historial_configuracion(request):
         'historial': historial
     }
     return render(request, 'control/historial_configuracion.html', contexto)
+
+
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional'])
+def registrar_vacuna(request, nino_rut):
+    nino = get_object_or_404(Nino, pk=nino_rut)
+
+    if request.method == 'POST':
+        vacuna_id = request.POST.get('vacuna')
+        fecha_aplicacion = request.POST.get('fecha_aplicacion')
+        dosis = request.POST.get('dosis')
+        lugar = request.POST.get('lugar')
+
+        # Obtenemos el objeto Vacuna completo usando su ID
+        vacuna_obj = get_object_or_404(Vacuna, pk=vacuna_id)
+
+        profesional_obj = None
+        try:
+            profesional_obj = request.user.perfil_profesional
+        except:
+            pass
+
+        # --- LÍNEA CORREGIDA ---
+        # Al crear el objeto, nos aseguramos de pasar el objeto 'vacuna_obj'
+        # al campo 'vacuna' del modelo.
+        VacunaAplicada.objects.create(
+            nino=nino,
+            vacuna=vacuna_obj, # <-- Cambio clave
+            fecha_aplicacion=fecha_aplicacion,
+            dosis=dosis,
+            lugar=lugar,
+            profesional=profesional_obj
+        )
+        messages.success(request, f"Vacuna '{vacuna_obj.nom_vacuna}' registrada para {nino.nombre}.")
+        return redirect('controles', nino_rut=nino.rut_nino)
+
+    # La lógica GET no cambia
+    todas_las_vacunas = Vacuna.objects.all().order_by('nom_vacuna')
+    contexto = {
+        'nino': nino,
+        'vacunas': todas_las_vacunas,
+    }
+    return render(request, 'control/registrar_vacuna.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional'])
+def registrar_vacuna(request, vacuna_aplicada_id):
+    vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
+    nino = vacuna_aplicada.nino
+
+    if request.method == 'POST':
+        # Actualizamos el registro existente con los datos del formulario
+        vacuna_aplicada.fecha_aplicacion = request.POST.get('fecha_aplicacion')
+        vacuna_aplicada.dosis = request.POST.get('dosis')
+        vacuna_aplicada.lugar = request.POST.get('lugar')
+        vacuna_aplicada.via = request.POST.get('via')
+
+        try:
+            vacuna_aplicada.profesional = request.user.perfil_profesional
+        except:
+            pass # Si es un admin, no tiene perfil de profesional
+
+        vacuna_aplicada.save()
+        messages.success(request, f"Vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' registrada exitosamente.")
+        return redirect('controles', nino_rut=nino.rut_nino)
+
+    contexto = {
+        'vacuna_aplicada': vacuna_aplicada,
+        'nino': nino,
+        'via_choices': VacunaAplicada.VIA_CHOICES, # Pasamos las opciones para el menú
+    }
+    return render(request, 'control/registrar_vacuna.html', contexto)
+
+@login_required
+def ver_vacuna(request, vacuna_aplicada_id):
+    vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
+    nino = vacuna_aplicada.nino
+
+    # Verificación de seguridad para tutores
+    if request.user.rol.nombre_rol.lower() == 'tutor':
+        if not request.user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
+            raise PermissionDenied
+
+    contexto = {
+        'vacuna_aplicada': vacuna_aplicada,
+        'nino': nino
+    }
+    return render(request, 'control/ver_vacuna.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional'])
+def editar_vacuna(request, vacuna_aplicada_id):
+    vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
+    nino = vacuna_aplicada.nino
+
+    if request.method == 'POST':
+        # La lógica de guardar los datos del formulario no cambia
+        vacuna_aplicada.fecha_aplicacion = request.POST.get('fecha_aplicacion')
+        vacuna_aplicada.dosis = request.POST.get('dosis')
+        vacuna_aplicada.lugar = request.POST.get('lugar')
+        vacuna_aplicada.via = request.POST.get('via')
+        
+        # --- LÓGICA AÑADIDA PARA REGISTRAR QUIÉN EDITA ---
+        # Se actualiza el profesional al que realizó la última modificación.
+        try:
+            vacuna_aplicada.profesional = request.user.perfil_profesional
+        except:
+            # Si el usuario es un Admin sin perfil de profesional, el campo no se modifica.
+            pass
+        # -------------------------------------------------
+
+        vacuna_aplicada.save()
+        
+        messages.success(request, f"Registro de vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' actualizado.")
+        return redirect('controles', nino_rut=nino.rut_nino)
+
+    # La lógica para la petición GET no cambia
+    contexto = {
+        'vacuna_aplicada': vacuna_aplicada,
+        'nino': nino,
+        'via_choices': VacunaAplicada.VIA_CHOICES,
+    }
+    return render(request, 'control/editar_vacuna.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador']) # Solo para Administradores
+def historial_vacuna(request, vacuna_aplicada_id):
+    vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
+
+    # Obtenemos el historial usando la misma lógica que en los controles
+    historial = vacuna_aplicada.history.all()
+    for i in range(len(historial) - 1):
+        version_actual = historial[i]
+        version_anterior = historial[i+1]
+        delta = version_actual.diff_against(version_anterior)
+        version_actual.cambios_calculados = delta.changes
+
+    contexto = {
+        'vacuna_aplicada': vacuna_aplicada,
+        'historial': historial
+    }
+    return render(request, 'control/historial_vacuna.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador'])
+def configurar_vacunas(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update':
+            vacunas = Vacuna.objects.all()
+            for vacuna in vacunas:
+                nuevo_nombre = request.POST.get(f'nombre_vacuna_{vacuna.id}')
+                nuevo_mes = request.POST.get(f'meses_programada_{vacuna.id}')
+
+                # Convertimos el mes a entero o None si está vacío
+                if nuevo_mes:
+                    nuevo_mes = int(nuevo_mes)
+                else:
+                    nuevo_mes = None
+                
+                # Guardamos solo si hay cambios
+                if (vacuna.nom_vacuna != nuevo_nombre or vacuna.meses_programada != nuevo_mes):
+                    vacuna.nom_vacuna = nuevo_nombre
+                    vacuna.meses_programada = nuevo_mes
+                    vacuna.save()
+            
+            messages.success(request, 'La configuración de vacunas ha sido actualizada.')
+            # Aquí podríamos llamar a un futuro 'recalcular_vacunas'
+
+        elif action == 'create':
+            nuevo_nombre = request.POST.get('nuevo_nombre')
+            nuevo_mes = request.POST.get('nuevo_mes')
+
+            if nuevo_nombre and nuevo_mes:
+                Vacuna.objects.create(
+                    nom_vacuna=nuevo_nombre,
+                    meses_programada=int(nuevo_mes)
+                )
+                messages.success(request, f'Nueva vacuna "{nuevo_nombre}" agregada.')
+
+        return redirect('configurar_vacunas')
+
+    # Para la petición GET
+    vacunas = Vacuna.objects.all().order_by('meses_programada', 'nom_vacuna')
+    contexto = {'vacunas': vacunas}
+    return render(request, 'control/configurar_vacunas.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador'])
+def historial_vacunas(request):
+    # Obtenemos el historial de todos los objetos Vacuna
+    historial = Vacuna.history.all().order_by('-history_date')
+
+    # Calculamos los cambios entre versiones
+    for i in range(len(historial)):
+        version_actual = historial[i]
+        version_anterior = version_actual.prev_record
+        if version_anterior:
+            delta = version_actual.diff_against(version_anterior)
+            version_actual.cambios_calculados = delta.changes
+
+    contexto = {
+        'historial': historial
+    }
+    return render(request, 'control/historial_configuracion_vacunas.html', contexto)
+
+# control/views.py
+
+# 1. Asegúrate de que 'reverse' esté importado al principio del archivo
+from django.urls import reverse
+# ... (tus otros imports)
+
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional'])
+def registrar_alergia(request, nino_rut):
+    nino = get_object_or_404(Nino, pk=nino_rut)
+    
+    if request.method == 'POST':
+        alergia_id = request.POST.get('alergia')
+        fecha_aparicion = request.POST.get('fecha_aparicion')
+        observaciones = request.POST.get('observaciones')
+        
+        alergia_obj = get_object_or_404(Alergias, pk=alergia_id)
+        
+        RegistroAlergias.objects.create(
+            nino=nino,
+            alergia=alergia_obj,
+            fecha_aparicion=fecha_aparicion,
+            observaciones=observaciones
+        )
+        
+        messages.success(request, f"Alergia a '{alergia_obj.tipo_alergia}' registrada para {nino.nombre}.")
+
+        # --- LÓGICA DE REDIRECCIÓN ACTUALIZADA ---
+        # Construimos la URL base usando reverse()
+        url_base = reverse('controles', kwargs={'nino_rut': nino.rut_nino})
+        # Le añadimos el ancla para la pestaña de alergias
+        url_con_pestaña = f"{url_base}#alergias-pane"
+        # Redirigimos a la URL completa
+        return redirect(url_con_pestaña)
+
+    # La lógica GET no cambia
+    contexto = {
+        'nino': nino,
+        'alergias_disponibles': Alergias.objects.all()
+    }
+    return render(request, 'control/registrar_alergia.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional'])
+def editar_alergia(request, registro_alergia_id):
+    # Obtenemos el registro específico de la alergia que se quiere editar
+    registro = get_object_or_404(RegistroAlergias, pk=registro_alergia_id)
+    nino = registro.nino
+
+    if request.method == 'POST':
+        # Actualizamos los campos con los datos del formulario
+        registro.fecha_aparicion = request.POST.get('fecha_aparicion')
+        registro.observaciones = request.POST.get('observaciones')
+        
+        # El campo de fecha de remisión es opcional
+        fecha_remision = request.POST.get('fecha_remision')
+        if fecha_remision:
+            registro.fecha_remision = fecha_remision
+        else:
+            registro.fecha_remision = None # Guardamos null si el campo está vacío
+
+        registro.save()
+        
+        messages.success(request, f"El registro de alergia a '{registro.alergia.tipo_alergia}' ha sido actualizado.")
+        return redirect('controles', nino_rut=nino.rut_nino)
+
+    # Para la petición GET, mostramos el formulario con los datos existentes
+    contexto = {
+        'registro': registro,
+        'nino': nino
+    }
+    return render(request, 'control/editar_alergia.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador']) # Solo para Administradores
+def historial_alergia(request, registro_alergia_id):
+    registro = get_object_or_404(RegistroAlergias, pk=registro_alergia_id)
+
+    # Obtenemos el historial usando la misma lógica que en los otros modelos
+    historial = registro.history.all()
+    for i in range(len(historial) - 1):
+        version_actual = historial[i]
+        version_anterior = historial[i+1]
+        delta = version_actual.diff_against(version_anterior)
+        version_actual.cambios_calculados = delta.changes
+
+    contexto = {
+        'registro': registro,
+        'historial': historial
+    }
+    return render(request, 'control/historial_alergia.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador'])
+def configurar_alergias(request):
+    if request.method == 'POST':
+        # Obtenemos el 'action' que nos envía el botón presionado
+        action = request.POST.get('action', '')
+
+        # --- Lógica para ACTUALIZAR ---
+        if action == 'update':
+            for alergia in Alergias.objects.all():
+                nuevo_nombre = request.POST.get(f'tipo_alergia_{alergia.id}')
+                if nuevo_nombre and alergia.tipo_alergia != nuevo_nombre:
+                    alergia.tipo_alergia = nuevo_nombre
+                    alergia.save()
+            messages.success(request, 'La lista de alergias ha sido actualizada.')
+
+        # --- Lógica para ELIMINAR ---
+        elif action.startswith('delete_'):
+            # Si el 'action' empieza con 'delete_', sabemos que se presionó un botón de eliminar
+            alergia_id = action.split('_')[1] # Extraemos el ID del valor 'delete_123'
+            try:
+                alergia = Alergias.objects.get(pk=alergia_id)
+                nombre_alergia = alergia.tipo_alergia
+                alergia.delete()
+                messages.success(request, f'La alergia "{nombre_alergia}" ha sido eliminada.')
+            except IntegrityError:
+                messages.error(request, 'No se puede eliminar esta alergia porque ya está asignada a uno o más niños.')
+            except Alergias.DoesNotExist:
+                messages.error(request, 'La alergia que intentas eliminar no existe.')
+
+        # --- Lógica para CREAR ---
+        elif action == 'create':
+            nuevo_nombre = request.POST.get('nuevo_nombre')
+            if nuevo_nombre:
+                Alergias.objects.create(tipo_alergia=nuevo_nombre)
+                messages.success(request, f'El tipo de alergia "{nuevo_nombre}" ha sido agregado.')
+        
+        return redirect('configurar_alergias')
+
+    # La lógica GET no cambia
+    alergias = Alergias.objects.all().order_by('tipo_alergia')
+    contexto = {'alergias': alergias}
+    return render(request, 'control/configurar_alergias.html', contexto)
+@login_required
+@rol_requerido(['Administrador'])
+def historial_alergias(request):
+    # La lógica para obtener el historial no cambia
+    historial = Alergias.history.all().order_by('-history_date')
+    
+    for i in range(len(historial)):
+        version_actual = historial[i]
+        version_anterior = version_actual.prev_record
+        if version_anterior:
+            delta = version_actual.diff_against(version_anterior)
+            version_actual.cambios_calculados = delta.changes
+
+    contexto = {
+        'historial': historial
+    }
+
+    return render(request, 'control/historial_alergias_tipo.html', contexto)

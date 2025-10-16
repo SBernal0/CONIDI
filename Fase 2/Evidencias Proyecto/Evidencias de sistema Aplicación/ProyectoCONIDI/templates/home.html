@@ -88,6 +88,35 @@
                 </div>
             </div>
         </a>
+        <a href="{% url 'configurar_vacunas' %}" class="action-link animate-fade-in-up animate-delay-4">
+            <div class="action-card">
+                <span class="badge-featured">
+                    <i class="bi bi-star-fill me-1"></i>Importante
+                </span>
+                <div class="card-body">
+                    <div class="action-icon icon-info">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="action-content">
+                        <h5>Configurar Vacunas</h5>
+                        <p>Define las vacunas y los meses de aplicación del programa de inmunización.</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="{% url 'configurar_alergias' %}" class="action-link animate-fade-in-up animate-delay-5">
+            <div class="action-card">
+                <div class="card-body">
+                    <div class="action-icon icon-danger">
+                        <i class="bi bi-bandaid"></i>
+                    </div>
+                    <div class="action-content">
+                        <h5>Configurar Alergias</h5>
+                        <p>Gestiona la lista de tipos de alergias disponibles en el sistema.</p>
+                    </div>
+                </div>
+            </div>
+        </a>
     {% endif %}
 
     {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}

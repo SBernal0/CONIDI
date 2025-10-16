@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Alergia{% endblock %}
+
+{% block content %}
+<h2>Registrar Alergia</h2>
+<p><strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}</p>
+<hr>
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="alergia" class="form-label">Tipo de Alergia</label>
+                <select class="form-select" id="alergia" name="alergia" required>
+                    <option value="" disabled selected>-- Selecciona un tipo de alergia --</option>
+                    {% for alergia in alergias_disponibles %}
+                        <option value="{{ alergia.id }}">{{ alergia.tipo_alergia }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="fecha_aparicion" class="form-label">Fecha de Aparición / Diagnóstico</label>
+                <input type="date" class="form-control" id="fecha_aparicion" name="fecha_aparicion" required>
+            </div>
+            <div class="mb-3">
+                <label for="observaciones" class="form-label">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Alergia</button>
+            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

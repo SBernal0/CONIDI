@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Editar Registro de Vacuna{% endblock %}
+
+{% block content %}
+<h2>Editar Aplicación: {{ vacuna_aplicada.vacuna.nom_vacuna }}</h2>
+<p><strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}</p>
+<hr>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Vacuna</label>
+                <input type="text" class="form-control" value="{{ vacuna_aplicada.vacuna.nom_vacuna }}" disabled>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_aplicacion" class="form-label">Fecha de Aplicación</label>
+                    <input type="date" class="form-control" id="fecha_aplicacion" name="fecha_aplicacion" value="{{ vacuna_aplicada.fecha_aplicacion|date:'Y-m-d' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dosis" class="form-label">Dosis</label>
+                    <input type="text" class="form-control" id="dosis" name="dosis" value="{{ vacuna_aplicada.dosis|default:'' }}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="lugar" class="form-label">Lugar de Aplicación</label>
+                    <input type="text" class="form-control" id="lugar" name="lugar" value="{{ vacuna_aplicada.lugar|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="via" class="form-label">Vía de Administración</label>
+                    <select id="via" name="via" class="form-select">
+                        {% for value, display in via_choices %}
+                            <option value="{{ value }}" {% if vacuna_aplicada.via == value %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

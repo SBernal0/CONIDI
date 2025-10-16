@@ -278,3 +278,4 @@ def eliminar_usuario(request, pk):
         'usuario': usuario
     }
     return render(request, 'authentication/eliminar_usuario.html', contexto)
+

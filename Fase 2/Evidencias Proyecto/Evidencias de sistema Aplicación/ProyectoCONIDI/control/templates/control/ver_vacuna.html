@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Detalle de Vacuna{% endblock %}
+
+{% block content %}
+<h2>Detalle de Vacuna Aplicada</h2>
+<p>
+    <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}
+</p>
+<hr>
+
+<div class="card">
+    <div class="card-header">
+        <h5>{{ vacuna_aplicada.vacuna.nom_vacuna }}</h5>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Fecha de Aplicación:</strong> {{ vacuna_aplicada.fecha_aplicacion|date:"d/m/Y" }}</li>
+            <li class="list-group-item"><strong>Dosis:</strong> {{ vacuna_aplicada.dosis }}</li>
+            <li class="list-group-item"><strong>Vía de Administración:</strong> {{ vacuna_aplicada.get_via_display }}</li>
+            <li class="list-group-item"><strong>Lugar de Aplicación:</strong> {{ vacuna_aplicada.lugar }}</li>
+            <li class="list-group-item"><strong>Registrado por:</strong> {{ vacuna_aplicada.profesional.usuario.nombre_completo|default:"No especificado" }}</li>
+        </ul>
+    </div>
+    <div class="card-footer">
+        <div class="card-footer">
+            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Volver</a>
+            {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+                <a href="{% url 'historial_vacuna' vacuna_aplicada.id %}" class="btn btn-info">Ver Historial</a>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}

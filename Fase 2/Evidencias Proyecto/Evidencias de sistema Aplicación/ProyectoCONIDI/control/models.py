@@ -61,7 +61,7 @@ class PeriodoControl(models.Model):
 class Alergias(models.Model):
     id = models.AutoField(primary_key=True)
     tipo_alergia = models.CharField(max_length=200)
-
+    history = HistoricalRecords()
     def __str__(self):
         return self.tipo_alergia
 
@@ -184,7 +184,8 @@ class Vacuna(models.Model):
     id = models.AutoField(primary_key=True, db_column='vacuna_id')
     nom_vacuna = models.CharField(max_length=200)
     descripcion = models.CharField(max_length=200, blank=True, null=True)
-    
+    meses_programada = models.IntegerField(null=True, blank=True)
+    history = HistoricalRecords()
     def __str__(self):
         return self.nom_vacuna
 
@@ -198,29 +199,68 @@ class VacunaAplicada(models.Model):
     ]
 
     id = models.AutoField(primary_key=True, db_column='vacuna_aplicada_id')
-    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino')
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino', related_name='vacunas_aplicadas')
     vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT)
-    fecha_aplicacion = models.DateField()
-    dosis = models.FloatField()
-    lugar = models.CharField(max_length=100)
+
+    # --- CAMPOS CORREGIDOS ---
+    # Fecha en que DEBERÍA aplicarse (obligatoria para el calendario)
+    fecha_programada = models.DateField()
+    # Fecha en que REALMENTE se aplicó (opcional, se rellena al registrar)
+    fecha_aplicacion = models.DateField(null=True, blank=True)
+    history = HistoricalRecords()
+    # Hacemos el resto de campos opcionales, ya que se llenarán al registrar
+    dosis = models.CharField(max_length=50, null=True, blank=True)
+    lugar = models.CharField(max_length=100, null=True, blank=True)
+    profesional = models.ForeignKey('login.Profesional', on_delete=models.SET_NULL, null=True, blank=True)
     negacion = models.BooleanField(default=False)
-    via = models.CharField(max_length=10, choices=VIA_CHOICES, default='N/A')
+    via = models.CharField(max_length=10, choices=VIA_CHOICES, null=True, blank=True)
     fecha_inoculacion = models.DateField(null=True, blank=True)
 
+    # --- LÓGICA DE ALERTAS ---
+    @property
+    def estado_alerta(self):
+        if self.fecha_aplicacion:
+            return "Realizado"
+        
+        hoy = date.today()
+        # Usaremos un margen fijo de 30 días para las vacunas por ahora
+        if hoy <= self.fecha_programada:
+            return "Pendiente"
+        elif hoy <= self.fecha_programada + timedelta(days=30):
+            return "Atrasado"
+        else:
+            return "Muy Atrasado"
+
+    @property
+    def estado_css_class(self):
+        estado = self.estado_alerta
+        if estado == "Realizado":
+            return "bg-success"
+        elif estado == "Pendiente":
+            return "bg-secondary"
+        else: # Atrasado y Muy Atrasado
+            return "bg-danger"
+    
     def __str__(self):
         return f"{self.vacuna.nom_vacuna} para {self.nino.nombre}"
 
+# control/models.py
+
 class RegistroAlergias(models.Model):
-    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino')
+    # Añadimos un related_name para poder hacer nino.alergias_registradas
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino', related_name='alergias_registradas')
     alergia = models.ForeignKey(Alergias, on_delete=models.PROTECT, db_column='id_alergia')
     fecha_aparicion = models.DateTimeField()
     fecha_remision = models.DateTimeField(null=True, blank=True)
-
+    
+    # --- CAMPO NUEVO AÑADIDO ---
+    observaciones = models.TextField(blank=True, null=True)
+    history = HistoricalRecords()
     class Meta:
         unique_together = ('nino', 'alergia')
 
     def __str__(self):
-        return f"Alergia {self.alergia.tipo_alergia} en {self.nino.nombre}"
+        return f"Alergia a {self.alergia.tipo_alergia} en {self.nino.nombre}"
 
 class EntregaAlimentos(models.Model):
     id = models.AutoField(primary_key=True, db_column='id_entrega')
