@@ -1,101 +1,169 @@
 {% extends 'base.html' %}
-{% block title %}Gestionar Usuarios{% endblock %}
+{% load static %}
+
+{% block title %}Crear/Activar Usuario{% endblock %}
+
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos compartida #}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Gestionar Usuarios</h2>
-<hr>
 
+<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'listar_usuarios' %}">Gestión de Usuarios</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Crear/Activar Usuario</li>
+    </ol>
+</nav>
 
-{% if request.user.rol.nombre_rol|lower == 'administrador' %}
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>Crear Nuevo Administrador o Profesional</h5>
-    </div>
-    <div class="card-body">
-        <form method="post" id="form-crear-usuario-directo">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_new">
-            
-            <div class="mb-3">
-                <label for="rut" class="form-label">RUT</label>
-                <input type="text" name="rut" class="form-control" value="{{ form_data.rut }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="nombre_completo" class="form-label">Nombre Completo</label>
-                <input type="text" name="nombre_completo" class="form-control" value="{{ form_data.nombre_completo }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico</label>
-                <input type="email" name="email" class="form-control" value="{{ form_data.email }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="rol-select" class="form-label">Asignar Rol</label>
-                <select name="rol_id" id="rol-select" class="form-select" required>
-                    <option value="" disabled {% if not form_data.rol_id %}selected{% endif %}>-- Seleccione un rol --</option>
-                    {% for rol in roles_para_crear %}
-                        <option value="{{ rol.id }}" {% if form_data.rol_id == rol.id|stringformat:"s" %}selected{% endif %}>
-                            {{ rol.nombre_rol }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="nueva_clave" class="form-label">Contraseña</label>
-                    <input type="password" name="nueva_clave" id="nueva_clave" class="form-control" required>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+
+            {# --- Formulario para Crear Nuevo Administrador o Profesional (Solo Admins) --- #}
+            {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+            <div class="card form-card mb-4">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-person-plus-fill"></i></div>
+                    <h2>Crear Nuevo Usuario (Admin/Profesional)</h2>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="confirmar_clave" class="form-label">Confirmar Contraseña</label>
-                    <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
-                    <small id="msg-clave" class="form-text"></small>
+                <div class="form-body">
+                    <form method="post" id="form-crear-usuario-directo">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create_new">
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.1s;">
+                            <label for="rut" class="form-label">RUT</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <input type="text" name="rut" id="rut" class="form-control" value="{{ form_data.rut }}" placeholder="Ej: 12345678-9" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.2s;">
+                            <label for="nombre_completo" class="form-label">Nombre Completo</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                <input type="text" name="nombre_completo" id="nombre_completo" class="form-control" value="{{ form_data.nombre_completo }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.3s;">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                                <input type="email" name="email" id="email" class="form-control" value="{{ form_data.email }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.4s;">
+                            <label for="rol-select" class="form-label">Asignar Rol</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-diagram-3-fill"></i></span>
+                                <select name="rol_id" id="rol-select" class="form-select" required>
+                                    <option value="" disabled {% if not form_data.rol_id %}selected{% endif %}>-- Seleccione un rol --</option>
+                                    {% for rol in roles_para_crear %}
+                                        <option value="{{ rol.id }}" {% if form_data.rol_id == rol.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ rol.nombre_rol }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row animate-form-element" style="animation-delay: 0.5s;">
+                            <div class="col-md-6 mb-3">
+                                <label for="nueva_clave" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" name="nueva_clave" id="nueva_clave" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmar_clave" class="form-label">Confirmar Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-check-circle-fill"></i></span>
+                                    <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
+                                </div>
+                                <small id="msg-clave" class="form-text mt-1 d-block"></small> {# d-block ensures space #}
+                            </div>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.6s;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle-fill me-2"></i>Crear Usuario
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Crear Usuario</button>
-        </form> </div>
-</div>
-{% endif %}
+            {% endif %}
 
 
-{% if tutores_para_activar %}
-<div class="card">
-    <div class="card-header">
-        <h5>Activar Cuenta para Tutor Existente</h5>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="activate_tutor">
-            <div class="mb-3">
-                <label for="tutor-select" class="form-label">Tutores sin cuenta activa</label>
-                <select name="tutor_rut" id="tutor-select" class="form-select" required>
-                    <option></option> {% for tutor in tutores_para_activar %}
-                        <option value="{{ tutor.rut }}">{{ tutor.nombre_completo }} (RUT: {{ tutor.rut }})</option>
-                    {% endfor %}
-                </select>
+            {# --- Formulario para Activar Cuenta de Tutor (Admins y Profesionales) --- #}
+            {% if tutores_para_activar %}
+            <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-person-check-fill"></i></div>
+                    <h2>Activar Cuenta para Tutor Existente</h2>
+                </div>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="activate_tutor">
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.1s;">
+                            <label for="tutor-select" class="form-label">Tutores sin cuenta activa</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <select name="tutor_rut" id="tutor-select" class="form-select" required style="width: 100%;"> 
+                                    <option></option> 
+                                    {% for tutor in tutores_para_activar %}
+                                        <option value="{{ tutor.rut }}">{{ tutor.nombre_completo }} (RUT: {{ tutor.rut }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">Puedes escribir el nombre o RUT para buscar.</small>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.2s;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-lg me-2"></i>Activar Cuenta de Tutor
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <button type="submit" class="btn btn-success">Activar Cuenta de Tutor</button>
-        </form>
+            {# Mensaje si no hay tutores para activar (solo para Profesionales) #}
+            {% elif request.user.rol.nombre_rol|lower == 'profesional' %}
+                <div class="alert alert-info animate-form-element" style="animation-delay: 0.1s;">
+                    <i class="bi bi-info-circle-fill me-2"></i>No hay nuevos tutores para activar en este momento.
+                </div>
+            {% endif %}
+
+        </div>
     </div>
 </div>
-{% elif request.user.rol.nombre_rol|lower == 'profesional' %}
-    <div class="alert alert-info">No hay nuevos tutores para activar en este momento.</div>
-{% endif %}
 
 {% endblock %}
 
-
+{# --- BLOQUE JAVASCRIPT --- #}
+{# Este bloque ES NECESARIO para la funcionalidad de Select2 y la validación de contraseñas #}
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Esto busca el <select> con el id 'tutor-select' y lo convierte
+    // Inicializa Select2 en el dropdown de tutores
     $('#tutor-select').select2({
         placeholder: "Busca o selecciona un tutor por nombre o RUT",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve' // Ensures it takes the input-group width
     });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Código para validar que las contraseñas coincidan
     const form = document.getElementById("form-crear-usuario-directo");
     if (form) {
         const nueva = document.getElementById("nueva_clave");
@@ -103,19 +171,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = document.getElementById("msg-clave");
 
         function validarCoincidencia() {
-            if (confirmar.value === "") {
-                msg.textContent = "";
-                confirmar.classList.remove("is-invalid", "is-valid");
-                return;
-            }
+            if (confirmar.value === "" && nueva.value === "") { // Clear validation if both empty
+                 msg.textContent = "";
+                 confirmar.classList.remove("is-invalid", "is-valid");
+                 return;
+             }
             if (nueva.value === confirmar.value) {
                 msg.textContent = "Las contraseñas coinciden ✅";
-                msg.className = "form-text text-success";
+                msg.className = "form-text text-success mt-1 d-block"; // Added classes
                 confirmar.classList.remove("is-invalid");
                 confirmar.classList.add("is-valid");
             } else {
                 msg.textContent = "Las contraseñas no coinciden ❌";
-                msg.className = "form-text text-danger";
+                msg.className = "form-text text-danger mt-1 d-block"; // Added classes
                 confirmar.classList.remove("is-valid");
                 confirmar.classList.add("is-invalid");
             }
@@ -126,8 +194,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         form.addEventListener("submit", (e) => {
             if (nueva.value !== confirmar.value) {
-                e.preventDefault();
+                e.preventDefault(); // Detiene el envío del formulario
                 alert("Las contraseñas no coinciden. Por favor, corrígelas antes de enviar el formulario.");
+                confirmar.focus(); // Pone el foco en el campo de confirmación
             }
         });
     }

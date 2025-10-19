@@ -1,31 +1,84 @@
 {% extends 'base.html' %}
+{% load static %} {# <-- Añadido para usar static #}
 
 {% block title %}Cambiar Contraseña{% endblock %}
 
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos compartida #}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Cambiar Contraseña</h2>
 
+<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cambiar Contraseña</li>
+    </ol>
+</nav>
 
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
 
-<form method="post" class="w-50" id="form-cambiar-clave">
-    {% csrf_token %}
-    <div class="mb-3">
-    <label>Contraseña actual</label>
-    <input type="password" name="clave_actual" id="clave_actual" class="form-control" required>
+            <div class="card form-card">
+
+                <div class="form-header">
+                    <div class="form-icon">
+                        <i class="bi bi-key-fill"></i> {# Ícono de llave #}
+                    </div>
+                    <h2>Cambiar Contraseña</h2>
+                </div>
+
+                <div class="form-body">
+                    <form method="post" id="form-cambiar-clave">
+                        {% csrf_token %}
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.1s;">
+                            <label for="clave_actual" class="form-label">Contraseña actual</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+                                <input type="password" name="clave_actual" id="clave_actual" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.2s;">
+                            <label for="nueva_clave" class="form-label">Nueva contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                <input type="password" name="nueva_clave" id="nueva_clave" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.3s;">
+                            <label for="confirmar_clave" class="form-label">Confirmar nueva contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-check-circle-fill"></i></span>
+                                <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
+                            </div>
+                            {# Mensaje de validación que maneja el JS #}
+                            <small id="msg-clave" class="mt-1 d-block"></small>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.4s;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-lg me-2"></i>Cambiar contraseña
+                            </button>
+                             {# Botón Cancelar opcional, si quieres añadirlo #}
+                            <a href="{% url 'home' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label>Nueva contraseña</label>
-        <input type="password" name="nueva_clave" id="nueva_clave" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label>Confirmar nueva contraseña</label>
-        <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
-        <small id="msg-clave" class="text-danger"></small>
-    </div>
-    <button type="submit" class="btn btn-success">Cambiar contraseña</button>
-</form>
+{% endblock %}
 
+{# --- BLOQUE JAVASCRIPT --- #}
+{# Este bloque ES NECESARIO para la validación de contraseñas en tiempo real #}
+{% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const nueva = document.getElementById("nueva_clave");
@@ -34,21 +87,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("form-cambiar-clave");
 
     function validarCoincidencia() {
-        if (confirmar.value === "") {
+        // Clear message and validation if confirm field is empty or both are empty
+        if (confirmar.value === "" || (nueva.value === "" && confirmar.value === "")) {
             msg.textContent = "";
+            msg.className = "mt-1 d-block"; // Reset classes
             confirmar.classList.remove("is-invalid", "is-valid");
             return;
         }
+        // Compare passwords
         if (nueva.value === confirmar.value) {
             msg.textContent = "Las contraseñas coinciden ✅";
-            msg.classList.remove("text-danger");
-            msg.classList.add("text-success");
+            msg.className = "text-success mt-1 d-block"; // Use Bootstrap classes for styling
             confirmar.classList.remove("is-invalid");
             confirmar.classList.add("is-valid");
         } else {
             msg.textContent = "Las contraseñas no coinciden ❌";
-            msg.classList.remove("text-success");
-            msg.classList.add("text-danger");
+            msg.className = "text-danger mt-1 d-block"; // Use Bootstrap classes for styling
             confirmar.classList.remove("is-valid");
             confirmar.classList.add("is-invalid");
         }
@@ -58,9 +112,11 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmar.addEventListener("input", validarCoincidencia);
 
     form.addEventListener("submit", (e) => {
+        // Prevent submission if passwords don't match
         if (nueva.value !== confirmar.value) {
             e.preventDefault();
-            alert("Las contraseñas no coinciden.");
+            alert("Las contraseñas no coinciden. Por favor, corrígelas antes de enviar.");
+            confirmar.focus(); // Focus the confirmation field
         }
     });
 });

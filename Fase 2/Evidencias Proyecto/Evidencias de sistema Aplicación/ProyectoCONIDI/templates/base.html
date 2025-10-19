@@ -51,16 +51,6 @@
                             <i class="bi bi-house-door"></i>Inicio
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-people"></i>Profesionales
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-envelope"></i>Contacto
-                        </a>
-                    </li>
                     
                     {% if request.user.is_authenticated %}
                     <li class="nav-item dropdown ms-lg-2">
@@ -134,8 +124,69 @@
         {% endblock %}
     </main>
 
-    <footer class="footer-cesfam text-white py-4">
-        </footer>
+    <footer class="footer-cesfam text-white py-4 mt-auto"> {# mt-auto ayuda a pegarlo abajo si el contenido es corto #}
+        <div class="container">
+            <div class="row align-items-center">
+
+                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <i class="bi bi-hospital-fill fs-2 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Sistema CESFAM</h6>
+                            <small style="opacity: 0.8;">Control Niño Sano</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    {# Puedes poner aquí el logo del Minsal o dejarlo vacío #}
+                    {# Ejemplo con logo Minsal (como en tu CSS) #}
+                     <img src="https://www.minsal.cl/wp-content/themes/minsal/assets/img/logo-minsal.png"
+                         alt="Ministerio de Salud"
+                         class="logo-minsal"
+                         style="max-height: 40px; filter: brightness(0) invert(1); opacity: 0.9;">
+                    {# Si no quieres logo, puedes poner un texto o nada #}
+                    {# <p class="mb-0"><small>Salud Pública</small></p> #}
+                </div>
+
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="social-links mb-2">
+                        {# Reemplaza '#' con tus enlaces reales #}
+                        <a href="#" class="text-white text-decoration-none me-3" aria-label="Facebook">
+                            <i class="bi bi-facebook fs-5"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none me-3" aria-label="Twitter">
+                            <i class="bi bi-twitter fs-5"></i>
+                        </a>
+                        <a href="#" class="text-white text-decoration-none" aria-label="Instagram">
+                            <i class="bi bi-instagram fs-5"></i>
+                        </a>
+                    </div>
+                    {# Reemplaza con tu número real #}
+                    <small style="opacity: 0.8;">
+                        <i class="bi bi-telephone me-1"></i> +56 9 1234 5678
+                    </small>
+                </div>
+            </div>
+
+            <div class="footer-divider my-3"></div> {# my-3 añade margen vertical #}
+
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-1">
+                        {# Puedes ajustar este texto #}
+                        <strong>Ministerio de Salud de Chile &copy; {% now "Y" %}</strong>
+                    </p>
+                    <small style="opacity: 0.7;">
+                        Todos los derechos reservados |
+                        {# Reemplaza '#' con tus enlaces reales #}
+                        <a href="#" class="text-white text-decoration-none">Términos de Uso</a> |
+                        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <div class="spinner-overlay" id="loadingSpinner">
         <div class="spinner-border text-light" role="status">

@@ -132,3 +132,127 @@
         opacity: 1;
     }
 }
+
+/* ===========================
+   ESTILOS PARA FORMULARIOS DE EDICIÓN/CREACIÓN
+   =========================== */
+
+/* Tarjeta principal para formularios */
+.form-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 51, 102, 0.1);
+    border-top: 5px solid var(--cesfam-primary); /* Borde superior azul */
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Cabecera del formulario */
+.form-header {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: #f8f9fa; /* Fondo gris suave */
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 12px 12px 0 0; /* Redondeo solo arriba */
+}
+
+.form-icon {
+    font-size: 2rem;
+    color: var(--cesfam-primary);
+    margin-right: 1rem;
+    animation: bounceIn 0.7s ease-out 0.2s backwards; /* Animación para el ícono */
+}
+
+.form-header h2 {
+    color: var(--cesfam-primary);
+    font-weight: 700;
+    margin-bottom: 0;
+    font-size: 1.5rem; /* Ajuste de tamaño */
+}
+
+/* Cuerpo del formulario */
+.form-body {
+    padding: 2rem 2.5rem;
+}
+
+/* Estilo mejorado para los labels */
+.form-body .form-label {
+    font-weight: 600; /* Un poco más de peso */
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+
+/* Estilo para inputs deshabilitados (como el RUT) */
+.form-control:disabled {
+    background-color: #e9ecef; /* Fondo gris */
+    opacity: 0.8; /* Ligeramente transparente */
+}
+
+/* Contenedor para los botones de acción del formulario */
+.form-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    border-top: 1px solid #eee; /* Línea separadora */
+    padding-top: 1.5rem;
+}
+
+.form-buttons .btn {
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+}
+
+/* Animación escalonada para los elementos del formulario */
+.animate-form-element {
+    animation: fadeInUp 0.5s ease-out backwards; /* 'backwards' aplica el estado inicial (invisible) */
+}
+
+/* Reutilizamos los keyframes definidos antes si ya existen */
+/* Si no los tienes, asegúrate de añadirlos: */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+    0%   { opacity: 0; transform: scale(0.5); }
+    60%  { opacity: 1; transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* ===========================
+   ARREGLO PARA SELECT2 EN INPUT GROUP
+   =========================== */
+
+/* Hace que el contenedor de Select2 se comporte como un control de formulario dentro del grupo */
+.input-group span.select2-container {
+    flex-grow: 1 !important; /* Permite que Select2 ocupe el espacio restante */
+    width: auto !important;  /* Sobreescribe el ancho fijo de Select2 */
+    border-top-left-radius: 0;    /* Quita el redondeo del lado izquierdo */
+    border-bottom-left-radius: 0; /* Quita el redondeo del lado izquierdo */
+}
+
+/* Ajusta la altura y borde de la caja de selección de Select2 */
+.input-group .select2-selection--single {
+    height: calc(1.5em + 0.75rem + 2px) !important; /* Iguala la altura de los inputs de Bootstrap */
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    padding-top: 0.375rem; /* Ayuda a alinear el texto verticalmente */
+    padding-bottom: 0.375rem;
+}
+
+/* Alinea verticalmente la flecha del desplegable */
+.input-group .select2-selection__arrow {
+    height: calc(1.5em + 0.75rem) !important; /* Iguala altura menos bordes */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    right: 0.5rem !important; /* Pequeño ajuste de posición */
+}
+
+/* Alinea el texto seleccionado verticalmente */
+ .input-group .select2-selection__rendered {
+    line-height: calc(1.5em + 0.75rem) !important;
+    padding-left: 0.75rem !important; /* Añade espacio desde el ícono */
+}
