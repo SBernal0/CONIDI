@@ -1,0 +1,134 @@
+/* ===========================
+   FORMULARIOS.CSS - Estilos para Confirmaciones y Formularios
+   =========================== */
+
+:root {
+    --cesfam-primary: #003366;
+    --cesfam-danger: #dc3545;
+    --cesfam-danger-soft: #f8d7da;
+}
+
+/* Tarjeta de confirmación */
+.confirm-card {
+    border: none;
+    border-radius: 12px;
+    /* Sombra suave con el color de peligro */
+    box-shadow: 0 8px 24px rgba(220, 53, 69, 0.15);
+    /* Borde superior rojo grueso para énfasis */
+    border-top: 5px solid var(--cesfam-danger);
+    /* Animación de entrada para la tarjeta */
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Cabecera de la tarjeta */
+.confirm-header {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+/* Ícono de advertencia animado */
+.confirm-icon {
+    font-size: 2.5rem;
+    color: var(--cesfam-danger);
+    margin-right: 1.5rem;
+    /* Aplicamos la animación 'pulse-warning' */
+    animation: pulse-warning 1.8s ease-in-out infinite;
+}
+
+.confirm-header h3 {
+    color: var(--cesfam-danger);
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* Cuerpo de la tarjeta */
+.confirm-body {
+    padding: 0 1.5rem 2rem 1.5rem;
+}
+
+/* Alerta que muestra los datos del usuario a eliminar */
+.user-info-alert {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #6c757d;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem; /* Añade un margen inferior para separar */
+    text-align: left; /* Alinea el texto a la izquierda por defecto */
+    word-break: break-word; /* Asegura que texto largo se parta si es necesario */
+    display: block;
+}
+
+/* Estilo para cada línea de datos dentro de la alerta */
+.user-info-alert div {
+    margin-bottom: 0.25rem; /* Pequeño espacio entre líneas */
+}
+
+.user-info-alert div:last-child {
+    margin-bottom: 0; /* Sin espacio extra al final */
+}
+
+.user-info-alert strong {
+    color: var(--cesfam-primary);
+    margin-right: 0.5rem; 
+}
+
+/* Contenedor para los botones de acción */
+.confirm-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Para que se ajusten en móviles */
+    gap: 0.75rem; /* Espacio entre botones */
+    margin-top: 1.5rem;
+}
+
+/* Estilos de hover para los botones */
+.confirm-buttons .btn {
+    transition: all 0.2s ease;
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+    flex-grow: 1;      /* Permite que los botones crezcan para llenar el espacio */
+    text-align: center; /* Centra el texto e ícono dentro del botón */
+}
+
+/* Efecto de "levantar" y sombrear al pasar el mouse */
+.confirm-buttons .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.confirm-buttons .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+/* --- Definición de las Animaciones --- */
+
+/* Animación de entrada para la tarjeta */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animación de pulso para el ícono de advertencia */
+@keyframes pulse-warning {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

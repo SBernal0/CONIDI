@@ -120,3 +120,38 @@
     from { opacity: 0; transform: translateY(30px) scale(0.98); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Aplica estos estilos en pantallas de 768px de ancho o menos */
+@media (max-width: 768px) {
+
+    .page-header {
+        flex-direction: column; /* Apila el título y el botón */
+        align-items: flex-start; /* Alinea ambos a la izquierda */
+        gap: 0.75rem; /* Añade espacio entre título y botón */
+    }
+
+    .page-header h2 {
+        font-size: 1.5rem; /* Reduce un poco el tamaño del título */
+    }
+
+    .table thead th {
+        font-size: 0.75rem; /* Reduce tamaño de cabeceras de tabla */
+        padding: 0.75rem 0.5rem; /* Reduce padding en cabeceras */
+    }
+
+    .table tbody td {
+        padding: 0.75rem 0.5rem; /* Reduce padding en celdas */
+        font-size: 0.85rem; /* Reduce tamaño de fuente en celdas */
+    }
+
+    .action-buttons {
+        flex-direction: column; /* Apila los botones de acción si no caben */
+        align-items: center;   /* Centra los botones apilados */
+    }
+
+    /* Opcional: Desactivar el zoom en hover en móviles */
+    .table-hover tbody tr:hover {
+        transform: none; /* Quita el efecto de escala */
+        box-shadow: none; /* Quita la sombra extra */
+    }
+}
