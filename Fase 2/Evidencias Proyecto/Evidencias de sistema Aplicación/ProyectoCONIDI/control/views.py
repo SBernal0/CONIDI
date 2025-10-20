@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from datetime import date, timedelta
 
 from django.urls import reverse
+from unidecode import unidecode
 from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, Alergias, RegistroAlergias
 from django.contrib.auth.decorators import login_required
 from login.models import Tutor 
@@ -50,7 +51,7 @@ def listar_ninos(request):
     nombre_query = request.GET.get('nombre', '')
     rut_query = request.GET.get('rut', '')
 
-    # Tu lógica original para obtener la lista base de niños
+    # Obtener la lista base de niños
     lista_ninos = Nino.objects.none() # Por defecto, una lista vacía
 
     if rol_usuario in ['administrador', 'profesional']:
@@ -64,13 +65,14 @@ def listar_ninos(request):
         except Tutor.DoesNotExist:
             lista_ninos = Nino.objects.none()
 
-    # --- Aplicamos los filtros sobre la lista base que obtuvimos ---
+    # Se aplican los filtros sobre la lista base que obtuvimos 
     if nombre_query:
         # Si se buscó un nombre, filtramos la lista usando Q para buscar en múltiples campos
+        nombre_query_norm = unidecode(nombre_query).lower()
         lista_ninos = lista_ninos.filter(
-            Q(nombre__icontains=nombre_query) |
-            Q(ap_paterno__icontains=nombre_query) |
-            Q(ap_materno__icontains=nombre_query)
+            Q(nombre_norm__icontains=nombre_query_norm) |
+            Q(ap_paterno_norm__icontains=nombre_query_norm) |
+            Q(ap_materno_norm__icontains=nombre_query_norm)
         )
 
     if rut_query:

@@ -1,11 +1,5 @@
-/* ===========================
-   HOME.CSS - Página de Inicio
-   Estilos específicos para el dashboard principal
-   =========================== */
 
-/* ===========================
-   HERO / BIENVENIDA
-   =========================== */
+/* Hero / Bienvenida*/
 
 .hero-welcome {
     background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
@@ -112,9 +106,7 @@
     }
 }
 
-/* ===========================
-   SECCIÓN DE ACCIONES
-   =========================== */
+/* Sección de acciones*/
 
 .section-title {
     color: #003366;
@@ -142,9 +134,7 @@
     color: #0066cc;
 }
 
-/* ===========================
-   CARDS DE ACCIÓN
-   =========================== */
+/* Cards de acción */
 
 .action-card {
     border: none;
@@ -249,9 +239,7 @@
     line-height: 1.5;
 }
 
-/* ===========================
-   LINK WRAPPER
-   =========================== */
+/* Link wrapper*/
 
 .action-link {
     text-decoration: none;
@@ -264,9 +252,7 @@
     color: inherit;
 }
 
-/* ===========================
-   GRID DE ACCIONES
-   =========================== */
+/* Grid de acciones */
 
 .actions-grid {
     display: grid;
@@ -275,41 +261,8 @@
     margin-bottom: 2rem;
 }
 
-/* ===========================
-   BADGE DE DESTACADO
-   =========================== */
 
-.badge-featured {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    color: #664d03;
-    padding: 0.35rem 0.75rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(255,193,7,0.3);
-    z-index: 2;
-    position: relative; 
-    overflow: hidden;  
-}
-
-.badge-featured::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: shimmer 3s infinite;
-    animation-delay: 1s;
-}
-
-/* ===========================
-   INFORMACIÓN ADICIONAL
-   =========================== */
+/* Información adicional*/
 
 .info-box {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -346,9 +299,7 @@
     font-size: 0.9rem;
 }
 
-/* ===========================
-   ACCESOS RÁPIDOS (Alternativo)
-   =========================== */
+/* Accesos rapidos */
 
 .quick-actions {
     background: white;
@@ -404,9 +355,7 @@
     font-weight: 500;
 }
 
-/* ===========================
-   RESPONSIVE
-   =========================== */
+/* Responsivo */
 
 @media (max-width: 991.98px) {
     .hero-welcome {
@@ -459,9 +408,7 @@
     }
 }
 
-/* ===========================
-   ANIMACIONES ADICIONALES
-   =========================== */
+/* Animaciones adicionales */
 
 @keyframes fadeInUp {
     from {
@@ -502,9 +449,7 @@
     animation-fill-mode: forwards;
 }
 
-/* ===========================
-   EFECTOS ESPECIALES
-   =========================== */
+/* Efectos especiales */
 
 .shimmer {
     position: relative;
@@ -533,13 +478,13 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* NUEVO: Animación para el badge del rol */
+/* Animación para el badge del rol */
 @keyframes slideInRight {
     from { opacity: 0; transform: translateX(30px); }
     to   { opacity: 1; transform: translateX(0); }
 }
 
-/* NUEVO: Animación para el icono del hospital */
+/* Animación para el icono del hospital */
 @keyframes bounceIn {
     0%   { opacity: 0; transform: scale(0.3) rotate(-10deg); }
     50%  { transform: scale(1.05) rotate(5deg); }
@@ -547,17 +492,17 @@
     100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-/* NUEVO: Keyframe para el efecto de brillo */
+/* Keyframe para el efecto de brillo */
 @keyframes shimmer {
     to { left: 150%; }
 }
 
 .animate-fade-in-up {
-    /* Esta animación ahora se usará para la entrada escalonada de las tarjetas */
+    /* Esta animación se usa para la entrada escalonada de las tarjetas */
     animation: fadeInUp 0.6s ease-out;
 }
 
-/* Los delays ya estaban bien definidos, no necesitan cambios */
+
 .animate-delay-1, .animate-delay-2, .animate-delay-3, .animate-delay-4 {
     opacity: 0;
     animation-fill-mode: forwards;

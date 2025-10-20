@@ -2,6 +2,7 @@
 from django.db import models
 from datetime import date, timedelta # Asegúrate de tener este import
 from simple_history.models import HistoricalRecords
+from unidecode import unidecode
 
 # --- Modelos Geográficos ---
 class Region(models.Model):
@@ -43,6 +44,47 @@ class Nino(models.Model):
     direccion = models.CharField(max_length=200)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     comuna = models.ForeignKey(Comuna, on_delete=models.PROTECT)
+
+    # AÑADE LOS CAMPOS NORMALIZADOS 
+    nombre_norm = models.CharField(
+        max_length=50,
+        editable=False,     # No se muestra en formularios/admin
+        db_index=True       # Indexado para búsquedas rápidas
+    )
+    ap_paterno_norm = models.CharField(
+        max_length=30,
+        editable=False,
+        db_index=True
+    )
+    ap_materno_norm = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True,
+        editable=False,
+        db_index=True
+    )
+   
+   # AÑADE LA FUNCIÓN DE NORMALIZACIÓN 
+    def _normalize_text(self, text):
+        """Convierte texto a minúsculas y quita acentos."""
+        if text:
+            # unidecode quita acentos, .lower() convierte a minúsculas
+            return unidecode(text).lower()
+        return text # Devuelve None o '' si el original era None o ''
+
+    #  SOBREESCRIBE EL MÉTODO SAVE -
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe el método save para asegurar que los campos normalizados
+        se actualicen automáticamente antes de guardar.
+        """
+        # Normaliza y asigna los valores a los campos _norm
+        self.nombre_norm = self._normalize_text(self.nombre)
+        self.ap_paterno_norm = self._normalize_text(self.ap_paterno)
+        self.ap_materno_norm = self._normalize_text(self.ap_materno)
+
+        # Llama al método save original para guardar el objeto
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nombre} {self.ap_paterno}"
