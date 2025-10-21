@@ -100,13 +100,59 @@ class PeriodoControl(models.Model):
     def __str__(self):
         return self.nombre_mes_control
 
-class Alergias(models.Model):
+class CategoriaAlergia(models.Model):
     id = models.AutoField(primary_key=True)
-    tipo_alergia = models.CharField(max_length=200)
-    history = HistoricalRecords()
-    def __str__(self):
-        return self.tipo_alergia
+    nombre = models.CharField(max_length=100, unique=True)
 
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Categoría de Alergia"
+        verbose_name_plural = "Categorías de Alergias"
+
+
+class RegistroAlergias(models.Model):
+    # Opciones para el mecanismo inmunitario (las movemos aquí)
+    TIPO_HIPERSENSIBILIDAD_CHOICES = [
+        ('TIPO_I', 'Tipo I (Inmediata, IgE)'),
+        ('TIPO_II', 'Tipo II (Citotóxica, IgG/IgM)'),
+        ('TIPO_III', 'Tipo III (Inmunocomplejos)'),
+        ('TIPO_IV', 'Tipo IV (Retardada, Celular)'),
+        ('NO_ESPECIFICADO', 'No Especificado / Desconocido'),
+    ]
+
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino', related_name='alergias_registradas')
+    
+    # --- NUEVOS CAMPOS ---
+    categoria = models.ForeignKey(CategoriaAlergia, on_delete=models.PROTECT, verbose_name="Categoría")
+    agente_especifico = models.CharField(max_length=200, verbose_name="Agente Específico")
+    mecanismo_inmunitario = models.CharField(
+        max_length=50, 
+        choices=TIPO_HIPERSENSIBILIDAD_CHOICES, 
+        default='NO_ESPECIFICADO',
+        verbose_name="Mecanismo Inmunitario"
+    )
+
+
+    fecha_aparicion = models.DateField()
+    fecha_remision = models.DateField(null=True, blank=True)
+    observaciones = models.TextField(blank=True, null=True)
+    
+    history = HistoricalRecords()
+
+    class Meta:
+        # La combinación niño + categoría + agente debe ser única
+        unique_together = ('nino', 'categoria', 'agente_especifico')
+        verbose_name = "Registro de Alergia"
+        verbose_name_plural = "Registros de Alergias"
+
+    def __str__(self):
+        return f"Alergia a {self.agente_especifico} ({self.categoria.nombre}) en {self.nino.nombre}"
+    
+    
 # --- Modelo Principal de Control ---
 class Control(models.Model):
     TIPO_CONTROL_CHOICES = [
@@ -286,23 +332,7 @@ class VacunaAplicada(models.Model):
     def __str__(self):
         return f"{self.vacuna.nom_vacuna} para {self.nino.nombre}"
 
-# control/models.py
 
-class RegistroAlergias(models.Model):
-    # Añadimos un related_name para poder hacer nino.alergias_registradas
-    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino', related_name='alergias_registradas')
-    alergia = models.ForeignKey(Alergias, on_delete=models.PROTECT, db_column='id_alergia')
-    fecha_aparicion = models.DateTimeField()
-    fecha_remision = models.DateTimeField(null=True, blank=True)
-    
-    # --- CAMPO NUEVO AÑADIDO ---
-    observaciones = models.TextField(blank=True, null=True)
-    history = HistoricalRecords()
-    class Meta:
-        unique_together = ('nino', 'alergia')
-
-    def __str__(self):
-        return f"Alergia a {self.alergia.tipo_alergia} en {self.nino.nombre}"
 
 class EntregaAlimentos(models.Model):
     id = models.AutoField(primary_key=True, db_column='id_entrega')

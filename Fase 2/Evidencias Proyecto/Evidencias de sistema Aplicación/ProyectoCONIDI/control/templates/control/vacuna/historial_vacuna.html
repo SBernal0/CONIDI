@@ -42,5 +42,5 @@
 <div class="alert alert-info">No hay historial de cambios para este registro.</div>
 {% endfor %}
 
-<a href="{% url 'ver_vacuna' vacuna_aplicada.id %}" class="btn btn-secondary mt-3">Volver al Detalle</a>
+<a href="{% url 'control:ver_vacuna' vacuna_aplicada.id %}" class="btn btn-secondary mt-3">Volver al Detalle</a>
 {% endblock %}

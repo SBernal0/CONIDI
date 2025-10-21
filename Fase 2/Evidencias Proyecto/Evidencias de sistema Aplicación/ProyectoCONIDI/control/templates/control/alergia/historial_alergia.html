@@ -9,11 +9,11 @@
 <div class="card mb-3">
     <div class="card-header d-flex justify-content-between">
         <span>
-            <strong>{{ version.tipo_alergia }}</strong> fue 
+            <strong>{{ version.agente_especifico }} ({{ version.get_categoria_display }})</strong> fue
             <strong>
                 {% if version.history_type == '~' %}modificado{% elif version.history_type == '+' %}creado{% elif version.history_type == '-' %}eliminado{% endif %}
             </strong>
-             por 
+             por
             <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
         </span>
         <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
@@ -25,7 +25,7 @@
             {% for cambio in version.cambios_calculados %}
                 <li>
                     <strong>{{ cambio.field }}:</strong>
-                    <span class="text-danger"><del>{{ cambio.old|default:"(vacío)" }}</del></span> → 
+                    <span class="text-danger"><del>{{ cambio.old|default:"(vacío)" }}</del></span> →
                     <span class="text-success">{{ cambio.new|default:"(vacío)" }}</span>
                 </li>
             {% endfor %}
@@ -37,5 +37,5 @@
 <div class="alert alert-info">No hay historial de cambios.</div>
 {% endfor %}
 
-<a href="{% url 'configurar_alergias' %}" class="btn btn-secondary mt-3">Volver a la Configuración</a>
+<a href="{% url 'control:detalle_nino' registro.nino.rut_nino %}" class="btn btn-secondary mt-3">Volver a la Lista</a>
 {% endblock %}
