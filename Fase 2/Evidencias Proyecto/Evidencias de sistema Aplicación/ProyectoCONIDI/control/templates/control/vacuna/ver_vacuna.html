@@ -23,9 +23,9 @@
     </div>
     <div class="card-footer">
         <div class="card-footer">
-            <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Volver</a>
+            <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Volver</a>
             {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                <a href="{% url 'historial_vacuna' vacuna_aplicada.id %}" class="btn btn-info">Ver Historial</a>
+                <a href="{% url 'control:historial_vacuna' vacuna_aplicada.id %}" class="btn btn-info">Ver Historial</a>
             {% endif %}
         </div>
     </div>

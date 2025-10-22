@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 from django.urls import reverse
 from unidecode import unidecode
-from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, Alergias, RegistroAlergias
+from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, RegistroAlergias, CategoriaAlergia
 from django.contrib.auth.decorators import login_required
 from login.models import Tutor 
 from django.core.exceptions import PermissionDenied 
@@ -13,6 +13,7 @@ from django.core.management import call_command
 from simple_history.admin import SimpleHistoryAdmin
 from django.db.models import Q
 from django.db import IntegrityError
+from django.urls import reverse
 
 
 @login_required
@@ -41,7 +42,7 @@ def controles(request, nino_rut):
         "vacunas_aplicadas": vacunas_aplicadas,
         "alergias_registradas": alergias_registradas, # <-- AÑADIMOS LAS VACUNAS AL CONTEXTO
     }
-    return render(request, 'control/controles.html', context=contexto)
+    return render(request, 'control/nino/controles.html', context=contexto)
 
 @login_required
 def listar_ninos(request):
@@ -85,7 +86,7 @@ def listar_ninos(request):
         # Aseguramos el orden después de todos los filtros
         'ninos': lista_ninos.order_by('nombre', 'ap_paterno'),
     }
-    return render(request, 'control/listar_ninos.html', contexto)
+    return render(request, 'control/nino/listar_ninos.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador', 'Profesional'])
@@ -133,7 +134,7 @@ def registrar_control(request, control_id):
         
         control.save()
         messages.success(request, f'El "{control.nombre_control}" ha sido registrado exitosamente.')
-        return redirect('controles', nino_rut=nino.rut_nino)
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
     # --- Preparamos el contexto para la petición GET ---
     contexto = {
@@ -144,7 +145,7 @@ def registrar_control(request, control_id):
         'pce_choices': Control.CALIFICACION_PCE_CHOICES,
         'pa_choices': Control.DIG_PA_CHOICES,
     }
-    return render(request, 'control/registrar_control.html', contexto)
+    return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
 
 @login_required
@@ -163,7 +164,7 @@ def ver_control(request, control_id):
         'control': control,
         'nino': nino
     }
-    return render(request, 'control/ver_control.html', contexto)
+    return render(request, 'control/control_nino_sano/ver_control.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador', 'Profesional'])
@@ -198,7 +199,7 @@ def editar_control(request, control_id):
 
         control.save()
         messages.success(request, f'El "{control.nombre_control}" ha sido actualizado exitosamente.')
-        return redirect('controles', nino_rut=nino.rut_nino)
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
     # Para la petición GET, pasamos los datos del control y las opciones a la plantilla
     contexto = {
@@ -208,7 +209,7 @@ def editar_control(request, control_id):
         'pce_choices': Control.CALIFICACION_PCE_CHOICES,
         'pa_choices': Control.DIG_PA_CHOICES,
     }
-    return render(request, 'control/editar_control.html', contexto)
+    return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador']) # <-- Solo accesible para Administradores
@@ -232,7 +233,7 @@ def historial_control(request, control_id):
         'control': control,
         'historial': historial
     }
-    return render(request, 'control/historial_control.html', contexto)
+    return render(request, 'control/control_nino_sano/historial_control.html', contexto)
 
 
 # control/views.py
@@ -285,7 +286,7 @@ def configurar_periodos(request):
     # La lógica GET no cambia
     periodos = PeriodoControl.objects.all().order_by('mes_control')
     contexto = {'periodos': periodos}
-    return render(request, 'control/configurar_periodos.html', contexto)
+    return render(request, 'control/config/configurar_periodos.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador'])
@@ -305,51 +306,9 @@ def historial_configuracion(request):
     contexto = {
         'historial': historial
     }
-    return render(request, 'control/historial_configuracion.html', contexto)
+    return render(request, 'control/config/historial_configuracion.html', contexto)
 
 
-
-@login_required
-@rol_requerido(['Administrador', 'Profesional'])
-def registrar_vacuna(request, nino_rut):
-    nino = get_object_or_404(Nino, pk=nino_rut)
-
-    if request.method == 'POST':
-        vacuna_id = request.POST.get('vacuna')
-        fecha_aplicacion = request.POST.get('fecha_aplicacion')
-        dosis = request.POST.get('dosis')
-        lugar = request.POST.get('lugar')
-
-        # Obtenemos el objeto Vacuna completo usando su ID
-        vacuna_obj = get_object_or_404(Vacuna, pk=vacuna_id)
-
-        profesional_obj = None
-        try:
-            profesional_obj = request.user.perfil_profesional
-        except:
-            pass
-
-        # --- LÍNEA CORREGIDA ---
-        # Al crear el objeto, nos aseguramos de pasar el objeto 'vacuna_obj'
-        # al campo 'vacuna' del modelo.
-        VacunaAplicada.objects.create(
-            nino=nino,
-            vacuna=vacuna_obj, # <-- Cambio clave
-            fecha_aplicacion=fecha_aplicacion,
-            dosis=dosis,
-            lugar=lugar,
-            profesional=profesional_obj
-        )
-        messages.success(request, f"Vacuna '{vacuna_obj.nom_vacuna}' registrada para {nino.nombre}.")
-        return redirect('controles', nino_rut=nino.rut_nino)
-
-    # La lógica GET no cambia
-    todas_las_vacunas = Vacuna.objects.all().order_by('nom_vacuna')
-    contexto = {
-        'nino': nino,
-        'vacunas': todas_las_vacunas,
-    }
-    return render(request, 'control/registrar_vacuna.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador', 'Profesional'])
@@ -371,14 +330,14 @@ def registrar_vacuna(request, vacuna_aplicada_id):
 
         vacuna_aplicada.save()
         messages.success(request, f"Vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' registrada exitosamente.")
-        return redirect('controles', nino_rut=nino.rut_nino)
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
     contexto = {
         'vacuna_aplicada': vacuna_aplicada,
         'nino': nino,
         'via_choices': VacunaAplicada.VIA_CHOICES, # Pasamos las opciones para el menú
     }
-    return render(request, 'control/registrar_vacuna.html', contexto)
+    return render(request, 'control/vacuna/registrar_vacuna.html', contexto)
 
 @login_required
 def ver_vacuna(request, vacuna_aplicada_id):
@@ -394,7 +353,7 @@ def ver_vacuna(request, vacuna_aplicada_id):
         'vacuna_aplicada': vacuna_aplicada,
         'nino': nino
     }
-    return render(request, 'control/ver_vacuna.html', contexto)
+    return render(request, 'control/vacuna/ver_vacuna.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador', 'Profesional'])
@@ -421,7 +380,7 @@ def editar_vacuna(request, vacuna_aplicada_id):
         vacuna_aplicada.save()
         
         messages.success(request, f"Registro de vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' actualizado.")
-        return redirect('controles', nino_rut=nino.rut_nino)
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
     # La lógica para la petición GET no cambia
     contexto = {
@@ -429,7 +388,7 @@ def editar_vacuna(request, vacuna_aplicada_id):
         'nino': nino,
         'via_choices': VacunaAplicada.VIA_CHOICES,
     }
-    return render(request, 'control/editar_vacuna.html', contexto)
+    return render(request, 'control/vacuna/editar_vacuna.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador']) # Solo para Administradores
@@ -448,7 +407,7 @@ def historial_vacuna(request, vacuna_aplicada_id):
         'vacuna_aplicada': vacuna_aplicada,
         'historial': historial
     }
-    return render(request, 'control/historial_vacuna.html', contexto)
+    return render(request, 'control/vacuna/historial_vacuna.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador'])
@@ -493,7 +452,7 @@ def configurar_vacunas(request):
     # Para la petición GET
     vacunas = Vacuna.objects.all().order_by('meses_programada', 'nom_vacuna')
     contexto = {'vacunas': vacunas}
-    return render(request, 'control/configurar_vacunas.html', contexto)
+    return render(request, 'control/vacuna/configurar_vacunas.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador'])
@@ -512,7 +471,7 @@ def historial_vacunas(request):
     contexto = {
         'historial': historial
     }
-    return render(request, 'control/historial_configuracion_vacunas.html', contexto)
+    return render(request, 'control/config/historial_configuracion_vacunas.html', contexto)
 
 # control/views.py
 
@@ -524,66 +483,85 @@ def registrar_alergia(request, nino_rut):
     nino = get_object_or_404(Nino, pk=nino_rut)
     
     if request.method == 'POST':
-        alergia_id = request.POST.get('alergia')
+        categoria_id = request.POST.get('categoria')
+        agente = request.POST.get('agente_especifico')
+        mecanismo = request.POST.get('mecanismo_inmunitario')
         fecha_aparicion = request.POST.get('fecha_aparicion')
         observaciones = request.POST.get('observaciones')
         
-        alergia_obj = get_object_or_404(Alergias, pk=alergia_id)
-        
-        RegistroAlergias.objects.create(
-            nino=nino,
-            alergia=alergia_obj,
-            fecha_aparicion=fecha_aparicion,
-            observaciones=observaciones
-        )
-        
-        messages.success(request, f"Alergia a '{alergia_obj.tipo_alergia}' registrada para {nino.nombre}.")
+        categoria_obj = get_object_or_404(CategoriaAlergia, pk=categoria_id)
 
-        # --- LÓGICA DE REDIRECCIÓN ACTUALIZADA ---
-        # Construimos la URL base usando reverse()
-        url_base = reverse('controles', kwargs={'nino_rut': nino.rut_nino})
-        # Le añadimos el ancla para la pestaña de alergias
-        url_con_pestaña = f"{url_base}#alergias-pane"
-        # Redirigimos a la URL completa
-        return redirect(url_con_pestaña)
+        # Verificamos si ya existe
+        if RegistroAlergias.objects.filter(nino=nino, categoria=categoria_obj, agente_especifico=agente).exists():
+            messages.error(request, f"El niño/a ya tiene un registro para '{agente}' en la categoría '{categoria_obj.nombre}'.")
+        else:
+            RegistroAlergias.objects.create(
+                nino=nino,
+                categoria=categoria_obj,
+                agente_especifico=agente,
+                mecanismo_inmunitario=mecanismo,
+                fecha_aparicion=fecha_aparicion,
+                observaciones=observaciones
+            )
+            messages.success(request, f"Alergia a '{agente}' registrada para {nino.nombre}.")
+        
+        url_base = reverse('control:detalle_nino', kwargs={'nino_rut': nino.rut_nino})
+        return redirect(f"{url_base}#alergias-pane")
 
-    # La lógica GET no cambia
     contexto = {
         'nino': nino,
-        'alergias_disponibles': Alergias.objects.all()
+        'categorias_disponibles': CategoriaAlergia.objects.all(),
+        'mecanismos_choices': RegistroAlergias.TIPO_HIPERSENSIBILIDAD_CHOICES, # Choices desde RegistroAlergias
     }
-    return render(request, 'control/registrar_alergia.html', contexto)
+    return render(request, 'control/alergia/registrar_alergia.html', contexto)
 
-@login_required
 @rol_requerido(['Administrador', 'Profesional'])
 def editar_alergia(request, registro_alergia_id):
-    # Obtenemos el registro específico de la alergia que se quiere editar
     registro = get_object_or_404(RegistroAlergias, pk=registro_alergia_id)
     nino = registro.nino
 
     if request.method == 'POST':
-        # Actualizamos los campos con los datos del formulario
-        registro.fecha_aparicion = request.POST.get('fecha_aparicion')
-        registro.observaciones = request.POST.get('observaciones')
-        
-        # El campo de fecha de remisión es opcional
+        categoria_id = request.POST.get('categoria')
+        agente = request.POST.get('agente_especifico')
+        mecanismo = request.POST.get('mecanismo_inmunitario')
+        fecha_aparicion = request.POST.get('fecha_aparicion')
         fecha_remision = request.POST.get('fecha_remision')
-        if fecha_remision:
-            registro.fecha_remision = fecha_remision
+        observaciones = request.POST.get('observaciones')
+
+        categoria_obj = get_object_or_404(CategoriaAlergia, pk=categoria_id)
+
+        # Verificamos si la combinación ya existe PARA OTRO registro del mismo niño
+        existe_duplicado = RegistroAlergias.objects.filter(
+            nino=nino,
+            categoria=categoria_obj,
+            agente_especifico=agente
+        ).exclude(pk=registro.pk).exists() # Excluimos el registro actual de la verificación
+
+        if existe_duplicado:
+            messages.error(request, f"Ya existe un registro para '{agente}' en la categoría '{categoria_obj.nombre}' para este niño/a.")
         else:
-            registro.fecha_remision = None # Guardamos null si el campo está vacío
-
-        registro.save()
+            # Actualizamos los campos
+            registro.categoria = categoria_obj
+            registro.agente_especifico = agente
+            registro.mecanismo_inmunitario = mecanismo
+            registro.fecha_aparicion = fecha_aparicion
+            registro.observaciones = observaciones
+            registro.fecha_remision = fecha_remision if fecha_remision else None
+            
+            registro.save()
+            messages.success(request, f"El registro de alergia a '{registro.agente_especifico}' ha sido actualizado.")
         
-        messages.success(request, f"El registro de alergia a '{registro.alergia.tipo_alergia}' ha sido actualizado.")
-        return redirect('controles', nino_rut=nino.rut_nino)
+        url_base = reverse('control:detalle_nino', kwargs={'nino_rut': nino.rut_nino})
+        return redirect(f"{url_base}#alergias-pane")
 
-    # Para la petición GET, mostramos el formulario con los datos existentes
+    # Para la petición GET
     contexto = {
         'registro': registro,
-        'nino': nino
+        'nino': nino,
+        'categorias_disponibles': CategoriaAlergia.objects.all(),
+        'mecanismos_choices': RegistroAlergias.TIPO_HIPERSENSIBILIDAD_CHOICES,
     }
-    return render(request, 'control/editar_alergia.html', contexto)
+    return render(request, 'control/alergia/editar_alergia.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador']) # Solo para Administradores
@@ -602,56 +580,62 @@ def historial_alergia(request, registro_alergia_id):
         'registro': registro,
         'historial': historial
     }
-    return render(request, 'control/historial_alergia.html', contexto)
+    return render(request, 'control/alergia/historial_alergia.html', contexto)
 
 @login_required
 @rol_requerido(['Administrador'])
-def configurar_alergias(request):
+def configurar_categorias_alergia(request): # <- Nombre actualizado
     if request.method == 'POST':
-        # Obtenemos el 'action' que nos envía el botón presionado
-        action = request.POST.get('action', '')
+        action = request.POST.get('action')
 
-        # --- Lógica para ACTUALIZAR ---
         if action == 'update':
-            for alergia in Alergias.objects.all():
-                nuevo_nombre = request.POST.get(f'tipo_alergia_{alergia.id}')
-                if nuevo_nombre and alergia.tipo_alergia != nuevo_nombre:
-                    alergia.tipo_alergia = nuevo_nombre
-                    alergia.save()
-            messages.success(request, 'La lista de alergias ha sido actualizada.')
+            for categoria in CategoriaAlergia.objects.all():
+                nuevo_nombre = request.POST.get(f'nombre_categoria_{categoria.id}')
+                if nuevo_nombre and categoria.nombre != nuevo_nombre:
+                    # Verificamos si el nuevo nombre ya existe
+                    if CategoriaAlergia.objects.filter(nombre=nuevo_nombre).exists():
+                        messages.error(request, f'Ya existe una categoría llamada "{nuevo_nombre}".')
+                    else:
+                        categoria.nombre = nuevo_nombre
+                        categoria.save()
+            messages.success(request, 'La lista de categorías ha sido actualizada.')
 
-        # --- Lógica para ELIMINAR ---
-        elif action.startswith('delete_'):
-            # Si el 'action' empieza con 'delete_', sabemos que se presionó un botón de eliminar
-            alergia_id = action.split('_')[1] # Extraemos el ID del valor 'delete_123'
-            try:
-                alergia = Alergias.objects.get(pk=alergia_id)
-                nombre_alergia = alergia.tipo_alergia
-                alergia.delete()
-                messages.success(request, f'La alergia "{nombre_alergia}" ha sido eliminada.')
-            except IntegrityError:
-                messages.error(request, 'No se puede eliminar esta alergia porque ya está asignada a uno o más niños.')
-            except Alergias.DoesNotExist:
-                messages.error(request, 'La alergia que intentas eliminar no existe.')
-
-        # --- Lógica para CREAR ---
         elif action == 'create':
             nuevo_nombre = request.POST.get('nuevo_nombre')
             if nuevo_nombre:
-                Alergias.objects.create(tipo_alergia=nuevo_nombre)
-                messages.success(request, f'El tipo de alergia "{nuevo_nombre}" ha sido agregado.')
-        
-        return redirect('configurar_alergias')
+                # Verificamos si ya existe antes de crear
+                if not CategoriaAlergia.objects.filter(nombre=nuevo_nombre).exists():
+                    CategoriaAlergia.objects.create(nombre=nuevo_nombre)
+                    messages.success(request, f'Nueva categoría "{nuevo_nombre}" agregada.')
+                else:
+                    messages.warning(request, f'La categoría "{nuevo_nombre}" ya existe.')
 
-    # La lógica GET no cambia
-    alergias = Alergias.objects.all().order_by('tipo_alergia')
-    contexto = {'alergias': alergias}
-    return render(request, 'control/configurar_alergias.html', contexto)
+        elif action == 'delete':
+            categoria_id = request.POST.get('categoria_id')
+            try:
+                categoria = CategoriaAlergia.objects.get(pk=categoria_id)
+                nombre_categoria = categoria.nombre
+                # IMPORTANTE: Verificamos si está en uso en RegistroAlergias
+                if RegistroAlergias.objects.filter(categoria=categoria).exists():
+                     messages.error(request, f'No se puede eliminar "{nombre_categoria}" porque está asignada a uno o más niños.')
+                else:
+                    categoria.delete()
+                    messages.success(request, f'La categoría "{nombre_categoria}" ha sido eliminada.')
+            except CategoriaAlergia.DoesNotExist:
+                messages.error(request, 'La categoría que intentas eliminar no existe.')
+        
+        return redirect('configurar_categorias_alergia') # <- Nombre actualizado
+
+    # Para la petición GET
+    categorias = CategoriaAlergia.objects.all().order_by('nombre')
+    contexto = {'categorias': categorias}
+    return render(request, 'control/config/configurar_categorias_alergia.html', contexto) # <- Nombre actualizado
+
+
 @login_required
 @rol_requerido(['Administrador'])
-def historial_alergias(request):
-    # La lógica para obtener el historial no cambia
-    historial = Alergias.history.all().order_by('-history_date')
+def historial_categorias_alergia(request): # <-- Asegúrate que la función tenga este nombre
+    historial = CategoriaAlergia.history.all().order_by('-history_date')
     
     for i in range(len(historial)):
         version_actual = historial[i]
@@ -663,5 +647,4 @@ def historial_alergias(request):
     contexto = {
         'historial': historial
     }
-
-    return render(request, 'control/historial_alergias_tipo.html', contexto)
+    return render(request, 'control/config/historial_categorias_alergia.html', contexto)

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Tipos de Alergia{% endblock %}
+
+{% block content %}
+<h2>Historial de Cambios en Tipos de Alergia</h2>
+<hr>
+
+{% for version in historial %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <span>
+            <strong>{{ version.tipo_alergia }}</strong> fue 
+            <strong>
+                {% if version.history_type == '~' %}modificado{% elif version.history_type == '+' %}creado{% elif version.history_type == '-' %}eliminado{% endif %}
+            </strong>
+             por 
+            <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
+        </span>
+        <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
+    </div>
+    {% if version.history_type == '~' and version.cambios_calculados %}
+    <div class="card-body">
+        <h6>Cambios realizados:</h6>
+        <ul>
+            {% for cambio in version.cambios_calculados %}
+                <li>
+                    <strong>{{ cambio.field }}:</strong>
+                    <span class="text-danger"><del>{{ cambio.old|default:"(vacío)" }}</del></span> → 
+                    <span class="text-success">{{ cambio.new|default:"(vacío)" }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% empty %}
+<div class="alert alert-info">No hay historial de cambios.</div>
+{% endfor %}
+
+<a href="{% url 'control:configurar_categorias_alergia' %}" class="btn btn-secondary mt-3">Volver a la Configuración</a>
+{% endblock %}
