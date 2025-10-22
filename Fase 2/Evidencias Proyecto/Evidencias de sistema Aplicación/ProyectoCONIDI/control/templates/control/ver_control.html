@@ -60,9 +60,9 @@
         </div>
     </div>
     <div class="card-footer">
-        <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Volver a la Lista de Controles</a>
+        <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-secondary">Volver a la Lista de Controles</a>
         {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                <a href="{% url 'control:historial_control' control.id %}" class="btn btn-info">Ver Historial de Cambios</a>
+                <a href="{% url 'historial_control' control.id %}" class="btn btn-info">Ver Historial de Cambios</a>
         {% endif %}
     </div>
 </div>

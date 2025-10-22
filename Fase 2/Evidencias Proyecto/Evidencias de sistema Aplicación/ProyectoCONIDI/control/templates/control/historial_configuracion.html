@@ -1,28 +1,25 @@
 {% extends 'base.html' %}
 
-{% block title %}Historial de Cambios{% endblock %}
+{% block title %}Historial de Configuración de Controles{% endblock %}
 
 {% block content %}
-<h2>Historial de Cambios: {{ control.nombre_control }}</h2>
-<p>
-    <strong>Niño/a:</strong> {{ control.nino.nombre }} {{ control.nino.ap_paterno }}
-</p>
+<h2>Historial de Cambios en la Configuración de Controles</h2>
+<p>Aquí se registran todas las modificaciones hechas a los períodos de control.</p>
 <hr>
+<a href="{% url 'configurar_periodos' %}" class="btn btn-secondary mt-3">Volver a la Configuración</a>
 
 {% for version in historial %}
+
 <div class="card mb-3">
     <div class="card-header d-flex justify-content-between">
+
+
         <span>
+            <strong>{{ version.nombre_mes_control }}</strong> fue 
             <strong>
-                {% if version.history_type == '+' %}
-                    Creado
-                {% elif version.history_type == '~' %}
-                    Modificado
-                {% elif version.history_type == '-' %}
-                    Eliminado
-                {% endif %}
+                {% if version.history_type == '~' %}modificado{% elif version.history_type == '+' %}creado{% endif %}
             </strong>
-            por 
+             por 
             <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
         </span>
         <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
@@ -41,17 +38,11 @@
             </ul>
         {% elif version.history_type == '+' %}
             <p class="text-muted">Registro inicial creado.</p>
-        {% else %}
-             <p class="text-muted">No se detectaron cambios de campos en esta versión.</p>
         {% endif %}
     </div>
 </div>
 {% empty %}
-<div class="alert alert-info">
-    No hay historial de cambios para este registro.
-</div>
+<div class="alert alert-info">No hay historial de cambios.</div>
 {% endfor %}
-
-<a href="{% url 'control:ver_control' control.id %}" class="btn btn-secondary mt-3">Volver al Detalle del Control</a>
 
 {% endblock %}
