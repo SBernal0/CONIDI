@@ -86,6 +86,7 @@ def listar_ninos(request):
     contexto = {
         # Aseguramos el orden después de todos los filtros
         'ninos': lista_ninos.order_by('nombre', 'ap_paterno'),
+        'rol_usuario': rol_usuario, # <--- Pasa el rol a la plantilla
     }
     return render(request, 'control/nino/listar_ninos.html', contexto)
 

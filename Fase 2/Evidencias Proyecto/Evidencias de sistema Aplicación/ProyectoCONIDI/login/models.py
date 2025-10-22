@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
+from unidecode import unidecode
 
 # Este Manager es necesario para decirle a Django cómo crear usuarios y superusuarios con nuestro modelo personalizado.
 class UsuarioManager(BaseUserManager):
@@ -48,7 +49,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     nombre_completo = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
-    clave_temporal = models.BooleanField(default=False) # <--- AÑADE ESTA LÍNEA
+    clave_temporal = models.BooleanField(default=False) 
+
+    # Campo normalizado
+    nombre_completo_norm = models.CharField(
+        max_length=200,
+        editable=False,
+        db_index=True
+        # No necesita null=True porque nombre_completo es obligatorio
+    )
+
 
     activo = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False) # Necesario para el admin de Django
@@ -61,6 +71,20 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'rut'
     # Campos requeridos al crear un usuario por consola
     REQUIRED_FIELDS = ['nombre_completo', 'email']
+
+    # Función de normalización
+    def _normalize_text(self, text):
+        if text:
+            return unidecode(text).lower()
+        return text
+    
+
+    # Método save
+    def save(self, *args, **kwargs):
+        # Normaliza el nombre completo antes de guardar
+        self.nombre_completo_norm = self._normalize_text(self.nombre_completo)
+        super().save(*args, **kwargs) # Llama al save original
+ 
 
     def __str__(self):
         return f"{self.nombre_completo} ({self.rut})"

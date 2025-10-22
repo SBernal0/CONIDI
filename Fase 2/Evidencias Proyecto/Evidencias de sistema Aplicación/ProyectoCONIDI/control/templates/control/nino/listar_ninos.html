@@ -15,38 +15,42 @@
     <h2><i class="bi bi-person-lines-fill me-2"></i>Lista de Niños Registrados</h2>
 </div>
 
-<div class="card filter-card mb-4">
-    <div class="card-body">
-        <form method="get" action="">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label for="nombre" class="form-label">Buscar por Nombre o Apellido</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Ej: Juan Pérez" value="{{ request.GET.nombre }}">
+{# --- INICIO: Condición para mostrar filtros --- #}
+{% if rol_usuario != 'tutor' %}
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <form method="get" action="">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="nombre" class="form-label">Buscar por Nombre o Apellido</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Ej: Juan Pérez" value="{{ request.GET.nombre }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="rut" class="form-label">Buscar por RUT</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" name="rut" id="rut" class="form-control" placeholder="Ej: 12345678-9" value="{{ request.GET.rut }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="d-flex gap-2 w-100">
+                            <button type="submit" class="btn btn-cesfam btn-sm flex-grow-1">
+                                <i class="bi bi-funnel-fill me-1"></i> Filtrar
+                            </button>
+                            <a href="{% url 'control:listar_ninos' %}" class="btn btn-secondary btn-sm flex-grow-1">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-5">
-                    <label for="rut" class="form-label">Buscar por RUT</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                        <input type="text" name="rut" id="rut" class="form-control" placeholder="Ej: 12345678-9" value="{{ request.GET.rut }}">
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-cesfam">
-                            <i class="bi bi-funnel-fill me-1"></i> Filtrar
-                        </button>
-                        <a href="{% url 'control:listar_ninos' %}" class="btn btn-secondary flex-grow-1"> 
-                            <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
+{% endif %}
+{# --- FIN: Condición para mostrar filtros --- #}
 
 <div class="card table-card">
     <div class="card-body p-0">

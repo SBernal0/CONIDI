@@ -8,6 +8,7 @@ from login.models import Usuario, Usuario, Rol, Tutor, Profesional
 from login.decorators import rol_requerido, clave_no_temporal
 from django.shortcuts import get_object_or_404 # <- Asegúrate de que este import esté arriba
 from django.db.models import Q
+from unidecode import unidecode
 
 from django.contrib.auth.hashers import make_password
 import re
@@ -220,14 +221,44 @@ def cambiar_clave_temporal(request):
 
 
 @login_required
-@rol_requerido(['Administrador']) # Solo los administradores pueden ver esta página
+#@rol_requerido(['Administrador']) 
 def listar_usuarios(request):
-    # Obtenemos todos los usuarios y usamos 'select_related' para optimizar la consulta
-    # pidiendo que también traiga los datos del 'rol' en una sola vez.
-    usuarios = Usuario.objects.select_related('rol').all().order_by('nombre_completo')
-    
+    user = request.user
+    rol_usuario_actual = user.rol.nombre_rol.lower()
+
+    # --- NUEVO: Capturamos los datos del formulario de filtros ---
+    nombre_query = request.GET.get('nombre', '')
+    rut_query = request.GET.get('rut', '')
+
+    # --- Obtener la lista base según el rol ---
+    lista_usuarios = Usuario.objects.none()
+    if rol_usuario_actual == 'administrador':
+        # Admin ve a todos menos a sí mismo (opcional)
+        lista_usuarios = Usuario.objects.select_related('rol').exclude(pk=user.pk)
+    elif rol_usuario_actual == 'profesional':
+        # Profesional SOLO ve a los Tutores
+        lista_usuarios = Usuario.objects.select_related('rol').filter(rol__nombre_rol__iexact='tutor')
+
+    # --- Aplicamos los filtros sobre la lista base ---
+    if nombre_query:
+        nombre_query_norm = unidecode(nombre_query).lower()
+        lista_usuarios = lista_usuarios.filter(
+            nombre_completo_norm__icontains=nombre_query_norm
+            # Si hubieran campos separados nombre/apellido en Usuario, se añadiria Q() para ellos aquí
+        )
+
+    if rut_query:
+        # Filtramos por RUT 
+        lista_usuarios = lista_usuarios.filter(rut__icontains=rut_query)
+
+    # --- Enviamos el contexto ---
     contexto = {
-        'usuarios': usuarios
+        # Ordenamos DESPUÉS de filtrar
+        'usuarios': lista_usuarios.order_by('nombre_completo'),
+        'rol_usuario': rol_usuario_actual, # Pasa el rol para lógica en template si es necesario
+        # Pasamos los valores de búsqueda de vuelta para rellenar el formulario
+        'nombre_query': nombre_query,
+        'rut_query': rut_query,
     }
     return render(request, 'authentication/listar_usuarios.html', contexto)
 
