@@ -112,7 +112,7 @@ AUTH_USER_MODEL = 'login.Usuario'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
@@ -154,3 +154,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Nombre de la app -- CONIDI
 # Contraseña de la app -- lxzr fqlx cflg vfjv
+
+# conidi/settings.py
+

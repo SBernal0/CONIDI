@@ -60,8 +60,12 @@ class Command(BaseCommand):
                         'Equipo CESFAM'
                     )
                     
-                    send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [tutor.email])
-                    self.stdout.write(self.style.SUCCESS(f'Correo enviado a {tutor.email} para el control de {nino.nombre}.'))
+                    try:
+                        send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [tutor.email])
+                        self.stdout.write(self.style.SUCCESS(f'Correo enviado a {tutor.email} para el control de {nino.nombre}.'))
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f'Error al enviar correo a {tutor.email}: {e}'))
+
                 else:
                     self.stdout.write(self.style.WARNING(f'El tutor {tutor.nombre_completo} no tiene email. No se puede notificar.'))
             
