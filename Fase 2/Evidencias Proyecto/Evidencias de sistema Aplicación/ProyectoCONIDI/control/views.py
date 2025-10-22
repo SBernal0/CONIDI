@@ -14,6 +14,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from django.db.models import Q
 from django.db import IntegrityError
 
+
 @login_required
 def controles(request, nino_rut):
     # Obtenemos el niño que se está pidiendo en la URL
