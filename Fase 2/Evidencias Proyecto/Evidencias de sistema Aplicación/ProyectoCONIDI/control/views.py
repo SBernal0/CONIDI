@@ -589,17 +589,22 @@ def configurar_categorias_alergia(request): # <- Nombre actualizado
     if request.method == 'POST':
         action = request.POST.get('action')
 
+        # Bandera para saber si se realizó alguna acción exitosa
+        accion_exitosa = False
+
         if action == 'update':
             for categoria in CategoriaAlergia.objects.all():
                 nuevo_nombre = request.POST.get(f'nombre_categoria_{categoria.id}')
                 if nuevo_nombre and categoria.nombre != nuevo_nombre:
                     # Verificamos si el nuevo nombre ya existe
-                    if CategoriaAlergia.objects.filter(nombre=nuevo_nombre).exists():
+                    if CategoriaAlergia.objects.filter(nombre=nuevo_nombre).exclude(pk=categoria.id).exists():
                         messages.error(request, f'Ya existe una categoría llamada "{nuevo_nombre}".')
                     else:
                         categoria.nombre = nuevo_nombre
                         categoria.save()
-            messages.success(request, 'La lista de categorías ha sido actualizada.')
+                        accion_exitosa = True
+            if accion_exitosa:
+                messages.success(request, 'La lista de categorías ha sido actualizada.')
 
         elif action == 'create':
             nuevo_nombre = request.POST.get('nuevo_nombre')
@@ -618,7 +623,7 @@ def configurar_categorias_alergia(request): # <- Nombre actualizado
                 nombre_categoria = categoria.nombre
                 # IMPORTANTE: Verificamos si está en uso en RegistroAlergias
                 if RegistroAlergias.objects.filter(categoria=categoria).exists():
-                     messages.error(request, f'No se puede eliminar "{nombre_categoria}" porque está asignada a uno o más niños.')
+                    messages.error(request, f'No se puede eliminar "{nombre_categoria}" porque está asignada a uno o más niños.')
                 else:
                     categoria.delete()
                     messages.success(request, f'La categoría "{nombre_categoria}" ha sido eliminada.')
