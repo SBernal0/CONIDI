@@ -181,6 +181,9 @@ class Control(models.Model):
     # Próximo control
     fecha_proximo_control = models.DateField(null=True, blank=True) # <-- CORREGIDO a DateField
 
+    # CAMPO NUEVO PARA NOTIFICACIONES 
+    notificacion_enviada = models.BooleanField(default=False, help_text="Indica si ya se envió una notificación de control atrasado.")
+
     history = HistoricalRecords()
 
     @property

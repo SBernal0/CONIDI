@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'login',
     'control',
     'simple_history',
+    'django_apscheduler', # <-- AÑADIR ESTA LÍNEA
+    'django_extensions',  # <-- AÑADIR ESTA LÍNEA
 
 ]
 
@@ -134,3 +136,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 HANDLER403 = 'ProyectoCONIDI.views.custom_permission_denied_view'
 
 LOGIN_URL = 'login'
+
+
+# email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cesfamconidi@gmail.com' # <-- CAMBIAR: Tu dirección de correo de Gmail.
+EMAIL_HOST_PASSWORD = 'lxzr fqlx cflg vfjv' # <-- CAMBIAR: La contraseña de aplicación que generaste.
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# BORRAR
+# Nombre cuenta -- Cesfam.CONIDI
+# Correo gmail  -- cesfamconidi@gmail.com
+# Contraseña    -- CESFAM.Conidi01
+
+# Nombre de la app -- CONIDI
+# Contraseña de la app -- lxzr fqlx cflg vfjv
