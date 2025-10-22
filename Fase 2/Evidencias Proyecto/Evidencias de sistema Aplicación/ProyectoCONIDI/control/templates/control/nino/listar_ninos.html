@@ -38,7 +38,7 @@
                         <button type="submit" class="btn btn-cesfam">
                             <i class="bi bi-funnel-fill me-1"></i> Filtrar
                         </button>
-                        <a href="{% url 'listar_ninos' %}" class="btn btn-secondary flex-grow-1"> 
+                        <a href="{% url 'control:listar_ninos' %}" class="btn btn-secondary flex-grow-1"> 
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                         </a>
                     </div>
@@ -70,7 +70,7 @@
                             <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
                             <td class="text-center">
                                 <div class="action-buttons justify-content-center">
-                                    <a href="{% url 'controles' nino.rut_nino %}" class="btn btn-sm btn-primary">
+                                    <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye-fill me-1"></i> Ver Controles
                                     </a>
                                 </div>

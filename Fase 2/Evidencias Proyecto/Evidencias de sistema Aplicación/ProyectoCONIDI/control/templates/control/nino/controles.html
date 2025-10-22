@@ -9,6 +9,13 @@
 
 {% block content %}
 
+<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'control:detalle_nino' nino.rut_nino %}">Lista de Niños</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Controles de {{ nino.nombre }} {{ nino.ap_paterno }}</li>
+    </ol>
+</nav>
 
 
 
@@ -59,12 +66,12 @@
                 </div>
                 <div class="list-item-actions">
                     {% if control.estado_alerta == "Realizado" %}
-                        <a href="{% url 'ver_control' control.id %}" class="btn btn-sm btn-info text-white"><i class="bi bi-eye-fill me-1"></i> Ver</a>
+                        <a href="{% url 'control:ver_control' control.id %}" class="btn btn-sm btn-info text-white"><i class="bi bi-eye-fill me-1"></i> Ver</a>
                         {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                            <a href="{% url 'editar_control' control.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill me-1"></i> Editar</a>
+                            <a href="{% url 'control:editar_control' control.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill me-1"></i> Editar</a>
                         {% endif %}
                     {% elif request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                        <a href="{% url 'registrar_control' control.id %}" class="btn btn-sm btn-success"><i class="bi bi-plus-circle-fill me-1"></i> Registrar</a>
+                        <a href="{% url 'control:registrar_control' control.id %}" class="btn btn-sm btn-success"><i class="bi bi-plus-circle-fill me-1"></i> Registrar</a>
                     {% endif %}
                 </div>
             </div>
@@ -93,13 +100,13 @@
                  </div>
                  <div class="list-item-actions">
                      {% if vacuna_app.fecha_aplicacion %}
-                        <a href="{% url 'ver_vacuna' vacuna_app.id %}" class="btn btn-sm btn-info text-white"><i class="bi bi-eye-fill me-1"></i> Ver</a>
+                        <a href="{% url 'control:ver_vacuna' vacuna_app.id %}" class="btn btn-sm btn-info text-white"><i class="bi bi-eye-fill me-1"></i> Ver</a>
                         {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                            <a href="{% url 'editar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill me-1"></i> Editar</a>
+                            <a href="{% url 'control:editar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill me-1"></i> Editar</a>
                         {% endif %}
                     {% else %}
                         {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                            <a href="{% url 'registrar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-success"><i class="bi bi-plus-circle-fill me-1"></i> Registrar</a>
+                            <a href="{% url 'control:registrar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-success"><i class="bi bi-plus-circle-fill me-1"></i> Registrar</a>
                         {% endif %}
                     {% endif %}
                  </div>
@@ -112,42 +119,48 @@
 
     {# --- Pestaña Alergias Registradas --- #}
     <div class="tab-pane fade" id="alergias-pane" role="tabpanel" aria-labelledby="alergias-tab" tabindex="0">
-        {# Botón flotante o fijo para añadir alergia #}
-        <div class="text-end my-3"> {# Contenedor para alinear el botón a la derecha #}
-             {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                <a href="{% url 'registrar_alergia' nino.rut_nino %}" class="btn btn-warning btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i> Registrar Nueva Alergia
-                </a>
-            {% endif %}
-        </div>
-        <div class="item-grid-container"> {# <-- CAMBIO DE CLASE #}
-            {% for registro in alergias_registradas %}
-             <div class="info-block animate-list-item" style="--i: {{ forloop.counter0 }};"> {# <-- CAMBIO DE CLASE #}
-                 <div class="list-item-header">
-                    <h5>{{ registro.alergia.tipo_alergia }}</h5>
-                     <small class="text-muted">Detectada: {{ registro.fecha_aparicion|date:"d/m/Y" }}</small>
-                </div>
-                 <div class="list-item-content">
-                     <p class="mb-1">{{ registro.observaciones|default:"Sin observaciones."|truncatewords:20 }}</p> {# Truncar texto largo si es necesario #}
-                    {% if registro.fecha_remision %}
-                        <small class="text-success d-block">Remitida: {{ registro.fecha_remision|date:"d/m/Y" }}</small>
-                    {% else %}
-                        <small class="text-danger d-block">Alergia activa.</small>
-                    {% endif %}
-                 </div>
-                 <div class="list-item-actions">
-                    {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-                         <a href="{% url 'editar_alergia' registro.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i> Editar</a>
-                         {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                             <a href="{% url 'historial_alergia' registro.id %}" class="btn btn-sm btn-outline-info"><i class="bi bi-clock-history me-1"></i> Historial</a>
-                         {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-            {% empty %}
-                <div class="alert alert-light w-100 text-center">No se han registrado alergias para este niño/a.</div>
-            {% endfor %}
-        </div>
+    {# Botón flotante o fijo para añadir alergia #}
+    <div class="text-end my-3"> {# Contenedor para alinear el botón a la derecha #}
+        {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+            <a href="{% url 'control:registrar_alergia' nino.rut_nino %}" class="btn btn-warning btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Registrar Nueva Alergia
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="item-grid-container"> {# <-- Contenedor de la cuadrícula #}
+        {% for registro in alergias_registradas %}
+         <div class="info-block animate-list-item" style="--i: {{ forloop.counter0 }};"> {# <-- Bloque de información para cada alergia #}
+             <div class="list-item-header">
+                 {# Usamos los nuevos campos del modelo #}
+                 <h5>{{ registro.agente_especifico }}</h5>
+                 <small class="text-muted">Detectada: {{ registro.fecha_aparicion|date:"d/m/Y" }}</small>
+             </div>
+             <div class="list-item-content">
+                {# Mostramos la categoría y el mecanismo #}
+                <small class="text-secondary d-block mb-1">
+                    {{ registro.categoria.nombre }} - {{ registro.get_mecanismo_inmunitario_display }}
+                </small>
+                <p class="mb-1">{{ registro.observaciones|default:"Sin observaciones."|truncatewords:20 }}</p>
+                 {% if registro.fecha_remision %}
+                     <small class="text-success d-block">Remitida: {{ registro.fecha_remision|date:"d/m/Y" }}</small>
+                 {% else %}
+                     <small class="text-danger d-block">Alergia activa.</small>
+                 {% endif %}
+             </div>
+             <div class="list-item-actions">
+                 {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+                     <a href="{% url 'control:editar_alergia' registro.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i> Editar</a>
+                     {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+                         <a href="{% url 'control:historial_alergia' registro.id %}" class="btn btn-sm btn-outline-info"><i class="bi bi-clock-history me-1"></i> Historial</a>
+                     {% endif %}
+                 {% endif %}
+             </div>
+         </div>
+        {% empty %}
+             <div class="alert alert-light w-100 text-center">No se han registrado alergias para este niño/a.</div>
+        {% endfor %}
+    </div>
     </div>
 
 </div> {% endblock %}

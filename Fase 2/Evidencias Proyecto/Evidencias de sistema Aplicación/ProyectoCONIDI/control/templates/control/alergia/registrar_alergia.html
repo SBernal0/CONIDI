@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Alergia{% endblock %}
+{% block content %}
+<h2>Registrar Alergia</h2>
+<p><strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}</p><hr>
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria" required>
+                        <option value="" disabled selected>-- Selecciona --</option>
+                        {% for cat in categorias_disponibles %}
+                            <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="agente_especifico" class="form-label">Agente Específico</label>
+                    <input type="text" class="form-control" id="agente_especifico" name="agente_especifico" placeholder="Ej: Maní, Penicilina, Abeja" required>
+                </div>
+            </div>
+            <div class="row">
+                 <div class="col-md-6 mb-3">
+                    <label for="mecanismo" class="form-label">Mecanismo Inmunitario</label>
+                    <select class="form-select" id="mecanismo" name="mecanismo_inmunitario" required>
+                         {% for value, display in mecanismos_choices %}
+                            <option value="{{ value }}">{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_aparicion" class="form-label">Fecha Aparición/Diagnóstico</label>
+                    <input type="date" class="form-control" id="fecha_aparicion" name="fecha_aparicion" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="observaciones" class="form-label">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Alergia</button>
+            <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -42,7 +42,7 @@
 <div class="actions-grid">
     
     {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
-        <a href="{% url 'listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
+        <a href="{% url 'control:listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
             <div class="action-card">
                 <div class="card-body">
                     <div class="action-icon icon-primary">
@@ -72,7 +72,7 @@
             </div>
         </a>
 
-        <a href="{% url 'configurar_periodos' %}" class="action-link animate-fade-in-up animate-delay-3">
+        <a href="{% url 'control:configurar_periodos' %}" class="action-link animate-fade-in-up animate-delay-3">
             <div class="action-card">
                 <div class="card-body">
                     <div class="action-icon icon-warning">
@@ -85,7 +85,7 @@
                 </div>
             </div>
         </a>
-        <a href="{% url 'configurar_vacunas' %}" class="action-link animate-fade-in-up animate-delay-4">
+        <a href="{% url 'control:configurar_vacunas' %}" class="action-link animate-fade-in-up animate-delay-4">
             <div class="action-card">
                 <div class="card-body">
                     <div class="action-icon icon-info">
@@ -98,19 +98,19 @@
                 </div>
             </div>
         </a>
-        <a href="{% url 'configurar_alergias' %}" class="action-link animate-fade-in-up animate-delay-5">
-            <div class="action-card">
-                <div class="card-body">
-                    <div class="action-icon icon-danger">
-                        <i class="bi bi-bandaid"></i>
-                    </div>
-                    <div class="action-content">
-                        <h5>Configurar Alergias</h5>
-                        <p>Gestiona la lista de tipos de alergias disponibles en el sistema.</p>
-                    </div>
+        <a href="{% url 'control:configurar_categorias_alergia' %}" class="action-link animate-fade-in-up animate-delay-5">
+        <div class="action-card">
+            <div class="card-body">
+                <div class="action-icon icon-danger">
+                    <i class="bi bi-bandaid"></i>
+                </div>
+                <div class="action-content">
+                    <h5>Configurar Cat. Alergia</h5>
+                    <p>Gestiona la lista de categorías generales de alergias.</p>
                 </div>
             </div>
-        </a>
+        </div>
+    </a>
     {% endif %}
 
     {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
@@ -135,7 +135,7 @@
     {% endif %}
 
     {% if request.user.rol.nombre_rol|lower == 'tutor' %}
-        <a href="{% url 'listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
+        <a href="{% url 'control:listar_ninos' %}" class="action-link animate-fade-in-up animate-delay-1">
             <div class="action-card">
                 <div class="card-body">
                     <div class="action-icon icon-primary">
@@ -184,7 +184,7 @@
         Accesos Rápidos
     </h5>
     <div class="quick-actions-grid">
-        <a href="{% url 'listar_ninos' %}" class="quick-action-btn">
+        <a href="{% url 'control:listar_ninos' %}" class="quick-action-btn">
             <i class="bi bi-search"></i>
             <span>Buscar Niño</span>
         </a>

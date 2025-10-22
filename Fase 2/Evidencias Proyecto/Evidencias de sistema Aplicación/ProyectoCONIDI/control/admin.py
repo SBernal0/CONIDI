@@ -1,7 +1,7 @@
 # control/admin.py
 
 from django.contrib import admin
-from .models import Region, Ciudad, Comuna, Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, Alergias, RegistroAlergias, EntregaAlimentos
+from .models import Region, Ciudad, Comuna, Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, CategoriaAlergia, RegistroAlergias, EntregaAlimentos
 from simple_history.admin import SimpleHistoryAdmin 
 
 # Para una mejor visualización, registraremos cada modelo.
@@ -40,9 +40,11 @@ class PeriodoControlAdmin(admin.ModelAdmin):
     list_editable = ('mes_control', 'dias_margen')
     ordering = ('mes_control',)
 
-    
+
+
 admin.site.register(Vacuna)
-admin.site.register(VacunaAplicada)
-admin.site.register(Alergias)
+admin.site.register(CategoriaAlergia)
 admin.site.register(RegistroAlergias)
+
+admin.site.register(VacunaAplicada)
 admin.site.register(EntregaAlimentos)

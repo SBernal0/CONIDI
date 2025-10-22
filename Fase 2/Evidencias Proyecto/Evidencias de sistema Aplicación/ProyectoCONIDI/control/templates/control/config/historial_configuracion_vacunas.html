@@ -1,22 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}Historial de Alergia{% endblock %}
+{% block title %}Historial de Configuración de Vacunas{% endblock %}
 
 {% block content %}
-<h2>Historial de Cambios: Alergia a {{ registro.alergia.tipo_alergia }}</h2>
-<p>
-    <strong>Niño/a:</strong> {{ registro.nino.nombre }} {{ registro.nino.ap_paterno }}
-</p>
+<h2>Historial de Cambios en la Configuración de Vacunas</h2>
 <hr>
 
 {% for version in historial %}
 <div class="card mb-3">
     <div class="card-header d-flex justify-content-between">
         <span>
-            Registro
+            <strong>{{ version.nom_vacuna }}</strong> fue 
             <strong>
                 {% if version.history_type == '~' %}modificado{% elif version.history_type == '+' %}creado{% endif %}
             </strong>
-             por
+             por 
             <strong>{{ version.history_user.nombre_completo|default:'Sistema' }}</strong>
         </span>
         <span class="text-muted">{{ version.history_date|date:"d/m/Y, H:i" }}</span>
@@ -28,19 +25,19 @@
                 {% for cambio in version.cambios_calculados %}
                     <li>
                         <strong>{{ cambio.field }}:</strong>
-                        <span class="text-danger"><del>{{ cambio.old|default:"(vacío)" }}</del></span> →
+                        <span class="text-danger"><del>{{ cambio.old|default:"(vacío)" }}</del></span> → 
                         <span class="text-success">{{ cambio.new|default:"(vacío)" }}</span>
                     </li>
                 {% endfor %}
             </ul>
-        {% else %}
+        {% elif version.history_type == '+' %}
             <p class="text-muted">Registro inicial creado.</p>
         {% endif %}
     </div>
 </div>
 {% empty %}
-<div class="alert alert-info">No hay historial de cambios para este registro.</div>
+<div class="alert alert-info">No hay historial de cambios.</div>
 {% endfor %}
 
-<a href="{% url 'controles' registro.nino.rut_nino %}" class="btn btn-secondary mt-3">Volver a la Lista</a>
+<a href="{% url 'control:configurar_vacunas' %}" class="btn btn-secondary mt-3">Volver a la Configuración</a>
 {% endblock %}

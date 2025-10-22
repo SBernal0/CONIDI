@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Configurar Categorías de Alergia{% endblock %}
+
+{% block content %}
+<h2>Configurar Categorías de Alergia</h2>
+<p>Gestiona la lista de categorías generales de alergias.</p>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-header"><h5>Categorías Existentes</h5></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Nombre de la Categoría</th><th class="text-end">Acciones</th></tr></thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td>
+                                <input type="text" class="form-control"
+                                       name="nombre_categoria_{{ categoria.id }}"
+                                       value="{{ categoria.nombre }}">
+                            </td>
+                            <td class="text-end">
+                                <button type="submit" name="action" value="delete_{{ categoria.id }}"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('¿Eliminar esta categoría?');">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" name="action" value="update" class="btn btn-primary">Guardar Cambios</button>
+            <a href="{% url 'control:historial_categorias_alergia' %}" class="btn btn-info">Ver Historial</a>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header"><h5>Agregar Nueva Categoría</h5></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div class="input-group">
+                <input type="text" class="form-control" name="nuevo_nombre" placeholder="Nombre de la nueva categoría" required>
+                <button type="submit" class="btn btn-success">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
