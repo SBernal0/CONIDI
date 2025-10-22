@@ -9,13 +9,6 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'control:detalle_nino' nino.rut_nino %}">Lista de Niños</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Controles de {{ nino.nombre }} {{ nino.ap_paterno }}</li>
-    </ol>
-</nav>
 
 
 
