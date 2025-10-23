@@ -1,0 +1,149 @@
+/* Estilos para Páginas de Historial*/
+
+:root {
+    --cesfam-primary: #003366;
+    --cesfam-secondary: #0066cc;
+    --cesfam-light-gray: #f8f9fa;
+    --cesfam-border-gray: #dee2e6;
+    --cesfam-success: #198754;
+    --cesfam-warning: #ffc107;
+    --cesfam-danger: #dc3545;
+    --cesfam-info: #0dcaf0;
+    --cesfam-muted-text: #6c757d;
+}
+
+/* Cabecera de la página */
+.page-header {
+    animation: fadeInUp 0.5s ease-out;
+}
+.page-header h2 {
+    color: var(--cesfam-primary);
+    font-weight: 700;
+}
+
+/* Tarjeta para cada entrada del historial */
+.history-card {
+    border: 1px solid var(--cesfam-border-gray);
+    border-left: 5px solid var(--cesfam-secondary); /* Borde izquierdo azul por defecto */
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0, 51, 102, 0.08);
+    background-color: #fff;
+    /* Animación de entrada */
+    animation: slideInUp 0.6s ease-out backwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(var(--i) * 0.08s); /* Retraso escalonado */
+}
+
+/* Colores de borde según el tipo de cambio */
+.history-card.type-create { /* Creado (+) */
+    border-left-color: var(--cesfam-success);
+}
+.history-card.type-update { /* Modificado (~) */
+    border-left-color: var(--cesfam-warning);
+}
+.history-card.type-delete { /* Eliminado (-) - Si lo usaras en el futuro */
+    border-left-color: var(--cesfam-danger);
+}
+
+
+/* Cabecera de la tarjeta de historial */
+.history-header {
+    background-color: var(--cesfam-light-gray);
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--cesfam-border-gray);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.history-header .action-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Espacio entre icono, texto y usuario */
+}
+
+.history-header .action-icon {
+    font-size: 1.2rem;
+}
+.history-header .action-icon.icon-create { color: var(--cesfam-success); }
+.history-header .action-icon.icon-update { color: var(--cesfam-warning); }
+.history-header .action-icon.icon-delete { color: var(--cesfam-danger); }
+
+.history-header .user-info {
+    color: var(--cesfam-muted-text);
+}
+.history-header .user-info strong {
+    color: var(--cesfam-primary); /* Resalta el nombre de usuario */
+}
+
+.history-header .timestamp {
+    color: var(--cesfam-muted-text);
+    font-style: italic;
+}
+
+/* Cuerpo de la tarjeta de historial */
+.history-body {
+    padding: 1.25rem;
+}
+
+.history-body h6 {
+    color: var(--cesfam-primary);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* Lista de cambios */
+.changes-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0; /* Sin margen extra al final */
+}
+
+.changes-list li {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.changes-list strong { /* Nombre del campo */
+    display: inline-block;
+    min-width: 120px; /* Alinea los valores */
+    color: #495057;
+}
+
+/* Estilos para valores antiguos y nuevos */
+.changes-list .old-value {
+    color: var(--cesfam-danger);
+    text-decoration: line-through; /* Tachado */
+    margin-right: 0.25rem;
+}
+.changes-list .new-value {
+    color: var(--cesfam-success);
+    font-weight: 500;
+    margin-left: 0.25rem;
+}
+.changes-list .change-arrow {
+    color: var(--cesfam-muted-text);
+    font-weight: bold;
+}
+
+
+/* Mensaje para registros iniciales */
+.initial-record-msg {
+    color: var(--cesfam-muted-text);
+    font-style: italic;
+}
+
+
+/* Reutilizamos los keyframes */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}

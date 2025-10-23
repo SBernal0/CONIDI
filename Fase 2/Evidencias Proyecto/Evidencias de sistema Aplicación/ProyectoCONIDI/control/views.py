@@ -283,7 +283,7 @@ def configurar_periodos(request):
             # ... (la lógica para crear un nuevo control no cambia)
             pass
 
-        return redirect('configurar_periodos')
+        return redirect('control:configurar_periodos')
 
     # La lógica GET no cambia
     periodos = PeriodoControl.objects.all().order_by('mes_control')
@@ -449,7 +449,7 @@ def configurar_vacunas(request):
                 )
                 messages.success(request, f'Nueva vacuna "{nuevo_nombre}" agregada.')
 
-        return redirect('configurar_vacunas')
+        return redirect('control:configurar_vacunas')
 
     # Para la petición GET
     vacunas = Vacuna.objects.all().order_by('meses_programada', 'nom_vacuna')

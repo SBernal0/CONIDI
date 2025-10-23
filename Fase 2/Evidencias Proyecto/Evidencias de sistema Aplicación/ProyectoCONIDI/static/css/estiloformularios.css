@@ -133,9 +133,7 @@
     }
 }
 
-/* ===========================
-   ESTILOS PARA FORMULARIOS DE EDICIÓN/CREACIÓN
-   =========================== */
+/* ESTILOS PARA FORMULARIOS DE EDICIÓN/CREACIÓN*/
 
 /* Tarjeta principal para formularios */
 .form-card {
@@ -222,9 +220,7 @@
     100% { transform: scale(1); }
 }
 
-/* ===========================
-   ARREGLO PARA SELECT2 EN INPUT GROUP
-   =========================== */
+/* ARREGLO PARA SELECT2 EN INPUT GROUP */
 
 /* Hace que el contenedor de Select2 se comporte como un control de formulario dentro del grupo */
 .input-group span.select2-container {
@@ -255,4 +251,51 @@
  .input-group .select2-selection__rendered {
     line-height: calc(1.5em + 0.75rem) !important;
     padding-left: 0.75rem !important; /* Añade espacio desde el ícono */
+}
+
+/* ESTILOS CONFIGURACIÓN DE PERIODOS*/
+
+/* Estilo para la tabla de edición dentro de una tarjeta */
+.form-card .table {
+    margin-top: 1rem; /* Espacio sobre la tabla */
+    margin-bottom: 1.5rem; /* Espacio bajo la tabla, antes del botón */
+    border: 1px solid var(--cesfam-border-gray); /* Borde sutil alrededor */
+    border-radius: 8px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que el thead redondeado funcione */
+}
+
+.form-card .table thead {
+    background-color: var(--cesfam-primary); /* Cabecera azul oscuro */
+    color: white;
+    border-color: var(--cesfam-primary); /* Borde del mismo color */
+}
+
+.form-card .table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+    border: none;
+    color: white; /* Asegura texto blanco */
+}
+
+.form-card .table tbody td {
+    padding: 0.5rem 1rem; /* Padding más ajustado para inputs */
+    vertical-align: middle;
+}
+
+/* Ajusta el tamaño y ancho de los inputs dentro de la tabla */
+.form-card .table input[type="text"],
+.form-card .table input[type="number"] {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    width: 100%; 
+    box-sizing: border-box; /* asegura que el padding no desborde */
+}
+
+/* Animación para las filas de la tabla de edición */
+.animate-table-row {
+    animation: fadeIn 0.5s ease-out backwards;
+    animation-delay: calc(var(--i) * 0.05s + 0.3s); /* Calcula el retraso: i * 0.05s + 0.3s base */
 }

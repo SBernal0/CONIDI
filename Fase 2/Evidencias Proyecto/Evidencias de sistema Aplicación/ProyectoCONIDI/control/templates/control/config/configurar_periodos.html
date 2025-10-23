@@ -1,85 +1,124 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Configurar Períodos de Control{% endblock %}
 
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos compartida #}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Configurar Períodos de Control</h2>
-<p>Desde aquí puedes modificar los nombres, los meses programados y los días de margen para cada control.</p>
-<hr>
 
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="update"> <div class="card">
-        <div class="card-header">
-            <h5>Editar Controles Existentes</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Nombre del Control</th>
-                            <th>Mes Programado</th>
-                            <th>Días de Margen (Alerta Amarilla)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for periodo in periodos %}
-                        <tr>
-                            <td>
-                                <input type="text" class="form-control"
-                                       name="nombre_control_{{ periodo.id }}"
-                                       value="{{ periodo.nombre_mes_control }}">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" 
-                                       name="mes_control_{{ periodo.id }}" 
-                                       value="{{ periodo.mes_control }}">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" 
-                                       name="dias_margen_{{ periodo.id }}" 
-                                       value="{{ periodo.dias_margen }}">
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            <a href="{% url 'control:historial_configuracion' %}" class="btn btn-info">Ver Historial de Cambios</a>
-        </div>
-    </div>
-</form>
+<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Configurar Períodos</li>
+    </ol>
+</nav>
 
-<div class="card mt-4">
-    <div class="card-header">
-        <h5>Agregar Nuevo Período de Control</h5>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create"> <div class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label for="new-nombre" class="form-label">Nombre del Nuevo Control</label>
-                    <input type="text" class="form-control" id="new-nombre" name="nuevo_nombre" required>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9"> {# Columnas un poco más anchas para la tabla #}
+
+            <div class="card form-card mb-4">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-pencil-square"></i></div>
+                    <h2>Editar Períodos Existentes</h2>
                 </div>
-                <div class="col-md-3">
-                    <label for="new-mes" class="form-label">Mes Programado</label>
-                    <input type="number" class="form-control" id="new-mes" name="nuevo_mes" required>
+                <div class="form-body">
+                    <p class="text-muted animate-form-element" style="animation-delay: 0.1s;">
+                        Modifica los nombres, meses programados y días de margen para cada control existente.
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update">
+                        <div class="table-responsive animate-form-element" style="animation-delay: 0.2s;">
+                            <table class="table table-bordered"> {# table-bordered añade bordes internos #}
+                                <thead>
+                                    <tr>
+                                        <th>Nombre del Control</th>
+                                        <th>Mes Programado</th>
+                                        <th>Días de Margen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for periodo in periodos %}
+                                    {# Animación escalonada para las filas #}
+                                    <tr class="animate-table-row" style="--i: {{ forloop.counter0 }};">
+                                        <td>
+                                            <input type="text" class="form-control"
+                                                   name="nombre_control_{{ periodo.id }}"
+                                                   value="{{ periodo.nombre_mes_control }}">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control"
+                                                   name="mes_control_{{ periodo.id }}"
+                                                   value="{{ periodo.mes_control }}" min="0"> {# min="0" para evitar negativos #}
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control"
+                                                   name="dias_margen_{{ periodo.id }}"
+                                                   value="{{ periodo.dias_margen }}" min="0"> {# min="0" #}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.5s;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save-fill me-2"></i>Guardar Cambios
+                            </button>
+                            <a href="{% url 'control:historial_configuracion' %}" class="btn btn-info text-white">
+                                <i class="bi bi-clock-history me-2"></i>Ver Historial
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-plus-circle-fill"></i></div>
+                    <h2>Agregar Nuevo Período</h2>
                 </div>
-                <div class="col-md-3">
-                    <label for="new-margen" class="form-label">Días de Margen</label>
-                    <input type="number" class="form-control" id="new-margen" name="nuevo_margen" required>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-success">Agregar</button>
-                </div>
-            </div>
-        </form>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5 animate-form-element" style="animation-delay: 0.1s;">
+                                <label for="new-nombre" class="form-label">Nombre del Nuevo Control</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
+                                    <input type="text" class="form-control" id="new-nombre" name="nuevo_nombre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.2s;">
+                                <label for="new-mes" class="form-label">Mes Programado</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-month"></i></span>
+                                    <input type="number" class="form-control" id="new-mes" name="nuevo_mes" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.3s;">
+                                <label for="new-margen" class="form-label">Días de Margen</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                                    <input type="number" class="form-control" id="new-margen" name="nuevo_margen" min="0" value="7" required> {# Valor por defecto 7 #}
+                                </div>
+                            </div>
+                            <div class="col-md-1 animate-form-element" style="animation-delay: 0.4s;">
+                                <button type="submit" class="btn btn-success w-100"> {# w-100 para que ocupe columna #}
+                                     <i class="bi bi-plus-lg"></i> {# Ícono más grande #}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div> </div> {# Tu alerta de advertencia, si necesitas mostrarla #}
+            {# <div class="alert alert-warning mt-4 animate-form-element" style="animation-delay: 0.7s;"> ... </div> #}
+
+        </div>
     </div>
 </div>
 
-<div class="alert alert-warning mt-4">
-    </div>
 {% endblock %}

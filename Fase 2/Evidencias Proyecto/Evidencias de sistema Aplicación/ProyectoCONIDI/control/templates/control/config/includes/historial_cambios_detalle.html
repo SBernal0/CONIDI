@@ -1,0 +1,27 @@
+{# Plantilla incluida para mostrar el detalle de los cambios en el historial #}
+{# Recibe las variables 'version' y 'action_text' desde el include #}
+
+{% if version.cambios_calculados %}
+    <h6>Cambios realizados:</h6>
+    <ul class="changes-list">
+        {% for cambio in version.cambios_calculados %}
+            <li>
+                {# Muestra el nombre del campo, quitando '_id' si lo tiene y poniendo mayúscula #}
+                <strong>{{ cambio.field|title }}:</strong> {# Muestra nombre del campo con mayúscula inicial #}
+                <span class="old-value">{{ cambio.old }}</span>
+                <span class="change-arrow">&rarr;</span>
+                <span class="new-value">{{ cambio.new }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+{% elif action_text == 'creado' %}
+    <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>Registro inicial creado con los siguientes valores:</p>
+    {# Muestra los valores iniciales para registros creados #}
+    <ul class="changes-list">
+        <li><strong>Nombre Mes Control:</strong> <span class="new-value">{{ version.nombre_mes_control }}</span></li>
+        <li><strong>Mes Control:</strong> <span class="new-value">{{ version.mes_control }}</span></li>
+        <li><strong>Dias Margen:</strong> <span class="new-value">{{ version.dias_margen }}</span></li>
+    </ul>
+{% else %}
+     <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
+{% endif %}

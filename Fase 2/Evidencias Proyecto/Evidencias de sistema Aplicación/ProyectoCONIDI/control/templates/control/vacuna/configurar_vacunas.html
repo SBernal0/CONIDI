@@ -1,79 +1,115 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Configurar Vacunas{% endblock %}
 
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos compartida #}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Configurar Calendario de Vacunación</h2>
-<p>Desde aquí puedes modificar los nombres y los meses programados para cada vacuna del calendario.</p>
-<hr>
 
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="update">
-    <div class="card">
-        <div class="card-header">
-            <h5>Editar Vacunas Existentes</h5>
+<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Configurar Vacunas</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9"> {# Columnas un poco más anchas para la tabla #}
+
+            <div class="card form-card mb-4">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-pencil-square"></i></div>
+                    <h2>Editar Vacunas del Calendario</h2>
+                </div>
+                <div class="form-body">
+                    <p class="text-muted animate-form-element" style="animation-delay: 0.1s;">
+                        Modifica los nombres y los meses programados para cada vacuna. Deja el mes vacío si no tiene un mes fijo (ej. Influenza).
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update">
+                        <div class="table-responsive animate-form-element" style="animation-delay: 0.2s;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre de la Vacuna</th>
+                                        <th>Mes Programado de Aplicación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vacuna in vacunas %}
+                                    {# Animación escalonada para las filas #}
+                                    <tr class="animate-table-row" style="--i: {{ forloop.counter0 }}; animation-delay: calc(var(--i) * 0.05s + 0.3s);"> {# Added base delay #}
+                                        <td>
+                                            <input type="text" class="form-control"
+                                                   name="nombre_vacuna_{{ vacuna.id }}"
+                                                   value="{{ vacuna.nom_vacuna }}">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control"
+                                                   name="meses_programada_{{ vacuna.id }}"
+                                                   value="{{ vacuna.meses_programada|default:'' }}"
+                                                   min="0" {# Evita negativos #}
+                                                   placeholder="Vacuna sin mes fijo">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.5s;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save-fill me-2"></i>Guardar Cambios
+                            </button>
+                            {# Asegúrate que la URL sea correcta #}
+                            <a href="{% url 'control:historial_vacunas' %}" class="btn btn-info text-white">
+                                <i class="bi bi-clock-history me-2"></i>Ver Historial
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-plus-circle-fill"></i></div>
+                    <h2>Agregar Nueva Vacuna</h2>
+                </div>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create">
+                        <div class="row g-3">
+                            <div class="col-md-7 animate-form-element" style="animation-delay: 0.1s;"> {# Ajustado ancho #}
+                                <label for="new-nombre" class="form-label">Nombre de la Nueva Vacuna</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
+                                    <input type="text" class="form-control" id="new-nombre" name="nuevo_nombre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.2s;">
+                                <label for="new-mes" class="form-label">Mes Programado</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-month"></i></span>
+                                    <input type="number" class="form-control" id="new-mes" name="nuevo_mes" min="0" placeholder="Ej: 2" required>
+                                </div>
+                                <small class="form-text text-muted">Deja vacío si no aplica.</small> {# Aclaración #}
+                            </div>
+                            <div class="col-md-2 animate-form-element" style="animation-delay: 0.3s;"> {# Ajustado ancho #}
+                                <button type="submit" class="btn btn-success w-100">
+                                     <i class="bi bi-plus-lg me-1"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div> </div> {# Tu alerta de advertencia #}
+             {# <div class="alert alert-warning mt-4 animate-form-element" style="animation-delay: 0.7s;"> ... </div> #}
+
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Nombre de la Vacuna</th>
-                            <th>Mes Programado de Aplicación</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for vacuna in vacunas %}
-                        <tr>
-                            <td>
-                                <input type="text" class="form-control"
-                                       name="nombre_vacuna_{{ vacuna.id }}"
-                                       value="{{ vacuna.nom_vacuna }}">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" 
-                                       name="meses_programada_{{ vacuna.id }}" 
-                                       value="{{ vacuna.meses_programada|default:'' }}"
-                                       placeholder="Vacuna sin mes fijo (ej. Influenza)">
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                        <a href="{% url 'control:historial_vacunas' %}" class="btn btn-info">Ver Historial de Cambios</a>
-                    </div>
-                </div>
-            </form>       
-         </div>
-    </div>
-</form>
-
-<div class="card mt-4">
-    <div class="card-header">
-        <h5>Agregar Nueva Vacuna al Calendario</h5>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-8">
-                    <label for="new-nombre" class="form-label">Nombre de la Nueva Vacuna</label>
-                    <input type="text" class="form-control" id="new-nombre" name="nuevo_nombre" required>
-                </div>
-                <div class="col-md-3">
-                    <label for="new-mes" class="form-label">Mes Programado</label>
-                    <input type="number" class="form-control" id="new-mes" name="nuevo_mes" required>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-success">Agregar</button>
-                </div>
-            </div>
-        </form>
     </div>
 </div>
+
 {% endblock %}
