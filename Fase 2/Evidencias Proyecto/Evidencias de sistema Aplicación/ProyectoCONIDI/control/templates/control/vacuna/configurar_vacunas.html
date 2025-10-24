@@ -10,13 +10,6 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Configurar Vacunas</li>
-    </ol>
-</nav>
-
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-9"> {# Columnas un poco más anchas para la tabla #}
@@ -78,6 +71,7 @@
                     <div class="form-icon"><i class="bi bi-plus-circle-fill"></i></div>
                     <h2>Agregar Nueva Vacuna</h2>
                 </div>
+
                 <div class="form-body">
                     <form method="post">
                         {% csrf_token %}
@@ -99,6 +93,7 @@
                                 <small class="form-text text-muted">Deja vacío si no aplica.</small> {# Aclaración #}
                             </div>
                             <div class="col-md-2 animate-form-element" style="animation-delay: 0.3s;"> {# Ajustado ancho #}
+                                <label class="form-label" style="opacity: 0;">&nbsp;</label>
                                 <button type="submit" class="btn btn-success w-100">
                                      <i class="bi bi-plus-lg me-1"></i> Agregar
                                 </button>

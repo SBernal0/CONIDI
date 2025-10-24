@@ -1,38 +1,37 @@
-/* ===========================
-   FORMULARIOS.CSS - Estilos para Confirmaciones y Formularios
-   =========================== */
+/* Estilos para Confirmaciones y Formularios */
 
 :root {
     --cesfam-primary: #003366;
+    --cesfam-secondary: #0066cc; 
     --cesfam-danger: #dc3545;
     --cesfam-danger-soft: #f8d7da;
+    --cesfam-light-gray: #f8f9fa; 
+    --cesfam-border-gray: #dee2e6; 
+    --cesfam-success: #198754; 
+    --cesfam-warning: #ffc107; 
+    --cesfam-info: #0dcaf0; 
+    --cesfam-muted-text: #6c757d; 
 }
 
-/* Tarjeta de confirmación */
+/* Tarjeta de Confirmación (Eliminar Usuario) */
 .confirm-card {
     border: none;
     border-radius: 12px;
-    /* Sombra suave con el color de peligro */
     box-shadow: 0 8px 24px rgba(220, 53, 69, 0.15);
-    /* Borde superior rojo grueso para énfasis */
     border-top: 5px solid var(--cesfam-danger);
-    /* Animación de entrada para la tarjeta */
     animation: fadeInUp 0.6s ease-out;
 }
 
-/* Cabecera de la tarjeta */
 .confirm-header {
     display: flex;
     align-items: center;
     padding: 1.5rem;
 }
 
-/* Ícono de advertencia animado */
 .confirm-icon {
     font-size: 2.5rem;
     color: var(--cesfam-danger);
     margin-right: 1.5rem;
-    /* Aplicamos la animación 'pulse-warning' */
     animation: pulse-warning 1.8s ease-in-out infinite;
 }
 
@@ -42,56 +41,52 @@
     margin-bottom: 0;
 }
 
-/* Cuerpo de la tarjeta */
 .confirm-body {
     padding: 0 1.5rem 2rem 1.5rem;
 }
 
-/* Alerta que muestra los datos del usuario a eliminar */
+/* Alerta interna para info de usuario */
 .user-info-alert {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-left: 4px solid #6c757d;
     padding: 1rem;
     border-radius: 8px;
-    margin-bottom: 1rem; /* Añade un margen inferior para separar */
-    text-align: left; /* Alinea el texto a la izquierda por defecto */
-    word-break: break-word; /* Asegura que texto largo se parta si es necesario */
-    display: block;
+    margin-bottom: 1rem;
+    text-align: left;
+    word-break: break-word;
+    display: block; 
 }
 
-/* Estilo para cada línea de datos dentro de la alerta */
 .user-info-alert div {
-    margin-bottom: 0.25rem; /* Pequeño espacio entre líneas */
+    margin-bottom: 0.25rem;
 }
 
 .user-info-alert div:last-child {
-    margin-bottom: 0; /* Sin espacio extra al final */
+    margin-bottom: 0;
 }
 
 .user-info-alert strong {
     color: var(--cesfam-primary);
-    margin-right: 0.5rem; 
+    margin-right: 0.5rem;
 }
 
-/* Contenedor para los botones de acción */
+/* Botones en confirmación */
 .confirm-buttons {
     display: flex;
-    flex-wrap: wrap; /* Para que se ajusten en móviles */
-    gap: 0.75rem; /* Espacio entre botones */
+    flex-wrap: wrap;
+    gap: 0.75rem;
     margin-top: 1.5rem;
 }
 
-/* Estilos de hover para los botones */
 .confirm-buttons .btn {
     transition: all 0.2s ease;
     padding: 0.6rem 1.25rem;
     font-weight: 600;
-    flex-grow: 1;      /* Permite que los botones crezcan para llenar el espacio */
-    text-align: center; /* Centra el texto e ícono dentro del botón */
+    flex-grow: 1;
+    text-align: center;
 }
 
-/* Efecto de "levantar" y sombrear al pasar el mouse */
 .confirm-buttons .btn-danger:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
@@ -102,45 +97,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-
-/* --- Definición de las Animaciones --- */
-
-/* Animación de entrada para la tarjeta */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Animación de pulso para el ícono de advertencia */
-@keyframes pulse-warning {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* ESTILOS PARA FORMULARIOS DE EDICIÓN/CREACIÓN*/
+/* ESTILOS PARA FORMULARIOS GENERALES (Editar/Crear Usuario, Configurar)*/
 
 /* Tarjeta principal para formularios */
 .form-card {
     border: none;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 51, 102, 0.1);
-    border-top: 5px solid var(--cesfam-primary); /* Borde superior azul */
+    border-top: 3px solid #ced4da; /* Borde superior tenue */
     animation: fadeInUp 0.6s ease-out;
 }
 
@@ -149,42 +113,52 @@
     display: flex;
     align-items: center;
     padding: 1.5rem 2rem;
-    background-color: #f8f9fa; /* Fondo gris suave */
+    background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
-    border-radius: 12px 12px 0 0; /* Redondeo solo arriba */
+    border-radius: 12px 12px 0 0;
 }
 
 .form-icon {
     font-size: 2rem;
     color: var(--cesfam-primary);
     margin-right: 1rem;
-    animation: bounceIn 0.7s ease-out 0.2s backwards; /* Animación para el ícono */
+    animation: bounceIn 0.7s ease-out 0.2s backwards;
 }
 
 .form-header h2 {
     color: var(--cesfam-primary);
     font-weight: 700;
     margin-bottom: 0;
-    font-size: 1.5rem; /* Ajuste de tamaño */
+    font-size: 1.5rem;
 }
 
 /* Cuerpo del formulario */
 .form-body {
     padding: 2rem 2.5rem;
+    text-align: left; /* Alineación por defecto para formularios */
 }
+/* Centrado específico para 'Activar Tutor' */
+.form-body.text-center {
+    text-align: center;
+}
+.form-body.text-center .input-group {
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 
 /* Estilo mejorado para los labels */
 .form-body .form-label {
-    font-weight: 600; /* Un poco más de peso */
+    font-weight: 600;
     color: #495057;
     margin-bottom: 0.5rem;
 }
 
-
-/* Estilo para inputs deshabilitados (como el RUT) */
+/* Estilo para inputs deshabilitados */
 .form-control:disabled {
-    background-color: #e9ecef; /* Fondo gris */
-    opacity: 0.8; /* Ligeramente transparente */
+    background-color: #e9ecef;
+    opacity: 0.8;
 }
 
 /* Contenedor para los botones de acción del formulario */
@@ -193,7 +167,7 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 2rem;
-    border-top: 1px solid #eee; /* Línea separadora */
+    border-top: 1px solid #eee;
     padding-top: 1.5rem;
 }
 
@@ -204,14 +178,125 @@
 
 /* Animación escalonada para los elementos del formulario */
 .animate-form-element {
-    animation: fadeInUp 0.5s ease-out backwards; /* 'backwards' aplica el estado inicial (invisible) */
+    animation: fadeInUp 0.5s ease-out backwards;
 }
 
-/* Reutilizamos los keyframes definidos antes si ya existen */
-/* Si no los tienes, asegúrate de añadirlos: */
+/* ESTILOS PARA TABLAS DENTRO DE FORMULARIOS (Configuración Periodos/Vacunas) */
+
+/* Contenedor de la tabla */
+.form-card .table-responsive {
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Estilo para la tabla de edición */
+.form-card .table {
+    border: 1px solid var(--cesfam-border-gray, #dee2e6);
+    border-radius: 8px;
+    overflow: hidden; /* Mantenemos para bordes redondeados */
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+}
+
+/* Cabecera de la tabla (thead) - Selector más específico */
+.form-card .form-body .table-responsive .table > thead {
+    background-color: var(--cesfam-primary);
+    color: white;
+    vertical-align: middle;
+    border-color: var(--cesfam-primary);
+    /* border-bottom: 2px solid var(--cesfam-primary); Eliminar o ajustar si causa problemas */
+}
+
+/* Celdas de la cabecera (th) - Selector más específico */
+.form-card .form-body .table-responsive .table > thead > tr > th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+    color: white; /* Color blanco explícito */
+    vertical-align: middle;
+    border: none; /* Quitamos bordes internos por defecto */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Borde interno claro */
+    line-height: normal;
+    min-height: 40px; /* Mantenemos altura mínima por si acaso */
+    background-color: var(--cesfam-primary); /* Asegura fondo por si acaso */
+}
+/* Asegura que el borde inferior se quite en la última fila de cabecera si hay múltiples */
+ .form-card .form-body .table-responsive .table > thead > tr:last-child > th {
+     border-bottom: none;
+ }
+
+
+/* Celdas del cuerpo (td) */
+.form-card .table tbody td {
+    padding: 0.5rem 1rem;
+    vertical-align: middle;
+    border-top: 1px solid var(--cesfam-border-gray, #dee2e6);
+}
+
+/* Estilo específico para la clase .table-bordered*/
+.form-card .table-bordered th,
+.form-card .table-bordered td {
+    border: 1px solid var(--cesfam-border-gray, #dee2e6);
+}
+.form-card .table-bordered thead th {
+     border-bottom-width: 1px;
+     border-color: rgba(255, 255, 255, 0.2); /* Borde interno claro en cabecera */
+}
+
+/* Inputs dentro de la tabla */
+.form-card .table input[type="text"],
+.form-card .table input[type="number"] {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Animación para las filas de la tabla */
+.animate-table-row {
+    animation: fadeIn 0.5s ease-out backwards;
+    animation-delay: calc(var(--i) * 0.05s + 0.3s);
+}
+
+/* ARREGLO PARA SELECT2 EN INPUT GROUP */
+.input-group span.select2-container {
+    flex-grow: 1 !important;
+    width: auto !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.input-group .select2-selection--single {
+    height: calc(1.5em + 0.75rem + 2px) !important;
+    border-left: none !important; /* Fix crucial */
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+}
+.input-group .select2-selection__arrow {
+    height: calc(1.5em + 0.75rem) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    right: 0.5rem !important;
+}
+.input-group .select2-selection__rendered {
+    line-height: calc(1.5em + 0.75rem) !important;
+    padding-left: 0.75rem !important;
+}
+
+/* DEFINICIÓN DE ANIMACIONES */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-warning {
+    0%   { transform: scale(1); opacity: 1; }
+    50%  { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 @keyframes bounceIn {
@@ -220,82 +305,13 @@
     100% { transform: scale(1); }
 }
 
-/* ARREGLO PARA SELECT2 EN INPUT GROUP */
-
-/* Hace que el contenedor de Select2 se comporte como un control de formulario dentro del grupo */
-.input-group span.select2-container {
-    flex-grow: 1 !important; /* Permite que Select2 ocupe el espacio restante */
-    width: auto !important;  /* Sobreescribe el ancho fijo de Select2 */
-    border-top-left-radius: 0;    /* Quita el redondeo del lado izquierdo */
-    border-bottom-left-radius: 0; /* Quita el redondeo del lado izquierdo */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-/* Ajusta la altura y borde de la caja de selección de Select2 */
-.input-group .select2-selection--single {
-    height: calc(1.5em + 0.75rem + 2px) !important; /* Iguala la altura de los inputs de Bootstrap */
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    padding-top: 0.375rem; /* Ayuda a alinear el texto verticalmente */
-    padding-bottom: 0.375rem;
-}
-
-/* Alinea verticalmente la flecha del desplegable */
-.input-group .select2-selection__arrow {
-    height: calc(1.5em + 0.75rem) !important; /* Iguala altura menos bordes */
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    right: 0.5rem !important; /* Pequeño ajuste de posición */
-}
-
-/* Alinea el texto seleccionado verticalmente */
- .input-group .select2-selection__rendered {
-    line-height: calc(1.5em + 0.75rem) !important;
-    padding-left: 0.75rem !important; /* Añade espacio desde el ícono */
-}
-
-/* ESTILOS CONFIGURACIÓN DE PERIODOS*/
-
-/* Estilo para la tabla de edición dentro de una tarjeta */
-.form-card .table {
-    margin-top: 1rem; /* Espacio sobre la tabla */
-    margin-bottom: 1.5rem; /* Espacio bajo la tabla, antes del botón */
-    border: 1px solid var(--cesfam-border-gray); /* Borde sutil alrededor */
-    border-radius: 8px; /* Bordes redondeados */
-    overflow: hidden; /* Asegura que el thead redondeado funcione */
-}
-
-.form-card .table thead {
-    background-color: var(--cesfam-primary); /* Cabecera azul oscuro */
-    color: white;
-    border-color: var(--cesfam-primary); /* Borde del mismo color */
-}
-
-.form-card .table thead th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    padding: 0.75rem 1rem;
-    border: none;
-    color: white; /* Asegura texto blanco */
-}
-
-.form-card .table tbody td {
-    padding: 0.5rem 1rem; /* Padding más ajustado para inputs */
-    vertical-align: middle;
-}
-
-/* Ajusta el tamaño y ancho de los inputs dentro de la tabla */
-.form-card .table input[type="text"],
-.form-card .table input[type="number"] {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.75rem;
-    width: 100%; 
-    box-sizing: border-box; /* asegura que el padding no desborde */
-}
-
-/* Animación para las filas de la tabla de edición */
-.animate-table-row {
-    animation: fadeIn 0.5s ease-out backwards;
-    animation-delay: calc(var(--i) * 0.05s + 0.3s); /* Calcula el retraso: i * 0.05s + 0.3s base */
+/* Placeholder fix for focused password */
+.login-body input[type="password"]:focus::placeholder {
+    color: transparent;
+    transition: color 0.2s ease-out;
 }

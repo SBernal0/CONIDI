@@ -1,0 +1,26 @@
+{# --- PLANTILLA INCLUIDA (historial_vacunas_detalle.html) --- #}
+{# Verifica que este archivo exista en: control/templates/control/config/includes/historial_vacunas_detalle.html #}
+{% comment %}
+{% if version.cambios_calculados %}
+    <h6>Cambios realizados:</h6>
+    <ul class="changes-list">
+        {% for cambio in version.cambios_calculados %}
+            <li>
+                <strong>{{ cambio.field|title|replace:"_" " " }}:</strong> {# Reemplaza guiones bajos #}
+                <span class="old-value">{{ cambio.old|default:"(vacío)" }}</span>
+                <span class="change-arrow">&rarr;</span>
+                <span class="new-value">{{ cambio.new|default:"(vacío)" }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+{% elif action_text == 'creada' %}
+    <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>Registro inicial creado con los siguientes valores:</p>
+    <ul class="changes-list">
+        <li><strong>Nombre Vacuna:</strong> <span class="new-value">{{ version.nom_vacuna }}</span></li>
+        <li><strong>Descripción:</strong> <span class="new-value">{{ version.descripcion|default:"(vacío)" }}</span></li>
+        <li><strong>Meses Programada:</strong> <span class="new-value">{{ version.meses_programada|default:"(no definido)" }}</span></li>
+    </ul>
+{% else %}
+     <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
+{% endif %}
+{% endcomment %}

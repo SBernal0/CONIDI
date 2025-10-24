@@ -1,56 +1,97 @@
 {% extends 'base.html' %}
+{% load static %} {# <-- Asegúrate de tener esto #}
+
 {% block title %}Configurar Categorías de Alergia{% endblock %}
 
+{% block extra_css %}
+    {# Enlazamos la hoja de estilos compartida #}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Configurar Categorías de Alergia</h2>
-<p>Gestiona la lista de categorías generales de alergias.</p>
-<hr>
 
-<div class="card mb-4">
-    <div class="card-header"><h5>Categorías Existentes</h5></div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead><tr><th>Nombre de la Categoría</th><th class="text-end">Acciones</th></tr></thead>
-                    <tbody>
-                        {% for categoria in categorias %}
-                        <tr>
-                            <td>
-                                <input type="text" class="form-control"
-                                       name="nombre_categoria_{{ categoria.id }}"
-                                       value="{{ categoria.nombre }}">
-                            </td>
-                            <td class="text-end">
-                                <button type="submit" name="action" value="delete_{{ categoria.id }}"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('¿Eliminar esta categoría?');">
-                                    Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <button type="submit" name="action" value="update" class="btn btn-primary">Guardar Cambios</button>
-            <a href="{% url 'control:historial_categorias_alergia' %}" class="btn btn-info">Ver Historial</a>
-        </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9"> {# Columnas un poco más anchas para la tabla #}
+
+            <div class="card form-card mb-4">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-pencil-square"></i></div>
+                    <h2>Editar Categorías Existentes</h2>
+                </div>
+                <div class="form-body">
+                    <p class="text-muted animate-form-element" style="animation-delay: 0.1s;">
+                        Modifica los nombres de las categorías de alergias existentes.
+                    </p>
+                    {# Formulario principal para actualizar y eliminar #}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="table-responsive animate-form-element" style="animation-delay: 0.2s;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre de la Categoría</th>
+                                        <th class="text-end" style="min-width: 100px;">Acciones</th> {# Ancho mínimo para botón #}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for categoria in categorias %}
+                                    <tr class="animate-table-row" style="--i: {{ forloop.counter0 }}; animation-delay: calc(var(--i) * 0.05s + 0.3s);">
+                                        <td>
+                                            {# Input oculto para identificar la categoría al actualizar #}
+                                            <input type="hidden" name="categoria_id_{{ categoria.id }}" value="{{ categoria.id }}">
+                                            {# Input visible para editar el nombre #}
+                                            <input type="text" class="form-control"
+                                                   name="nombre_categoria_{{ categoria.id }}"
+                                                   value="{{ categoria.nombre }}">
+                                        </td>
+                                        <td class="text-end">
+                                            {# Botón específico para eliminar esta fila #}
+                                            <button type="submit" name="action" value="delete" formaction="{% url 'control:configurar_categorias_alergia' %}" {# Usamos formaction para indicar la URL #}
+                                                    onclick="return confirm('¿Estás seguro de eliminar la categoría \'{{ categoria.nombre }}\'? Esta acción no se puede deshacer.');"
+                                                    class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash3-fill"></i> {# Ícono añadido #}
+                                            </button>
+                                            {# Input oculto para enviar el ID a eliminar #}
+                                            <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.5s;">
+                            {# Botón para guardar TODOS los cambios de nombre #}
+                            <button type="submit" name="action" value="update" class="btn btn-primary">
+                                <i class="bi bi-save-fill me-2"></i>Guardar Cambios
+                            </button>
+                             {# Botón para ver historial #}
+                            <a href="{% url 'control:historial_categorias_alergia' %}" class="btn btn-info text-white">
+                                <i class="bi bi-clock-history me-2"></i>Ver Historial
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-plus-circle-fill"></i></div>
+                    <h2>Agregar Nueva Categoría</h2>
+                </div>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create">
+                        {# Usamos input-group para consistencia visual #}
+                        <div class="input-group animate-form-element" style="animation-delay: 0.1s;">
+                             <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
+                             <input type="text" class="form-control" name="nuevo_nombre" placeholder="Nombre de la nueva categoría" required>
+                             <button type="submit" class="btn btn-success">
+                                 <i class="bi bi-plus-lg me-1"></i> Agregar
+                             </button>
+                        </div>
+                    </form>
+                </div> </div> </div>
     </div>
 </div>
 
-<div class="card mt-4">
-    <div class="card-header"><h5>Agregar Nueva Categoría</h5></div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create">
-            <div class="input-group">
-                <input type="text" class="form-control" name="nuevo_nombre" placeholder="Nombre de la nueva categoría" required>
-                <button type="submit" class="btn btn-success">Agregar</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock %}
