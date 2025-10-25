@@ -1,0 +1,44 @@
+{% comment %}
+{% if version.cambios_calculados %}
+    <h6>Cambios realizados:</h6>
+    <ul class="changes-list">
+        {% for cambio in version.cambios_calculados %}
+            <li>
+                {# Muestra nombre legible del campo #}
+                {% with field_name=cambio.field|title|replace:"_" " "|replace:" Id" "" %} {# Quita _id también #}
+                    <strong>{{ field_name }}:</strong>
+                {% endwith %}
+
+                {# Manejo especial para fechas #}
+                {% if cambio.field == 'fecha_aplicacion' or cambio.field == 'fecha_inoculacion' %}
+                     <span class="old-value">{{ cambio.old|date:"d/m/Y"|default:"(vacío)" }}</span>
+                     <span class="change-arrow">&rarr;</span>
+                     <span class="new-value">{{ cambio.new|date:"d/m/Y"|default:"(vacío)" }}</span>
+                {# Manejo especial para Profesional (ForeignKey) #}
+                {% elif cambio.field == 'profesional_id' %}
+                     {# Asume que puedes acceder al nombre a través del ID guardado en el historial #}
+                     {# Esto podría necesitar ajustes en la vista si el profesional ya no existe #}
+                     <span class="old-value">{{ cambio.old|default:"(ninguno)" }}</span>
+                     <span class="change-arrow">&rarr;</span>
+                     <span class="new-value">{{ cambio.new|default:"(ninguno)" }}</span>
+                     {# Idealmente, buscarías el nombre del profesional basado en cambio.old/new #}
+                {# Otros campos #}
+                {% else %}
+                    <span class="old-value">{{ cambio.old|default:"(vacío)" }}</span>
+                    <span class="change-arrow">&rarr;</span>
+                    <span class="new-value">{{ cambio.new|default:"(vacío)" }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% elif action_text == 'creado' %}
+    <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>Registro inicial creado.</p>
+    {# Puedes mostrar valores iniciales si es relevante #}
+    {# <ul class="changes-list">
+        <li><strong>Fecha Aplicación:</strong> <span class="new-value">{{ version.fecha_aplicacion|date:"d/m/Y"|default:"(no definida)" }}</span></li>
+        <li><strong>Dosis:</strong> <span class="new-value">{{ version.dosis|default:"(no definida)" }}</span></li>
+    </ul> #}
+{% else %}
+     <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
+{% endif %}
+{% endcomment %}

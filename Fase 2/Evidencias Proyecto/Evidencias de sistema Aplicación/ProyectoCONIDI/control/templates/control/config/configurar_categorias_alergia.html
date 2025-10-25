@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
-{% load static %} {# <-- Asegúrate de tener esto #}
+{% load static %} 
 
 {% block title %}Configurar Categorías de Alergia{% endblock %}
 
 {% block extra_css %}
-    {# Enlazamos la hoja de estilos compartida #}
     <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
 {% endblock %}
 
@@ -12,7 +11,7 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-10 col-xl-9"> {# Columnas un poco más anchas para la tabla #}
+        <div class="col-lg-10 col-xl-9"> 
 
             <div class="card form-card mb-4">
                 <div class="form-header">
@@ -31,7 +30,7 @@
                                 <thead>
                                     <tr>
                                         <th>Nombre de la Categoría</th>
-                                        <th class="text-end" style="min-width: 100px;">Acciones</th> {# Ancho mínimo para botón #}
+                                        <th class="text-end" style="min-width: 100px;">Acciones</th> 
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -90,7 +89,9 @@
                              </button>
                         </div>
                     </form>
-                </div> </div> </div>
+                </div> 
+            </div> 
+        </div>
     </div>
 </div>
 

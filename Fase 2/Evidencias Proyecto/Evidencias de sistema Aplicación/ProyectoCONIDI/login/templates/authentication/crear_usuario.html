@@ -4,7 +4,6 @@
 {% block title %}Crear/Activar Usuario{% endblock %}
 
 {% block extra_css %}
-    {# Enlazamos la hoja de estilos compartida #}
     <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
 {% endblock %}
 
@@ -81,7 +80,7 @@
                                     <span class="input-group-text"><i class="bi bi-check-circle-fill"></i></span>
                                     <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
                                 </div>
-                                <small id="msg-clave" class="form-text mt-1 d-block"></small> {# d-block ensures space #}
+                                <small id="msg-clave" class="form-text mt-1 d-block"></small> 
                             </div>
                         </div>
 
@@ -143,8 +142,8 @@
 
 {% endblock %}
 
-{# --- BLOQUE JAVASCRIPT --- #}
-{# Este bloque ES NECESARIO para la funcionalidad de Select2 y la validación de contraseñas #}
+{# --- Bloque JS --- #}
+{# Este bloque es necesario para la funcionalidad de Select2 y la validación de contraseñas #}
 {% block extra_js %}
 <script>
 $(document).ready(function() {
@@ -152,7 +151,7 @@ $(document).ready(function() {
     $('#tutor-select').select2({
         placeholder: "Busca o selecciona un tutor por nombre o RUT",
         allowClear: true,
-        width: 'resolve' // Ensures it takes the input-group width
+        width: 'resolve' // Ajusta el ancho automáticamente
     });
 });
 
@@ -165,19 +164,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = document.getElementById("msg-clave");
 
         function validarCoincidencia() {
-            if (confirmar.value === "" && nueva.value === "") { // Clear validation if both empty
+            if (confirmar.value === "" && nueva.value === "") { 
                  msg.textContent = "";
                  confirmar.classList.remove("is-invalid", "is-valid");
                  return;
              }
             if (nueva.value === confirmar.value) {
                 msg.textContent = "Las contraseñas coinciden ✅";
-                msg.className = "form-text text-success mt-1 d-block"; // Added classes
+                msg.className = "form-text text-success mt-1 d-block"; 
                 confirmar.classList.remove("is-invalid");
                 confirmar.classList.add("is-valid");
             } else {
                 msg.textContent = "Las contraseñas no coinciden ❌";
-                msg.className = "form-text text-danger mt-1 d-block"; // Added classes
+                msg.className = "form-text text-danger mt-1 d-block"; 
                 confirmar.classList.remove("is-valid");
                 confirmar.classList.add("is-invalid");
             }

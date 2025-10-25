@@ -1,69 +1,139 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Detalle del Control{% endblock %}
+{% block title %}Detalle: {{ control.nombre_control }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estilodetalles.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Detalle: {{ control.nombre_control }}</h2>
-<p>
-    <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }} <br>
-    <strong>Fecha de Realización:</strong> {{ control.fecha_realizacion_control|date:"d/m/Y" }}
-</p>
-<hr>
 
-<div class="card">
-    <div class="card-header">
-        <h5>Resumen del Control</h5>
+
+<div class="page-header mb-3 animate-fade-in-up">
+    <h2><i class="bi bi-clipboard2-pulse-fill me-2"></i>Detalle: {{ control.nombre_control }}</h2>
+    <p class="text-muted">
+        <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }} |
+        <strong>Fecha Realización:</strong> {{ control.fecha_realizacion_control|date:"d/m/Y"|default:"<span class='text-warning fw-bold'>Pendiente</span>"|safe }}
+    </p>
+</div>
+
+<div class="card detail-form-card">
+    <div class="detail-form-header">
+        <span class="icon"><i class="bi bi-file-earmark-medical-fill"></i></span>
+        <h5>Resumen del Control Realizado</h5>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Datos Antropométricos</h6>
-                <ul class="list-group">
-                    <li class="list-group-item"><strong>Peso:</strong> {{ control.pesokg }} kg</li>
-                    <li class="list-group-item"><strong>Talla:</strong> {{ control.talla_cm }} cm</li>
-                    <li class="list-group-item"><strong>IMC:</strong> {{ control.imc }}</li>
-                    <li class="list-group-item"><strong>Perímetro Craneal:</strong> {{ control.pc_cm }} cm</li>
-                </ul>
-            </div>
-            <div class="col-md-6 mt-3 mt-md-0">
-                <h6>Calificaciones y Diagnósticos</h6>
-                <ul class="list-group">
-                    <li class="list-group-item"><strong>Nutricional:</strong> {{ control.calificacion_nutricional }}</li>
-                    <li class="list-group-item"><strong>Estatural:</strong> {{ control.get_calificacion_estatural_display }}</li>
-                    <li class="list-group-item"><strong>P/CE:</strong> {{ control.get_calificacion_pce_display }}</li>
-                    <li class="list-group-item"><strong>P. Arterial:</strong> {{ control.get_dig_pa_display }}</li>
-                </ul>
+    <div class="detail-form-body">
+
+        <div class="form-section" style="animation-delay: 0.1s;">
+            <h6 class="form-section-title"><i class="bi bi-rulers"></i>Datos Antropométricos</h6>
+            <div class="row form-fields-grid">
+                <div class="col-md-3 col-6 form-field">
+                    <span class="field-label"><i class="bi bi-cassette"></i> Peso</span>
+                    <span class="field-value">{{ control.pesokg|default:"N/A" }} kg</span>
+                </div>
+                <div class="col-md-3 col-6 form-field">
+                    <span class="field-label"><i class="bi bi-arrows-vertical"></i> Talla</span>
+                    <span class="field-value">{{ control.talla_cm|default:"N/A" }} cm</span>
+                </div>
+                <div class="col-md-3 col-6 form-field">
+                    <span class="field-label"><i class="bi bi-calculator"></i> IMC</span>
+                    <span class="field-value"><code>{{ control.imc|default:"N/A" }}</code></span>
+                </div>
+                <div class="col-md-3 col-6 form-field">
+                    <span class="field-label"><i class="bi bi-bullseye"></i> P. Craneal</span>
+                    <span class="field-value">{{ control.pc_cm|default:"N/A" }} cm</span>
+                </div>
             </div>
         </div>
 
-        <hr>
-        <h6>Diagnóstico, Observaciones e Indicaciones</h6>
-        <p><strong>Diagnóstico Desarrollo Integral:</strong> {{ control.diag_des_integral|linebreaksbr }}</p>
-        <p><strong>Observaciones Desarrollo Integral:</strong> {{ control.obs_desarrollo_integral|linebreaksbr }}</p>
-        <p><strong>Observaciones Generales:</strong> {{ control.observaciones|linebreaksbr }}</p>
-        <p><strong>Indicaciones:</strong> {{ control.indicaciones|linebreaksbr }}</p>
-
-        <hr>
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Derivaciones</h6>
-                <ul>
-                    <li><strong>Requiere Derivación:</strong> {% if control.derivacion %}Sí{% else %}No{% endif %}</li>
-                    <li><strong>Consulta Dental Realizada:</strong> {% if control.consulta_dental_realizada %}Sí{% else %}No{% endif %}</li>
-                    <li><strong>Derivación a Dentista:</strong> {% if control.derivacion_dentista %}Sí{% else %}No{% endif %}</li>
-                </ul>
-            </div>
-            <div class="col-md-6">
-                <h6>Profesional a Cargo</h6>
-                <p>{{ control.profesional.usuario.nombre_completo|default:"No asignado" }}</p>
+        <div class="form-section" style="animation-delay: 0.2s;">
+            <h6 class="form-section-title"><i class="bi bi-clipboard2-check-fill"></i>Calificaciones y Diagnósticos</h6>
+            <div class="row form-fields-grid">
+                <div class="col-md-6 form-field">
+                    <span class="field-label">Nutricional</span>
+                    <span class="field-value">{{ control.calificacion_nutricional|default:"N/A" }}</span>
+                </div>
+                <div class="col-md-6 form-field">
+                    <span class="field-label">Estatural</span>
+                    <span class="field-value">{{ control.get_calificacion_estatural_display|default:"N/A" }}</span>
+                </div>
+                <div class="col-md-6 form-field">
+                    <span class="field-label">P/CE</span>
+                    <span class="field-value">{{ control.get_calificacion_pce_display|default:"N/A" }}</span>
+                </div>
+                <div class="col-md-6 form-field">
+                    <span class="field-label">Presión Arterial</span>
+                    <span class="field-value">{{ control.get_dig_pa_display|default:"N/A" }}</span>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card-footer">
-        <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Volver a la Lista de Controles</a>
+
+        <div class="form-section" style="animation-delay: 0.3s;">
+             <h6 class="form-section-title"><i class="bi bi-file-earmark-richtext-fill"></i>Diagnóstico, Observaciones e Indicaciones</h6>
+             <div class="row form-fields-grid detail-text"> {# Usamos detail-text aquí para estilo de párrafos #}
+                 <div class="col-12 form-field">
+                     <span class="field-label">Diagnóstico Desarrollo Integral</span>
+                     <span class="field-value large-text">{{ control.diag_des_integral|default:"<span class='text-muted fst-italic'>Sin registro.</span>"|safe }}</span>
+                 </div>
+                 <div class="col-12 form-field">
+                     <span class="field-label">Observaciones Desarrollo Integral</span>
+                     <span class="field-value large-text">{{ control.obs_desarrollo_integral|default:"<span class='text-muted fst-italic'>Sin registro.</span>"|safe }}</span>
+                 </div>
+                 <div class="col-12 form-field">
+                     <span class="field-label">Observaciones Generales</span>
+                     <span class="field-value large-text">{{ control.observaciones|default:"<span class='text-muted fst-italic'>Sin registro.</span>"|safe }}</span>
+                 </div>
+                 <div class="col-12 form-field">
+                     <span class="field-label">Indicaciones</span>
+                     <span class="field-value large-text">{{ control.indicaciones|default:"<span class='text-muted fst-italic'>Sin registro.</span>"|safe }}</span>
+                 </div>
+             </div>
+        </div>
+
+        <div class="form-section" style="animation-delay: 0.4s;">
+             <h6 class="form-section-title"><i class="bi bi-person-check-fill"></i>Derivaciones y Profesional</h6>
+             <div class="row form-fields-grid">
+                 <div class="col-md-4 col-6 form-field">
+                     <span class="field-label">Requiere Derivación</span>
+                     <span class="field-value {% if control.derivacion %}status-si{% else %}status-no{% endif %}">
+                         {% if control.derivacion %}<i class="bi bi-check-circle-fill"></i>Sí{% else %}<i class="bi bi-x-circle-fill"></i>No{% endif %}
+                     </span>
+                 </div>
+                  <div class="col-md-4 col-6 form-field">
+                     <span class="field-label">Consulta Dental</span>
+                     <span class="field-value {% if control.consulta_dental_realizada %}status-si{% else %}status-no{% endif %}">
+                         {% if control.consulta_dental_realizada %}<i class="bi bi-check-circle-fill"></i>Realizada{% else %}<i class="bi bi-x-circle-fill"></i>No Realizada{% endif %}
+                     </span>
+                 </div>
+                  <div class="col-md-4 col-12 form-field"> {# col-12 para que ocupe todo en móvil #}
+                     <span class="field-label">Derivación Dentista</span>
+                     <span class="field-value {% if control.derivacion_dentista %}status-si{% else %}status-no{% endif %}">
+                         {% if control.derivacion_dentista %}<i class="bi bi-check-circle-fill"></i>Sí{% else %}<i class="bi bi-x-circle-fill"></i>No{% endif %}
+                     </span>
+                 </div>
+                 <div class="col-12 form-field mt-3"> {# Separador y ancho completo #}
+                     <span class="field-label">Profesional a Cargo</span>
+                     <span class="field-value">
+                         {% if control.profesional %}
+                             <i class="bi bi-person-fill"></i> {{ control.profesional.usuario.nombre_completo }}
+                             <small class="text-muted d-block ps-4">{{ control.profesional.especialidad|default:"" }}</small>
+                         {% else %}
+                             <span class='text-muted fst-italic'>No asignado</span>
+                         {% endif %}
+                     </span>
+                 </div>
+             </div>
+        </div>
+
+    </div> <div class="detail-card-footer">
+        <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle me-1"></i>Volver
+        </a>
         {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                <a href="{% url 'control:historial_control' control.id %}" class="btn btn-info">Ver Historial de Cambios</a>
+            <a href="{% url 'control:historial_control' control.id %}" class="btn btn-info text-white">
+                <i class="bi bi-clock-history me-1"></i>Historial
+            </a>
         {% endif %}
     </div>
-</div>
-{% endblock %}
+</div> {% endblock %}

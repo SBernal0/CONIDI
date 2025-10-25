@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
-{% load static %} {# <-- Añadido para usar static #}
+{% load static %} 
 
 {% block title %}Cambiar Contraseña{% endblock %}
 
 {% block extra_css %}
-    {# Enlazamos la hoja de estilos compartida #}
     <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
 {% endblock %}
 
@@ -20,7 +19,7 @@
 
                 <div class="form-header">
                     <div class="form-icon">
-                        <i class="bi bi-key-fill"></i> {# Ícono de llave #}
+                        <i class="bi bi-key-fill"></i> 
                     </div>
                     <h2>Cambiar Contraseña</h2>
                 </div>
@@ -51,7 +50,7 @@
                                 <span class="input-group-text"><i class="bi bi-check-circle-fill"></i></span>
                                 <input type="password" name="confirmar_clave" id="confirmar_clave" class="form-control" required>
                             </div>
-                            {# Mensaje de validación que maneja el JS #}
+                            
                             <small id="msg-clave" class="mt-1 d-block"></small>
                         </div>
 
@@ -59,7 +58,7 @@
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-lg me-2"></i>Cambiar contraseña
                             </button>
-                             {# Botón Cancelar opcional, si quieres añadirlo #}
+            
                             <a href="{% url 'home' %}" class="btn btn-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Cancelar
                             </a>

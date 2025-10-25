@@ -1,48 +1,96 @@
 {% extends 'base.html' %}
-{% block title %}Registrar Alergia{% endblock %}
+{% load static %} 
+
+{% block title %}Registrar Alergia para {{ nino.nombre }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Registrar Alergia</h2>
-<p><strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}</p><hr>
-<div class="card">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="categoria" class="form-label">Categoría</label>
-                    <select class="form-select" id="categoria" name="categoria" required>
-                        <option value="" disabled selected>-- Selecciona --</option>
-                        {% for cat in categorias_disponibles %}
-                            <option value="{{ cat.id }}">{{ cat.nombre }}</option>
-                        {% endfor %}
-                    </select>
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8"> 
+
+            <div class="card form-card">
+
+                <div class="form-header">
+                    <div class="form-icon">
+                        <i class="bi bi-bandaid-fill"></i> {# Icono de alergia/banda #}
+                    </div>
+                    <div>
+                        <h2>Registrar Alergia</h2>
+                        <p class="mb-0 text-muted">Niño/a: {{ nino.nombre }} {{ nino.ap_paterno }}</p>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="agente_especifico" class="form-label">Agente Específico</label>
-                    <input type="text" class="form-control" id="agente_especifico" name="agente_especifico" placeholder="Ej: Maní, Penicilina, Abeja" required>
-                </div>
-            </div>
-            <div class="row">
-                 <div class="col-md-6 mb-3">
-                    <label for="mecanismo" class="form-label">Mecanismo Inmunitario</label>
-                    <select class="form-select" id="mecanismo" name="mecanismo_inmunitario" required>
-                         {% for value, display in mecanismos_choices %}
-                            <option value="{{ value }}">{{ display }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="fecha_aparicion" class="form-label">Fecha Aparición/Diagnóstico</label>
-                    <input type="date" class="form-control" id="fecha_aparicion" name="fecha_aparicion" required>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="observaciones" class="form-label">Observaciones</label>
-                <textarea class="form-control" id="observaciones" name="observaciones" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Guardar Alergia</button>
-            <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Cancelar</a>
-        </form>
+
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.1s;">
+                                <label for="categoria" class="form-label form-label-required">Categoría</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
+                                    <select class="form-select" id="categoria" name="categoria" required>
+                                        <option value="" disabled selected>-- Selecciona --</option>
+                                        {% for cat in categorias_disponibles %}
+                                            <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.2s;">
+                                <label for="agente_especifico" class="form-label form-label-required">Agente Específico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-eyedropper"></i></span> 
+                                    <input type="text" class="form-control" id="agente_especifico" name="agente_especifico" placeholder="Ej: Maní, Penicilina, Abeja" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                             <div class="col-md-6 animate-form-element" style="animation-delay: 0.3s;">
+                                <label for="mecanismo" class="form-label form-label-required">Mecanismo Inmunitario</label>
+                                <div class="input-group">
+                                     <span class="input-group-text"><i class="bi bi-diagram-3"></i></span>
+                                    <select class="form-select" id="mecanismo" name="mecanismo_inmunitario" required>
+                                         <option value="" disabled selected>-- Selecciona --</option>
+                                         {% for value, display in mecanismos_choices %}
+                                             <option value="{{ value }}">{{ display }}</option>
+                                         {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.4s;">
+                                <label for="fecha_aparicion" class="form-label form-label-required">Fecha Aparición/Diagnóstico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                    <input type="date" class="form-control" id="fecha_aparicion" name="fecha_aparicion" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 animate-form-element" style="animation-delay: 0.5s;"> 
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Detalles sobre la reacción, tratamiento, etc. (Opcional)"></textarea>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.6s;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle-fill me-2"></i>Guardar Alergia
+                            </button>
+                            {# Botón Cancelar con ancla para volver a la pestaña correcta #}
+                            <a href="{% url 'control:detalle_nino' nino.rut_nino %}#alergias-pane" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> </div>
     </div>
 </div>
+
 {% endblock %}

@@ -4,7 +4,6 @@
 {% block title %}Configurar Vacunas{% endblock %}
 
 {% block extra_css %}
-    {# Enlazamos la hoja de estilos compartida #}
     <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
 {% endblock %}
 
@@ -37,7 +36,7 @@
                                 <tbody>
                                     {% for vacuna in vacunas %}
                                     {# Animación escalonada para las filas #}
-                                    <tr class="animate-table-row" style="--i: {{ forloop.counter0 }}; animation-delay: calc(var(--i) * 0.05s + 0.3s);"> {# Added base delay #}
+                                    <tr class="animate-table-row" style="--i: {{ forloop.counter0 }}; animation-delay: calc(var(--i) * 0.05s + 0.3s);"> 
                                         <td>
                                             <input type="text" class="form-control"
                                                    name="nombre_vacuna_{{ vacuna.id }}"
@@ -60,7 +59,6 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-save-fill me-2"></i>Guardar Cambios
                             </button>
-                            {# Asegúrate que la URL sea correcta #}
                             <a href="{% url 'control:historial_vacunas' %}" class="btn btn-info text-white">
                                 <i class="bi bi-clock-history me-2"></i>Ver Historial
                             </a>
@@ -100,7 +98,7 @@
                             </div>
                         </div>
                     </form>
-                </div> </div> {# Tu alerta de advertencia #}
+                </div> </div> {# Alerta de advertencia #}
              {# <div class="alert alert-warning mt-4 animate-form-element" style="animation-delay: 0.7s;"> ... </div> #}
 
         </div>

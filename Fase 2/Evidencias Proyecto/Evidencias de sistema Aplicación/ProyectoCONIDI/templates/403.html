@@ -1,10 +1,41 @@
 {% extends 'base.html' %}
-{% block title %}Acceso denegado{% endblock %}
+{% load static %}
+
+{% block title %}403 - Acceso Denegado{% endblock %}
+
+{% block extra_css %}
+    {# <link rel="stylesheet" href="{% static 'css/estilobase.css' %}"> #}
+{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h1 class="display-4 text-danger">403 - Acceso Denegado</h1>
-    <p class="lead">No tienes permisos para acceder a esta página.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Volver al inicio</a>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            {# Contenedor principal para centrar y animar #}
+            <div class="error-page-container">
+
+                {# Icono de advertencia animado #}
+                <div class="error-icon">
+                    <i class="bi bi-slash-circle-fill"></i> {# Icono de prohibido/denegado #}
+                </div>
+
+                {# Título del error #}
+                <h1 class="display-5">Acceso Denegado</h1> {# display-5 es un poco más pequeño #}
+
+                {# Mensaje descriptivo #}
+                <p class="lead">
+                    Lo sentimos, no tienes los permisos necesarios para acceder a esta página o realizar esta acción.
+                </p>
+
+                {# Botón para volver al inicio #}
+                <a href="{% url 'home' %}" class="btn btn-primary mt-3">
+                    <i class="bi bi-house-door-fill me-2"></i>Volver al Inicio
+                </a>
+
+            </div>
+
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,34 +1,76 @@
 {% extends 'base.html' %}
-{% block title %}Detalle de Vacuna{% endblock %}
+{% load static %} 
+
+{% block title %}Detalle Vacuna: {{ vacuna_aplicada.vacuna.nom_vacuna }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estilodetalles.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Detalle de Vacuna Aplicada</h2>
-<p>
-    <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}
-</p>
-<hr>
 
-<div class="card">
-    <div class="card-header">
-        <h5>{{ vacuna_aplicada.vacuna.nom_vacuna }}</h5>
-    </div>
-    <div class="card-body">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Fecha de Aplicación:</strong> {{ vacuna_aplicada.fecha_aplicacion|date:"d/m/Y" }}</li>
-            <li class="list-group-item"><strong>Dosis:</strong> {{ vacuna_aplicada.dosis }}</li>
-            <li class="list-group-item"><strong>Vía de Administración:</strong> {{ vacuna_aplicada.get_via_display }}</li>
-            <li class="list-group-item"><strong>Lugar de Aplicación:</strong> {{ vacuna_aplicada.lugar }}</li>
-            <li class="list-group-item"><strong>Registrado por:</strong> {{ vacuna_aplicada.profesional.usuario.nombre_completo|default:"No especificado" }}</li>
-        </ul>
-    </div>
-    <div class="card-footer">
-        <div class="card-footer">
-            <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Volver</a>
-            {% if request.user.rol.nombre_rol|lower == 'administrador' %}
-                <a href="{% url 'control:historial_vacuna' vacuna_aplicada.id %}" class="btn btn-info">Ver Historial</a>
-            {% endif %}
-        </div>
-    </div>
-    </div>
+<div class="page-header mb-3 animate-fade-in-up">
+    <h2><i class="bi bi-shield-check me-2"></i>Detalle de Vacuna Aplicada</h2>
+    <p class="text-muted">
+        <strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }} |
+        <strong>Vacuna:</strong> {{ vacuna_aplicada.vacuna.nom_vacuna }}
+    </p>
 </div>
-{% endblock %}
+
+<div class="card detail-form-card">
+    <div class="detail-form-header">
+        <span class="icon"><i class="bi bi-info-circle-fill"></i></span>
+        <h5>Información del Registro</h5>
+    </div>
+    <div class="detail-form-body">
+
+        <div class="form-section" style="animation-delay: 0.1s;">
+            <div class="row form-fields-grid g-3"> 
+
+                <div class="col-md-4 col-sm-6 form-field">
+                    <span class="field-label"><i class="bi bi-calendar-check"></i> Fecha de Aplicación</span>
+                    <span class="field-value">{{ vacuna_aplicada.fecha_aplicacion|date:"d/m/Y"|default:"<span class='text-muted fst-italic'>No registrada</span>"|safe }}</span>
+                </div>
+
+                <div class="col-md-4 col-sm-6 form-field">
+                    <span class="field-label"><i class="bi bi-droplet-half"></i> Dosis</span>
+                    <span class="field-value">{{ vacuna_aplicada.dosis|default:"N/A" }}</span>
+                </div>
+
+                <div class="col-md-4 col-sm-6 form-field">
+                    <span class="field-label"><i class="bi bi-signpost-split"></i> Vía de Admin.</span>
+                    <span class="field-value">{{ vacuna_aplicada.get_via_display|default:"N/A" }}</span>
+                </div>
+
+                <div class="col-md-8 col-sm-6 form-field"> 
+                    <span class="field-label"><i class="bi bi-geo-alt-fill"></i> Lugar de Aplicación</span>
+                    <span class="field-value">{{ vacuna_aplicada.lugar|default:"N/A" }}</span>
+                </div>
+
+                <div class="col-12 form-field"> {# Ancho completo #}
+                    <span class="field-label"><i class="bi bi-person-fill-check"></i> Registrado por</span>
+                    <span class="field-value">
+                         {% if vacuna_aplicada.profesional %}
+                             <i class="bi bi-person-fill"></i> {{ vacuna_aplicada.profesional.usuario.nombre_completo }}
+                             <small class="text-muted d-block ps-4">{{ vacuna_aplicada.profesional.especialidad|default:"" }}</small>
+                         {% else %}
+                             <span class='text-muted fst-italic'>No especificado</span>
+                         {% endif %}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </div> <div class="detail-card-footer">
+        {# Usamos detalle_nino y añadimos el ancla #vacunas-pane para volver directo a esa pestaña #}
+        <a href="{% url 'control:detalle_nino' nino.rut_nino %}#vacunas-pane" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle me-1"></i>Volver
+        </a>
+        {% if request.user.rol.nombre_rol|lower == 'administrador' %}
+            <a href="{% url 'control:historial_vacuna' vacuna_aplicada.id %}" class="btn btn-info text-white">
+                <i class="bi bi-clock-history me-1"></i>Historial
+            </a>
+        {% endif %}
+    </div>
+</div> {% endblock %}

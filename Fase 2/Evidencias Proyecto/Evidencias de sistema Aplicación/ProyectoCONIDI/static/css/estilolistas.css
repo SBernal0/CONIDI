@@ -1,3 +1,5 @@
+/* Estilos para listas/listar */
+
 
 :root {
     --cesfam-primary: #003366;
@@ -149,7 +151,7 @@
         align-items: center;   /* Centra los botones apilados */
     }
 
-    /* Opcional: Desactivar el zoom en hover en móviles */
+    /* Desactivar el zoom en hover en móviles */
     .table-hover tbody tr:hover {
         transform: none; /* Quita el efecto de escala */
         box-shadow: none; /* Quita la sombra extra */

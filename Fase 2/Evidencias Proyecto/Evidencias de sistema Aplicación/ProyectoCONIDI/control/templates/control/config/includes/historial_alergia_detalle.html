@@ -1,0 +1,45 @@
+
+{% comment %}
+{% if version.cambios_calculados %}
+    <h6>Cambios realizados:</h6>
+    <ul class="changes-list">
+        {% for cambio in version.cambios_calculados %}
+            <li>
+                {# Muestra nombre legible del campo #}
+                {% with field_name=cambio.field|title|replace:"_" " "|replace:" Id" "" %}
+                    <strong>{{ field_name }}:</strong>
+                {% endwith %}
+
+                {# Manejo especial para fechas #}
+                {% if cambio.field == 'fecha_aparicion' or cambio.field == 'fecha_remision' %}
+                     <span class="old-value">{{ cambio.old|date:"d/m/Y"|default:"(vacío)" }}</span>
+                     <span class="change-arrow">&rarr;</span>
+                     <span class="new-value">{{ cambio.new|date:"d/m/Y"|default:"(vacío)" }}</span>
+                 {# Manejo especial para ForeignKey (Categoría) #}
+                {% elif cambio.field == 'categoria_id' %}
+                     {# Necesitaríamos pasar las categorías al contexto o hacer otra consulta #}
+                     {# Forma simple: mostrar IDs #}
+                     <span class="old-value">ID: {{ cambio.old|default:"(ninguna)" }}</span>
+                     <span class="change-arrow">&rarr;</span>
+                     <span class="new-value">ID: {{ cambio.new|default:"(ninguna)" }}</span>
+                     {# Forma ideal (requiere más lógica en la vista): Mostrar nombre #}
+                {# Otros campos #}
+                {% else %}
+                    <span class="old-value">{{ cambio.old|default:"(vacío)" }}</span>
+                    <span class="change-arrow">&rarr;</span>
+                    <span class="new-value">{{ cambio.new|default:"(vacío)" }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% elif action_text == 'registrada' %}
+    <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>Registro inicial creado con los siguientes valores:</p>
+    <ul class="changes-list">
+        <li><strong>Categoría:</strong> <span class="new-value">{{ version.categoria.nombre|default:"(no definida)" }}</span></li>
+        <li><strong>Agente Específico:</strong> <span class="new-value">{{ version.agente_especifico|default:"(no definido)" }}</span></li>
+        <li><strong>Fecha Aparición:</strong> <span class="new-value">{{ version.fecha_aparicion|date:"d/m/Y"|default:"(no definida)" }}</span></li>
+    </ul>
+{% else %}
+     <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
+{% endif %}
+{% endcomment %}

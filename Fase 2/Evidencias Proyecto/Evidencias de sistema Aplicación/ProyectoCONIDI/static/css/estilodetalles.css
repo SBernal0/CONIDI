@@ -1,0 +1,167 @@
+/* Estilos para Vista Detallada tipo Formulario */
+
+:root {
+    --cesfam-primary: #003366;
+    --cesfam-secondary: #0066cc;
+    --cesfam-light-gray: #f8f9fa;
+    --cesfam-border-gray: #dee2e6;
+    --cesfam-success: #198754;
+    --cesfam-danger: #dc3545;
+    --cesfam-muted-text: #6c757d;
+    --cesfam-field-bg: #ffffff; /* Fondo blanco para campos */
+}
+
+/* Cabecera de la página (sin cambios significativos) */
+.page-header {
+    animation: fadeInUp 0.5s ease-out;
+}
+.page-header h2 {
+    color: var(--cesfam-primary);
+    font-weight: 700;
+}
+.page-header .text-muted {
+    font-size: 1.1rem;
+}
+
+/* Tarjeta principal (contenedor del "formulario") */
+.detail-form-card {
+    border: 1px solid var(--cesfam-border-gray);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 51, 102, 0.1);
+    background-color: #fff;
+    margin-top: 1.5rem;
+    animation: fadeInUp 0.6s ease-out;
+    overflow: hidden; /* Para que header redondeado funcione */
+}
+
+/* Cabecera de la tarjeta */
+.detail-form-header {
+    background-color: var(--cesfam-light-gray);
+    border-bottom: 1px solid var(--cesfam-border-gray);
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.detail-form-header .icon {
+    font-size: 1.6rem;
+    color: var(--cesfam-primary);
+}
+.detail-form-header h5 {
+    color: var(--cesfam-primary);
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* Cuerpo de la tarjeta (donde van las secciones) */
+.detail-form-body {
+    padding: 1.5rem 1.75rem;
+}
+
+/* Secciones dentro del formulario (ej. Datos Antropométricos) */
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--cesfam-border-gray);
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+.form-section:last-of-type { /* La última sección no necesita borde inferior */
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.form-section-title {
+    color: var(--cesfam-secondary);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+.form-section-title i {
+    margin-right: 0.6rem;
+    font-size: 1.3em;
+}
+
+
+/* Estilo para cada campo individual (label + value) */
+.form-field {
+    margin-bottom: 1rem;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cesfam-muted-text);
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+.field-label i {
+    margin-right: 0.3rem; /* Espacio para icono opcional */
+}
+
+.field-value {
+    display: block;
+    background-color: var(--cesfam-light-gray); /* Fondo sutil para el valor */
+    border: 1px solid var(--cesfam-border-gray);
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.95rem;
+    color: #212529; /* Color de texto oscuro */
+    min-height: calc(1.5em + 0.75rem + 2px); /* Altura similar a inputs */
+    line-height: 1.5;
+}
+.field-value.large-text { /* Para textos largos */
+    line-height: 1.6;
+    white-space: pre-wrap; /* Respeta saltos de línea y espacios */
+    background-color: #fff; /* Fondo blanco para textos largos */
+    min-height: 80px; /* Altura mínima */
+}
+.field-value.status-si { /* Estilo especial para "Sí" */
+    color: var(--cesfam-success);
+    font-weight: 600;
+    background-color: #d1e7dd; /* Fondo verde suave */
+    border-color: #badbcc;
+}
+.field-value.status-no { /* Estilo especial para "No" */
+    color: var(--cesfam-danger);
+    font-weight: 600;
+    background-color: #f8d7da; /* Fondo rojo suave */
+    border-color: #f5c2c7;
+}
+.field-value i { /* Iconos dentro del valor */
+    margin-right: 0.4rem;
+}
+.field-value code { /* Para valores técnicos como IMC */
+    font-weight: 600;
+    color: var(--cesfam-primary);
+}
+
+/* Pie de la tarjeta (sin cambios) */
+.detail-card-footer {
+    background-color: var(--cesfam-light-gray);
+    border-top: 1px solid var(--cesfam-border-gray);
+    padding: 1rem 1.75rem;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+.detail-card-footer .btn {
+    font-weight: 500;
+}
+
+/* Estilo adicional para Textareas en formularios */
+.form-body textarea.form-control {
+    min-height: 100px; /* Asegura una altura mínima para textareas */
+    line-height: 1.6; /* Mejora legibilidad */
+}
+
+/* Keyframes*/
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
