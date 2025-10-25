@@ -1,13 +1,10 @@
-{% comment %}
 {% if version.cambios_calculados %}
     <h6>Cambios realizados:</h6>
     <ul class="changes-list">
         {% for cambio in version.cambios_calculados %}
             <li>
                 {# Muestra nombre legible del campo #}
-                {% with field_name=cambio.field|title|replace:"_" " "|replace:" Id" "" %} {# Quita _id también #}
-                    <strong>{{ field_name }}:</strong>
-                {% endwith %}
+                <strong>{{ cambio.field|title }}:</strong>
 
                 {# Manejo especial para fechas #}
                 {% if cambio.field == 'fecha_aplicacion' or cambio.field == 'fecha_inoculacion' %}
@@ -41,4 +38,3 @@
 {% else %}
      <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
 {% endif %}
-{% endcomment %}
