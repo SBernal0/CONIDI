@@ -157,6 +157,14 @@
                             <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Cancelar
                             </a>
+                            {# --- BOTÓN NUEVO PARA DESHABILITAR --- #}
+                            <form method="post" action="{% url 'control:editar_control' control.id %}" class="d-inline ms-auto" onsubmit="return confirm('¿Estás seguro de que deseas marcar este control como NO APLICABLE o NO REALIZADO? Esta acción guardará el control como deshabilitado.');">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="disable" class="btn btn-danger">
+                                    <i class="bi bi-slash-circle-fill me-2"></i>Marcar como No Realizado/No Aplica
+                                </button>
+                            </form>
+                            {# --- FIN BOTÓN NUEVO --- #}
                         </div>
                     </form>
                 </div> </div> </div>
