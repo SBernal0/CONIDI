@@ -99,57 +99,98 @@ def registrar_control(request, control_id):
     control = get_object_or_404(Control, pk=control_id)
     nino = control.nino
 
-    if request.method == 'POST':
-        # --- Recolectamos TODOS los datos del formulario ---
-        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
-        
-        # Datos antropométricos
-        control.pesokg = float(request.POST.get('pesokg'))
-        control.talla_cm = float(request.POST.get('talla_cm'))
-        control.pc_cm = request.POST.get('pc_cm') if request.POST.get('pc_cm') else None
-        
-        # Cálculo automático del IMC
-        if control.talla_cm > 0:
-            talla_m = control.talla_cm / 100
-            control.imc = round(control.pesokg / (talla_m ** 2), 2)
-        
-        # Calificaciones
-        control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
-        control.calificacion_estatural = request.POST.get('calificacion_estatural')
-        control.calificacion_pce = request.POST.get('calificacion_pce')
-        control.dig_pa = request.POST.get('dig_pa')
-        
-        # Textos largos
-        control.diag_des_integral = request.POST.get('diag_des_integral')
-        control.obs_desarrollo_integral = request.POST.get('obs_desarrollo_integral')
-        control.observaciones = request.POST.get('observaciones')
-        control.indicaciones = request.POST.get('indicaciones')
-        
-        # Checkboxes (si están marcados, existen en request.POST)
-        control.derivacion = 'derivacion' in request.POST
-        control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
-        control.derivacion_dentista = 'derivacion_dentista' in request.POST
-
-        # Estado y profesional
-        control.estado_control = 'Realizado'
-        try:
-            control.profesional = request.user.perfil_profesional
-        except:
-            pass
-        
-        control.save()
-        messages.success(request, f'El "{control.nombre_control}" ha sido registrado exitosamente.')
-        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
-
-    # --- Preparamos el contexto para la petición GET ---
+    # Preparamos el contexto base para GET y para re-renderizar en caso de error POST
     contexto = {
         'control': control,
         'nino': nino,
-        # Pasamos las opciones de los 'choices' a la plantilla para los menús desplegables
         'estatural_choices': Control.CALIFICACION_ESTATURAL_CHOICES,
         'pce_choices': Control.CALIFICACION_PCE_CHOICES,
         'pa_choices': Control.DIG_PA_CHOICES,
     }
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'disable':
+            control.deshabilitado = True
+            control.estado_control = 'Deshabilitado'
+            control.fecha_realizacion_control = None # Limpia fecha
+            # Limpia campos clínicos
+            control.pesokg = None
+            control.talla_cm = None
+            control.imc = None
+            control.pc_cm = None
+            control.calificacion_nutricional = None
+            control.calificacion_estatural = None
+            control.calificacion_pce = None
+            control.dig_pa = None
+            control.diag_des_integral = None
+            control.obs_desarrollo_integral = None
+            control.observaciones = None
+            control.indicaciones = None
+            control.derivacion = False
+            control.consulta_dental_realizada = None
+            control.derivacion_dentista = None
+            control.profesional = None
+
+            control.save()
+            messages.warning(request, f'El "{control.nombre_control}" ha sido marcado como No Realizado/No Aplica.')
+            return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+        # Si no es disable, es guardado normal
+        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
+        try:
+            pesokg_str = request.POST.get('pesokg')
+            talla_cm_str = request.POST.get('talla_cm')
+            control.pesokg = float(pesokg_str) if pesokg_str else None
+            control.talla_cm = float(talla_cm_str) if talla_cm_str else None
+        except (ValueError, TypeError):
+             messages.error(request, 'El peso y la talla deben ser números válidos.')
+             # Re-renderiza el formulario manteniendo los datos ingresados
+             contexto['form_data'] = request.POST # Pasa los datos del POST para rellenar
+             return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
+
+        pc_cm_str = request.POST.get('pc_cm')
+        try:
+            control.pc_cm = float(pc_cm_str) if pc_cm_str else None
+        except (ValueError, TypeError):
+             messages.error(request, 'El perímetro craneal debe ser un número válido.')
+             contexto['form_data'] = request.POST
+             return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
+
+
+        # Cálculo IMC
+        if control.talla_cm and control.talla_cm > 0 and control.pesokg:
+            talla_m = control.talla_cm / 100
+            control.imc = round(control.pesokg / (talla_m ** 2), 2)
+        else:
+             control.imc = None
+
+        # Asignar resto de campos desde el POST
+        control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
+        control.calificacion_estatural = request.POST.get('calificacion_estatural')
+        control.calificacion_pce = request.POST.get('calificacion_pce')
+        control.dig_pa = request.POST.get('dig_pa')
+        control.diag_des_integral = request.POST.get('diag_des_integral')
+        control.obs_desarrollo_integral = request.POST.get('obs_desarrollo_integral')
+        control.observaciones = request.POST.get('observaciones')
+        control.indicaciones = request.POST.get('indicaciones')
+        control.derivacion = 'derivacion' in request.POST
+        control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
+        control.derivacion_dentista = 'derivacion_dentista' in request.POST
+        control.estado_control = 'Realizado'
+        control.deshabilitado = False # Si se guarda, no está deshabilitado
+
+        try:
+            control.profesional = request.user.perfil_profesional
+        except Profesional.DoesNotExist:
+            pass
+
+        control.save()
+        messages.success(request, f'El "{control.nombre_control}" ha sido registrado exitosamente.')
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+    # Lógica GET: simplemente renderiza la plantilla con el contexto
     return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
 
@@ -177,36 +218,7 @@ def editar_control(request, control_id):
     control = get_object_or_404(Control, pk=control_id)
     nino = control.nino
 
-    if request.method == 'POST':
-        # La lógica es idéntica a la de 'registrar_control', simplemente actualizamos el objeto existente
-        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
-        control.pesokg = float(request.POST.get('pesokg'))
-        control.talla_cm = float(request.POST.get('talla_cm'))
-        control.pc_cm = request.POST.get('pc_cm') if request.POST.get('pc_cm') else None
-        
-        if control.talla_cm > 0:
-            talla_m = control.talla_cm / 100
-            control.imc = round(control.pesokg / (talla_m ** 2), 2)
-        
-        control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
-        control.calificacion_estatural = request.POST.get('calificacion_estatural')
-        control.calificacion_pce = request.POST.get('calificacion_pce')
-        control.dig_pa = request.POST.get('dig_pa')
-        
-        control.diag_des_integral = request.POST.get('diag_des_integral')
-        control.obs_desarrollo_integral = request.POST.get('obs_desarrollo_integral')
-        control.observaciones = request.POST.get('observaciones')
-        control.indicaciones = request.POST.get('indicaciones')
-        
-        control.derivacion = 'derivacion' in request.POST
-        control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
-        control.derivacion_dentista = 'derivacion_dentista' in request.POST
-
-        control.save()
-        messages.success(request, f'El "{control.nombre_control}" ha sido actualizado exitosamente.')
-        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
-
-    # Para la petición GET, pasamos los datos del control y las opciones a la plantilla
+    # Preparamos el contexto base
     contexto = {
         'control': control,
         'nino': nino,
@@ -214,6 +226,91 @@ def editar_control(request, control_id):
         'pce_choices': Control.CALIFICACION_PCE_CHOICES,
         'pa_choices': Control.DIG_PA_CHOICES,
     }
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'disable':
+            control.deshabilitado = True
+            control.estado_control = 'Deshabilitado'
+            control.fecha_realizacion_control = None # Limpia fecha
+            # Limpia campos clínicos
+            control.pesokg = None
+            control.talla_cm = None
+            control.imc = None
+            control.pc_cm = None
+            # ... (limpiar el resto si es necesario)
+            control.calificacion_nutricional = None
+            control.calificacion_estatural = None
+            control.calificacion_pce = None
+            control.dig_pa = None
+            control.diag_des_integral = None
+            control.obs_desarrollo_integral = None
+            control.observaciones = None
+            control.indicaciones = None
+            control.derivacion = False
+            control.consulta_dental_realizada = None
+            control.derivacion_dentista = None
+            # No limpiamos el profesional aquí, podríamos querer saber quién lo deshabilitó
+            # o mantener el original. Depende de la regla de negocio.
+            # control.profesional = None
+
+            control.save()
+            messages.warning(request, f'El "{control.nombre_control}" ha sido marcado como No Realizado/No Aplica.')
+            return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+        # Si no es disable, es actualización normal
+        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
+        try:
+            pesokg_str = request.POST.get('pesokg')
+            talla_cm_str = request.POST.get('talla_cm')
+            control.pesokg = float(pesokg_str) if pesokg_str else None
+            control.talla_cm = float(talla_cm_str) if talla_cm_str else None
+        except (ValueError, TypeError):
+             messages.error(request, 'El peso y la talla deben ser números válidos.')
+             contexto['form_data'] = request.POST # Pasa datos para rellenar
+             return render(request, 'control/control_nino_sano/editar_control.html', contexto)
+
+        pc_cm_str = request.POST.get('pc_cm')
+        try:
+            control.pc_cm = float(pc_cm_str) if pc_cm_str else None
+        except (ValueError, TypeError):
+             messages.error(request, 'El perímetro craneal debe ser un número válido.')
+             contexto['form_data'] = request.POST
+             return render(request, 'control/control_nino_sano/editar_control.html', contexto)
+
+
+        if control.talla_cm and control.talla_cm > 0 and control.pesokg:
+            talla_m = control.talla_cm / 100
+            control.imc = round(control.pesokg / (talla_m ** 2), 2)
+        else:
+            control.imc = None
+
+        control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
+        control.calificacion_estatural = request.POST.get('calificacion_estatural')
+        control.calificacion_pce = request.POST.get('calificacion_pce')
+        control.dig_pa = request.POST.get('dig_pa')
+        control.diag_des_integral = request.POST.get('diag_des_integral')
+        control.obs_desarrollo_integral = request.POST.get('obs_desarrollo_integral')
+        control.observaciones = request.POST.get('observaciones')
+        control.indicaciones = request.POST.get('indicaciones')
+        control.derivacion = 'derivacion' in request.POST
+        control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
+        control.derivacion_dentista = 'derivacion_dentista' in request.POST
+        control.estado_control = 'Realizado' # Si se edita, se asume que está realizado
+        control.deshabilitado = False # Si se edita, se asegura que no esté deshabilitado
+
+        # Opcional: Actualizar el profesional que hizo la última edición
+        try:
+            control.profesional = request.user.perfil_profesional
+        except Profesional.DoesNotExist:
+            pass # Mantiene el profesional original si es un admin
+
+        control.save()
+        messages.success(request, f'El "{control.nombre_control}" ha sido actualizado exitosamente.')
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+    # Lógica GET
     return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
 @login_required

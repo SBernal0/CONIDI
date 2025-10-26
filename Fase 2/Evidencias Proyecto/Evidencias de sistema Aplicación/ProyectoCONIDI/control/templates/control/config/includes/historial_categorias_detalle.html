@@ -1,11 +1,11 @@
-{# --- PLANTILLA: historial_categorias_detalle.html --- #}
-{% comment %}
+
+
 {% if version.cambios_calculados %}
     <h6>Cambios realizados:</h6>
     <ul class="changes-list">
         {% for cambio in version.cambios_calculados %}
             <li>
-                <strong>{{ cambio.field|title|replace:"_" " " }}:</strong> {# Muestra nombre legible #}
+                <strong>{{ cambio.field|title }}:</strong>
                 <span class="old-value">{{ cambio.old|default:"(vacío)" }}</span>
                 <span class="change-arrow">&rarr;</span>
                 <span class="new-value">{{ cambio.new|default:"(vacío)" }}</span>
@@ -20,4 +20,3 @@
 {% else %}
      <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
 {% endif %}
-{% endcomment %}

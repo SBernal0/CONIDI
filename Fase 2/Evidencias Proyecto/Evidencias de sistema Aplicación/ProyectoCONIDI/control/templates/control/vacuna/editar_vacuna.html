@@ -1,50 +1,94 @@
 {% extends 'base.html' %}
-{% block title %}Editar Registro de Vacuna{% endblock %}
+{% load static %} 
+
+{% block title %}Editar Vacuna: {{ vacuna_aplicada.vacuna.nom_vacuna }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Editar Aplicación: {{ vacuna_aplicada.vacuna.nom_vacuna }}</h2>
-<p><strong>Niño/a:</strong> {{ nino.nombre }} {{ nino.ap_paterno }}</p>
-<hr>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8"> {# Ancho consistente #}
 
-            <div class="mb-3">
-                <label class="form-label">Vacuna</label>
-                <input type="text" class="form-control" value="{{ vacuna_aplicada.vacuna.nom_vacuna }}" disabled>
-            </div>
+            <div class="card form-card">
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="fecha_aplicacion" class="form-label">Fecha de Aplicación</label>
-                    <input type="date" class="form-control" id="fecha_aplicacion" name="fecha_aplicacion" value="{{ vacuna_aplicada.fecha_aplicacion|date:'Y-m-d' }}" required>
+                <div class="form-header">
+                    <div class="form-icon">
+                        <i class="bi bi-pencil-square"></i> {# Icono de editar #}
+                    </div>
+                    <div>
+                        <h2>Editar Aplicación: {{ vacuna_aplicada.vacuna.nom_vacuna }}</h2>
+                        <p class="mb-0 text-muted">Niño/a: {{ nino.nombre }} {{ nino.ap_paterno }}</p>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="dosis" class="form-label">Dosis</label>
-                    <input type="text" class="form-control" id="dosis" name="dosis" value="{{ vacuna_aplicada.dosis|default:'' }}">
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="lugar" class="form-label">Lugar de Aplicación</label>
-                    <input type="text" class="form-control" id="lugar" name="lugar" value="{{ vacuna_aplicada.lugar|default:'' }}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="via" class="form-label">Vía de Administración</label>
-                    <select id="via" name="via" class="form-select">
-                        {% for value, display in via_choices %}
-                            <option value="{{ value }}" {% if vacuna_aplicada.via == value %}selected{% endif %}>{{ display }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
 
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">Cancelar</a>
-        </form>
+                        <div class="mb-3 animate-form-element" style="animation-delay: 0.1s;">
+                            <label class="form-label">Vacuna</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-fill-check"></i></span>
+                                <input type="text" class="form-control" value="{{ vacuna_aplicada.vacuna.nom_vacuna }}" disabled>
+                            </div>
+                            <small class="form-text text-muted">El tipo de vacuna no se puede modificar.</small>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.2s;">
+                                <label for="fecha_aplicacion" class="form-label form-label-required">Fecha de Aplicación</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                                    <input type="date" class="form-control" id="fecha_aplicacion" name="fecha_aplicacion" value="{{ vacuna_aplicada.fecha_aplicacion|date:'Y-m-d' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.3s;">
+                                <label for="dosis" class="form-label">Dosis</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-droplet-half"></i></span>
+                                    <input type="text" class="form-control" id="dosis" name="dosis" value="{{ vacuna_aplicada.dosis|default:'' }}" placeholder="Ej: 1ra, Refuerzo">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4"> {# mb-4 para separar de botones #}
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.4s;">
+                                <label for="lugar" class="form-label">Lugar de Aplicación</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                                    <input type="text" class="form-control" id="lugar" name="lugar" value="{{ vacuna_aplicada.lugar|default:'CESFAM Hualpén' }}" placeholder="Centro de salud">
+                                </div>
+                            </div>
+                            <div class="col-md-6 animate-form-element" style="animation-delay: 0.5s;">
+                                <label for="via" class="form-label">Vía de Administración</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-signpost-split"></i></span>
+                                    <select id="via" name="via" class="form-select">
+                                        <option value="" {% if not vacuna_aplicada.via %}selected{% endif %} disabled>Seleccionar...</option>
+                                        {% for value, display in via_choices %}
+                                            <option value="{{ value }}" {% if vacuna_aplicada.via == value %}selected{% endif %}>{{ display }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-buttons animate-form-element" style="animation-delay: 0.6s;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle-fill me-2"></i>Guardar Cambios
+                            </button>
+                            {# Botón Cancelar con ancla #}
+                            <a href="{% url 'control:detalle_nino' nino.rut_nino %}#vacunas-pane" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div> </div> </div>
     </div>
 </div>
+
 {% endblock %}

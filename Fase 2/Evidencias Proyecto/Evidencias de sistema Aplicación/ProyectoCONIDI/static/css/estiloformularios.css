@@ -97,7 +97,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* ESTILOS PARA FORMULARIOS GENERALES (Editar/Crear Usuario, Configurar)*/
+/* Estilos para formularios generales (Editar/Crear Usuario, Configurar)*/
 
 /* Tarjeta principal para formularios */
 .form-card {
@@ -135,7 +135,7 @@
 /* Cuerpo del formulario */
 .form-body {
     padding: 2rem 2.5rem;
-    text-align: left; /* Alineación por defecto para formularios */
+    text-align: left; 
 }
 /* Centrado específico para 'Activar Tutor' */
 .form-body.text-center {
@@ -181,7 +181,7 @@
     animation: fadeInUp 0.5s ease-out backwards;
 }
 
-/* ESTILOS PARA TABLAS DENTRO DE FORMULARIOS (Configuración Periodos/Vacunas) */
+/* Estilos para tablas dentro de formularios (Configuración Periodos/Vacunas) */
 
 /* Contenedor de la tabla */
 .form-card .table-responsive {
@@ -205,7 +205,6 @@
     color: white;
     vertical-align: middle;
     border-color: var(--cesfam-primary);
-    /* border-bottom: 2px solid var(--cesfam-primary); Eliminar o ajustar si causa problemas */
 }
 
 /* Celdas de la cabecera (th) - Selector más específico */
@@ -220,8 +219,8 @@
     border: none; /* Quitamos bordes internos por defecto */
     border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Borde interno claro */
     line-height: normal;
-    min-height: 40px; /* Mantenemos altura mínima por si acaso */
-    background-color: var(--cesfam-primary); /* Asegura fondo por si acaso */
+    min-height: 40px; 
+    background-color: var(--cesfam-primary); /* Asegura fondo */
 }
 /* Asegura que el borde inferior se quite en la última fila de cabecera si hay múltiples */
  .form-card .form-body .table-responsive .table > thead > tr:last-child > th {
@@ -261,7 +260,7 @@
     animation-delay: calc(var(--i) * 0.05s + 0.3s);
 }
 
-/* ARREGLO PARA SELECT2 EN INPUT GROUP */
+/* Arreglo para select2 en input group */
 .input-group span.select2-container {
     flex-grow: 1 !important;
     width: auto !important;
@@ -287,7 +286,7 @@
     padding-left: 0.75rem !important;
 }
 
-/* DEFINICIÓN DE ANIMACIONES */
+/* Definición de animaciones */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -310,7 +309,7 @@
     to   { opacity: 1; }
 }
 
-/* Placeholder fix for focused password */
+/* Corrección para el marcador de posición (placeholder) de la contraseña cuando está enfocado*/
 .login-body input[type="password"]:focus::placeholder {
     color: transparent;
     transition: color 0.2s ease-out;

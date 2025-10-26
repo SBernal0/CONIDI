@@ -30,6 +30,15 @@ class Comuna(models.Model):
 
 # --- Modelo Principal del Niño ---
 class Nino(models.Model):
+
+
+    ESTADO_SEGUIMIENTO_CHOICES = [
+        ('ACTIVO', 'Seguimiento Activo'),
+        ('COMPLETADO', 'Programa Completado'),
+        ('TRASLADADO', 'Trasladado/Inactivo'),
+        ('OTRO', 'Otro'),
+    ]
+
     SEXO_CHOICES = [
         ('Masculino', 'Masculino'), 
         ('Femenino', 'Femenino')
@@ -44,6 +53,18 @@ class Nino(models.Model):
     direccion = models.CharField(max_length=200)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     comuna = models.ForeignKey(Comuna, on_delete=models.PROTECT)
+    estado_seguimiento = models.CharField(
+        max_length=20,
+        choices=ESTADO_SEGUIMIENTO_CHOICES,
+        default='ACTIVO',
+        verbose_name="Estado del Seguimiento"
+    )
+    sector = models.CharField(
+        max_length=50,
+        blank=True, # Lo hacemos opcional por si no se conoce al principio
+        null=True,
+        verbose_name="Sector Asignado"
+    )
 
     # AÑADE LOS CAMPOS NORMALIZADOS 
     nombre_norm = models.CharField(
@@ -187,7 +208,7 @@ class Control(models.Model):
     id = models.AutoField(primary_key=True, db_column='contro_ninol_id')
     nino = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='controles')
     nombre_control = models.CharField(max_length=200)
-    
+    deshabilitado = models.BooleanField(default=False, help_text="Marcar si este control no se realizó o no aplica.")
     # --- CORREGIDO: Renombrado a 'fecha_control_programada' y cambiado a DateField ---
     periodo = models.ForeignKey(PeriodoControl, on_delete=models.PROTECT, null=True, blank=True)
 
@@ -234,15 +255,21 @@ class Control(models.Model):
 
     @property
     def estado_alerta(self):
-        # Si el control ya se realizó, no hay alerta.
+        # --- NUEVA LÓGICA ---
+        # 1. Si está deshabilitado, ese es su estado principal.
+        if self.deshabilitado:
+            return "Deshabilitado"
+        # --------------------
+        
+        # 2. Si ya se realizó, está Realizado.
         if self.fecha_realizacion_control:
             return "Realizado"
 
+        # 3. Si no está deshabilitado ni realizado, calculamos la alerta.
         hoy = date.today()
         fecha_programada = self.fecha_control_programada
         margen = self.periodo.dias_margen if self.periodo else 7
 
-        # Lógica de alertas que definiste
         if hoy <= fecha_programada:
             return "Al día"
         elif hoy <= fecha_programada + timedelta(days=margen):
@@ -261,7 +288,11 @@ class Control(models.Model):
             return "bg-warning text-dark"
         elif estado == "Alerta Roja":
             return "bg-danger text-white"
-        return "bg-secondary text-white"
+        # --- NUEVA CLASE PARA DESHABILITADO ---
+        elif estado == "Deshabilitado":
+            return "bg-secondary text-white opacity-75" # Gris y un poco transparente
+        # ---------------------------------------
+        return "bg-light text-dark" # Fallback por si acaso
 
     class Meta:
         verbose_name = "Control del Niño"

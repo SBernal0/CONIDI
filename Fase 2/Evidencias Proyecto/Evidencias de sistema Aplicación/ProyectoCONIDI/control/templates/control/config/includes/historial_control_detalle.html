@@ -1,0 +1,34 @@
+
+
+{% if version.cambios_calculados %}
+    <h6>Cambios realizados:</h6>
+    <ul class="changes-list">
+        {% for cambio in version.cambios_calculados %}
+            <li>
+                {# Muestra nombre legible del campo #}
+                <strong>{{ cambio.field|title }}:</strong>
+                {# Manejo especial para booleanos (checkboxes) #}
+                {% if cambio.field in 'derivacion,consulta_dental_realizada,derivacion_dentista' %}
+                    <span class="old-value">{% if cambio.old %}Sí{% else %}No{% endif %}</span>
+                    <span class="change-arrow">&rarr;</span>
+                    <span class="new-value">{% if cambio.new %}Sí{% else %}No{% endif %}</span>
+                {% else %}
+                    <span class="old-value">{{ cambio.old|default:"(vacío)" }}</span>
+                    <span class="change-arrow">&rarr;</span>
+                    <span class="new-value">{{ cambio.new|default:"(vacío)" }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% elif action_text == 'creado' %}
+    {# Puedes mostrar aquí los valores iniciales si lo deseas, o un mensaje simple #}
+    <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>Registro inicial creado.</p>
+    <ul class="changes-list">
+        <li><strong>Fecha Realizacion Control:</strong> <span class="new-value">{{ version.fecha_realizacion_control|date:"d/m/Y"|default:"(no definida)" }}</span></li>
+        <li><strong>Peso:</strong> <span class="new-value">{{ version.pesokg|default:"(no definido)" }} kg</span></li>
+        <li><strong>Talla:</strong> <span class="new-value">{{ version.talla_cm|default:"(no definido)" }} cm</span></li>
+        {# ... otros campos iniciales que quieras mostrar ... #}
+    {# </ul> #}
+{% else %}
+     <p class="initial-record-msg"><i class="bi bi-info-circle me-1"></i>No se detectaron cambios específicos en esta versión o es un registro eliminado.</p>
+{% endif %}
