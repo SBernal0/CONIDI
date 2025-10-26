@@ -104,6 +104,7 @@ class Profesional(models.Model):
     nombre_completo = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
     especialidad = models.CharField(max_length=30, choices=ESPECIALIDAD_CHOICES, default='Pediatra')
+    encargado = models.BooleanField(default=False)
     
     # El usuario es opcional al principio
     usuario = models.OneToOneField(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='perfil_profesional')

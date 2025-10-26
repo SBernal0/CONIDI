@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Controles Atrasados</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { width: 90%; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { color: #003366; font-size: 24px; }
+        p { margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 12px; color: #777; text-align: center; }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reporte de Controles de Niño Sano Atrasados</h1>
+        <p><strong>Fecha del reporte:</strong> {{ fecha|date:"d/m/Y" }}</p>
+        <p>Estimado/a <strong>{{ encargado.nombre_completo }}</strong>,</p>
+        <p>A continuación se presenta el listado de niños y niñas con controles de salud pendientes que han superado su fecha programada.</p>
+
+        {% if controles %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>RUT Niño</th>
+                        <th>Nombre Completo</th>
+                        <th>Control Pendiente</th>
+                        <th>Fecha Programada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for control in controles %}
+                        <tr>
+                            <td>{{ control.nino.rut_nino }}</td>
+                            <td>{{ control.nino.nombre_completo }}</td>
+                            <td>{{ control.nombre_control }}</td>
+                            <td>{{ control.fecha_control_programada|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <p>¡Buenas noticias! No hay controles atrasados para reportar en este momento.</p>
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Este es un correo generado automáticamente por el Sistema de Gestión CESFAM. Por favor, no responda a este mensaje.</p>
+        </div>
+    </div>
+</body>
+</html>

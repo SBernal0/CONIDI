@@ -1,15 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect   
 from datetime import date, timedelta
-
+from django.db import transaction
 from django.urls import reverse
 from unidecode import unidecode
 from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, RegistroAlergias, CategoriaAlergia
 from django.contrib.auth.decorators import login_required
-from login.models import Tutor 
+from login.models import Tutor, Profesional
 from django.core.exceptions import PermissionDenied 
 from django.contrib import messages
 from login.decorators import rol_requerido
 from django.core.management import call_command
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 from simple_history.admin import SimpleHistoryAdmin
 from django.db.models import Q
 from django.db import IntegrityError
@@ -655,3 +658,94 @@ def historial_categorias_alergia(request): # <-- Asegúrate que la función teng
         'historial': historial
     }
     return render(request, 'control/config/historial_categorias_alergia.html', contexto)
+
+
+@login_required
+@rol_requerido(['Administrador'])
+def reportes(request):
+    # Obtenemos todos los profesionales y el que está actualmente como encargado
+    profesionales = Profesional.objects.select_related('usuario').all()
+    encargado_actual = profesionales.filter(encargado=True).first()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        # --- ACCIÓN: Cambiar el profesional encargado ---
+        if action == 'cambiar_encargado':
+            nuevo_encargado_rut = request.POST.get('profesional_encargado')
+            
+            try:
+                with transaction.atomic():
+                    # 1. Quitamos el estado de 'encargado' a todos
+                    Profesional.objects.update(encargado=False)
+                    
+                    # 2. Asignamos el nuevo encargado si se seleccionó uno
+                    if nuevo_encargado_rut:
+                        nuevo_encargado = get_object_or_404(Profesional, rut=nuevo_encargado_rut)
+                        nuevo_encargado.encargado = True
+                        nuevo_encargado.save()
+                        messages.success(request, f'Se ha asignado a {nuevo_encargado.nombre_completo} como nuevo encargado de reportes.')
+                    else:
+                        messages.info(request, 'Se ha quitado el encargado de reportes. Nadie recibirá los correos.')
+                
+                return redirect('control:reportes')
+
+            except Profesional.DoesNotExist:
+                messages.error(request, 'El profesional seleccionado no existe.')
+            except Exception as e:
+                messages.error(request, f'Ocurrió un error al actualizar el encargado: {e}')
+
+        # --- ACCIÓN: Enviar el reporte por correo ---
+        elif action == 'enviar_reporte':
+            if not encargado_actual:
+                messages.error(request, 'No se puede enviar el reporte porque no hay un profesional encargado asignado.')
+                return redirect('control:reportes')
+
+            # Buscamos los niños con controles atrasados
+            controles_atrasados = Control.objects.filter(
+                fecha_realizacion_control__isnull=True,
+                fecha_control_programada__lt=date.today()
+            ).select_related('nino').order_by('nino__ap_paterno', 'nino__nombre')
+
+            # --- Construcción del mensaje del correo directamente en la vista ---
+            fecha_reporte = date.today().strftime("%d/%m/%Y")
+            asunto = f'Reporte de Controles Atrasados - {fecha_reporte}'
+            
+            mensaje_body = (
+                f'Estimado/a {encargado_actual.nombre_completo},\n\n'
+                f'A continuación se presenta el listado de niños y niñas con controles de salud pendientes al {fecha_reporte}.\n\n'
+            )
+
+            if controles_atrasados.exists():
+                mensaje_body += "--------------------------------------------------\n"
+                for control in controles_atrasados:
+                    mensaje_body += (
+                        f"  - Niño/a: {control.nino.nombre} {control.nino.ap_paterno} {control.nino.ap_materno}\n"
+                        f"  - RUT: {control.nino.rut_nino}\n"
+                        f"  - Control: {control.nombre_control}\n"
+                        f"  - Fecha Programada: {control.fecha_control_programada.strftime('%d/%m/%Y')}\n"
+                        "--------------------------------------------------\n"
+                    )
+            else:
+                mensaje_body += "¡Buenas noticias! No hay controles atrasados para reportar en este momento.\n\n"
+
+            mensaje_body += "\nAtentamente,\nSistema de Gestión CESFAM."
+            
+            try:
+                send_mail(
+                    subject=asunto,
+                    message=mensaje_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[encargado_actual.email],
+                )
+                messages.success(request, f'Reporte enviado exitosamente a {encargado_actual.email}.')
+            except Exception as e:
+                messages.error(request, f'Error al enviar el correo: {e}')
+            
+            return redirect('control:reportes')
+
+    contexto = {
+        'profesionales': profesionales,
+        'encargado_actual': encargado_actual
+    }
+    return render(request, 'control/reportes_mail/enviar_reporte.html', contexto)

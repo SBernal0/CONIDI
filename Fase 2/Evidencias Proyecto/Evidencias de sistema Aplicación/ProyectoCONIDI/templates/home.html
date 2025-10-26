@@ -110,7 +110,20 @@
                 </div>
             </div>
         </div>
-    </a>
+        </a>
+        <a href="{% url 'control:reportes' %}" class="action-link animate-fade-in-up animate-delay-5">
+        <div class="action-card">
+            <div class="card-body">
+                <div class="action-icon icon-danger">
+                    <i class="bi bi-bandaid"></i>
+                </div>
+                <div class="action-content">
+                    <h5>Configurar Enviar reportes</h5>
+                    <p>Gestiona quien es el encargado del control de niño sano y quien recibe los reportes.</p>
+                </div>
+            </div>
+        </div>
+        </a>
     {% endif %}
 
     {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
