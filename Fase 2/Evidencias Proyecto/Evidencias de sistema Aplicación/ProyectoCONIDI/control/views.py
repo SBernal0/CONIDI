@@ -21,32 +21,39 @@ from django.urls import reverse
 
 
 @login_required
-def controles(request, nino_rut):
-    # Obtenemos el niño que se está pidiendo en la URL
-    nino = get_object_or_404(Nino, pk=nino_rut)
+def controles(request, nino_rut): # Vista renombrada mentalmente a 'detalle_nino'
+    nino = get_object_or_404(Nino.objects.select_related('comuna'), pk=nino_rut) # Optimizamos comuna
     user = request.user
-    
-    # --- Verificación de permisos (sin cambios) ---
-    if user.rol.nombre_rol.lower() == 'tutor':
-        if not user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
-            raise PermissionDenied
-    
-    # --- Obtención de datos ---
-    # 1. Obtenemos los controles de niño sano (sin cambios)
-    lista_controles = nino.controles.all().order_by('fecha_control_programada')
 
-    # 2. OBTENEMOS LAS VACUNAS APLICADAS AL NIÑO 💉
-    vacunas_aplicadas = nino.vacunas_aplicadas.all().order_by('-fecha_aplicacion')
-    # 3. Obtenemos las alergias we 
-    alergias_registradas = nino.alergias_registradas.all().order_by('-fecha_aparicion')
-    # --- Preparamos el contexto para la plantilla ---
+    # Verificación de permisos para tutores
+    if user.rol.nombre_rol.lower() == 'tutor':
+        try:
+            if not user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
+                raise PermissionDenied
+        except Tutor.DoesNotExist:
+             raise PermissionDenied # Si es rol tutor pero no tiene perfil, denegar
+
+    # Obtención de datos para las pestañas
+    lista_controles = nino.controles.select_related('periodo').all().order_by('fecha_control_programada')
+    vacunas_aplicadas = nino.vacunas_aplicadas.select_related('vacuna').all().order_by('fecha_programada')
+    alergias_registradas = nino.alergias_registradas.select_related('categoria').all().order_by('-fecha_aparicion')
+
+    # --- LÓGICA NECESARIA PARA LA PESTAÑA RESUMEN ---
+    ultimo_control = nino.controles.filter(
+        fecha_realizacion_control__isnull=False, 
+        deshabilitado=False                     
+    ).order_by('-fecha_realizacion_control').first() 
+    # ---------------------------------------------------
+
     contexto = {
         "nino": nino,
         "controles": lista_controles,
         "vacunas_aplicadas": vacunas_aplicadas,
-        "alergias_registradas": alergias_registradas, # <-- AÑADIMOS LAS VACUNAS AL CONTEXTO
+        "alergias_registradas": alergias_registradas,
+        "ultimo_control": ultimo_control, # <-- Variable añadida para la pestaña Resumen
     }
-    return render(request, 'control/nino/controles.html', context=contexto)
+    # Asegúrate que la ruta de la plantilla sea correcta
+    return render(request, 'control/nino/controles.html', contexto)
 
 @login_required
 def listar_ninos(request):
