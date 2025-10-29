@@ -76,6 +76,19 @@
                                     <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-eye-fill me-1"></i> Ver Controles
                                     </a>
+                                    <!-- Nuevo botón para enviar correo PENAC -->
+                                    {% with relacion=nino.ninotutor_set.first %}
+                                        {% if relacion and relacion.tutor and relacion.tutor.email and rol_usuario != 'tutor' %}
+                                            <form method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas enviar el correo de notificación PENAC al tutor de {{ nino.nombre }}?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="enviar_correo_penac">
+                                                <input type="hidden" name="nino_rut" value="{{ nino.rut_nino }}">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Notificar arribo de alimentos PENAC al tutor: {{ relacion.tutor.email }}">
+                                                    <i class="bi bi-envelope-paper-heart me-1"></i> Notificar PENAC
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
                             </td>
                             <td class="text-center">

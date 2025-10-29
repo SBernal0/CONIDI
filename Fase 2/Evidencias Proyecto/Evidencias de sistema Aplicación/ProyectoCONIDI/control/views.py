@@ -60,6 +60,35 @@ def listar_ninos(request):
     user = request.user
     rol_usuario = user.rol.nombre_rol.lower()
 
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'enviar_correo_penac':
+            nino_rut = request.POST.get('nino_rut')
+            nino = get_object_or_404(Nino, rut_nino=nino_rut)
+            
+            # Buscamos la primera relación tutor-niño para obtener el tutor
+            relacion = nino.ninotutor_set.select_related('tutor').first()
+
+            if relacion and relacion.tutor and relacion.tutor.email:
+                tutor = relacion.tutor
+                asunto = "Notificación: Arribo de Alimentos PENAC"
+                mensaje = (
+                    f"Estimado/a {tutor.nombre_completo},\n\n"
+                    f"Le informamos que han llegado los alimentos del Programa de Alimentación Complementaria (PENAC) para {nino.nombre} {nino.ap_paterno} {nino.ap_materno}.\n\n"
+                    "Puede acercarse a nuestro CESFAM para realizar el retiro.\n\n"
+                    "Horario de atención: [Completar con el horario de retiro]\n\n"
+                    "Atentamente,\n"
+                    "Equipo CESFAM"
+                )
+                try:
+                    send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [tutor.email])
+                    messages.success(request, f"Correo de notificación PENAC enviado exitosamente a {tutor.email}.")
+                except Exception as e:
+                    messages.error(request, f"Error al enviar el correo a {tutor.email}: {e}")
+            else:
+                messages.warning(request, f"No se pudo enviar el correo: el niño/a {nino.nombre_completo} no tiene un tutor con email asignado.")
+            return redirect('control:listar_ninos')
+
     # --- Capturamos los datos del formulario de filtros ---
     nombre_query = request.GET.get('nombre', '')
     rut_query = request.GET.get('rut', '')
@@ -152,18 +181,18 @@ def registrar_control(request, control_id):
             control.pesokg = float(pesokg_str) if pesokg_str else None
             control.talla_cm = float(talla_cm_str) if talla_cm_str else None
         except (ValueError, TypeError):
-             messages.error(request, 'El peso y la talla deben ser números válidos.')
-             # Re-renderiza el formulario manteniendo los datos ingresados
-             contexto['form_data'] = request.POST # Pasa los datos del POST para rellenar
-             return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
+            messages.error(request, 'El peso y la talla deben ser números válidos.')
+            # Re-renderiza el formulario manteniendo los datos ingresados
+            contexto['form_data'] = request.POST # Pasa los datos del POST para rellenar
+            return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
         pc_cm_str = request.POST.get('pc_cm')
         try:
             control.pc_cm = float(pc_cm_str) if pc_cm_str else None
         except (ValueError, TypeError):
-             messages.error(request, 'El perímetro craneal debe ser un número válido.')
-             contexto['form_data'] = request.POST
-             return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
+            messages.error(request, 'El perímetro craneal debe ser un número válido.')
+            contexto['form_data'] = request.POST
+            return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
 
         # Cálculo IMC
@@ -171,7 +200,7 @@ def registrar_control(request, control_id):
             talla_m = control.talla_cm / 100
             control.imc = round(control.pesokg / (talla_m ** 2), 2)
         else:
-             control.imc = None
+            control.imc = None
 
         # Asignar resto de campos desde el POST
         control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
@@ -274,17 +303,17 @@ def editar_control(request, control_id):
             control.pesokg = float(pesokg_str) if pesokg_str else None
             control.talla_cm = float(talla_cm_str) if talla_cm_str else None
         except (ValueError, TypeError):
-             messages.error(request, 'El peso y la talla deben ser números válidos.')
-             contexto['form_data'] = request.POST # Pasa datos para rellenar
-             return render(request, 'control/control_nino_sano/editar_control.html', contexto)
+            messages.error(request, 'El peso y la talla deben ser números válidos.')
+            contexto['form_data'] = request.POST # Pasa datos para rellenar
+            return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
         pc_cm_str = request.POST.get('pc_cm')
         try:
             control.pc_cm = float(pc_cm_str) if pc_cm_str else None
         except (ValueError, TypeError):
-             messages.error(request, 'El perímetro craneal debe ser un número válido.')
-             contexto['form_data'] = request.POST
-             return render(request, 'control/control_nino_sano/editar_control.html', contexto)
+            messages.error(request, 'El perímetro craneal debe ser un número válido.')
+            contexto['form_data'] = request.POST
+            return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
 
         if control.talla_cm and control.talla_cm > 0 and control.pesokg:
