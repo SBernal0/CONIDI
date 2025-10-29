@@ -78,6 +78,12 @@
                             <a href="{% url 'control:detalle_nino' nino.rut_nino %}#vacunas-pane" class="btn btn-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Cancelar
                             </a>
+
+                            <button type="submit" name="action" value="disable" class="btn btn-danger ms-auto" 
+                                    formnovalidate 
+                                    onclick="return confirm('¿Estás seguro de que deseas marcar esta vacuna como NO APLICABLE?');">
+                                <i class="bi bi-slash-circle-fill me-2"></i>Marcar como No Aplica
+                            </button>
                         </div>
                     </form>
                 </div> 

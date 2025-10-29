@@ -8,53 +8,50 @@
 {% endblock %}
 
 {% block content %}
-
-
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-9"> 
-
             <div class="card form-card">
 
                 <div class="form-header">
                     <div class="form-icon">
                         <i class="bi bi-pencil-square"></i>
                     </div>
-                    <div> {# Contenedor extra para título y subtítulo #}
+                    <div>
                         <h2>Editando: {{ control.nombre_control }}</h2>
                         <p class="mb-0 text-muted">Niño/a: {{ nino.nombre }} {{ nino.ap_paterno }}</p>
                     </div>
                 </div>
 
                 <div class="form-body">
-                    <form method="post">
+                    <form method="post" action="{% url 'control:editar_control' control.id %}">
                         {% csrf_token %}
 
                         {# --- Sección Datos Básicos y Antropométricos --- #}
-                        <h5 class="mb-3 animate-form-element" style="animation-delay: 0.1s;"><i class="bi bi-person-bounding-box me-2"></i>Datos Básicos y Antropométricos</h5>
+                        <h5 class="mb-3 ..."><i class="bi bi-person-bounding-box me-2"></i>Datos Básicos y Antropométricos</h5>
                         <div class="row g-3 mb-4">
-                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.2s;">
-                                <label for="fecha_realizacion" class="form-label">Fecha Realización</label>
+                            <div class="col-md-3 ...">
+                                <label for="fecha_realizacion" class="form-label form-label-required">Fecha Realización</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-                                    <input type="date" class="form-control" id="fecha_realizacion" name="fecha_realizacion" value="{{ control.fecha_realizacion_control|date:'Y-m-d'|default:'' }}" required>
+                                    <input type="date" class="form-control" id="fecha_realizacion" name="fecha_realizacion" value="{{ control.fecha_realizacion_control|date:'Y-m-d' }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.3s;">
-                                <label for="pesokg" class="form-label">Peso (kg)</label>
+                            <div class="col-md-3 ...">
+                                <label for="pesokg" class="form-label form-label-required">Peso (kg)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-cassette"></i></span>
                                     <input type="number" step="0.01" class="form-control" id="pesokg" name="pesokg" value="{{ control.pesokg|default:'' }}" placeholder="Ej: 5.2" required>
                                 </div>
                             </div>
-                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.4s;">
-                                <label for="talla_cm" class="form-label">Talla (cm)</label>
+                            <div class="col-md-3 ...">
+                                <label for="talla_cm" class="form-label form-label-required">Talla (cm)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-arrows-vertical"></i></span>
                                     <input type="number" step="0.1" class="form-control" id="talla_cm" name="talla_cm" value="{{ control.talla_cm|default:'' }}" placeholder="Ej: 55.5" required>
                                 </div>
                             </div>
-                            <div class="col-md-3 animate-form-element" style="animation-delay: 0.5s;">
+                            <div class="col-md-3 ...">
                                 <label for="pc_cm" class="form-label">P. Craneal (cm)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-bullseye"></i></span>
@@ -64,9 +61,9 @@
                         </div>
 
                         {# --- Sección Calificaciones y Diagnósticos --- #}
-                        <h5 class="mb-3 animate-form-element" style="animation-delay: 0.6s;"><i class="bi bi-clipboard2-check-fill me-2"></i>Calificaciones y Diagnósticos</h5>
+                        <h5 class="mb-3 ..."><i class="bi bi-clipboard2-check-fill me-2"></i>Calificaciones y Diagnósticos</h5>
                         <div class="row g-3 mb-3"> 
-                             <div class="col-md-4 animate-form-element" style="animation-delay: 0.7s;">
+                            <div class="col-md-4 ...">
                                 <label for="calificacion_estatural" class="form-label">Calificación Estatural</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-bar-chart-steps"></i></span>
@@ -78,7 +75,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 animate-form-element" style="animation-delay: 0.8s;">
+                            <div class="col-md-4 ...">
                                 <label for="calificacion_pce" class="form-label">Calificación P/CE</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-bullseye"></i></span>
@@ -90,7 +87,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 animate-form-element" style="animation-delay: 0.9s;">
+                            <div class="col-md-4 ...">
                                 <label for="dig_pa" class="form-label">Diagnóstico P. Arterial</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-heart-pulse"></i></span>
@@ -103,8 +100,8 @@
                                 </div>
                             </div>
                         </div>
-                         <div class="row mb-4"> {# Fila separada para Nutricional #}
-                            <div class="col-md-12 animate-form-element" style="animation-delay: 1.0s;">
+                        <div class="row mb-4">
+                            <div class="col-md-12 ...">
                                 <label for="calificacion_nutricional" class="form-label">Calificación Nutricional</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-pie-chart-fill"></i></span>
@@ -114,28 +111,28 @@
                         </div>
 
                         {# --- Sección Observaciones e Indicaciones --- #}
-                        <h5 class="mb-3 animate-form-element" style="animation-delay: 1.1s;"><i class="bi bi-file-earmark-text-fill me-2"></i>Observaciones e Indicaciones</h5>
-                        <div class="mb-3 animate-form-element" style="animation-delay: 1.2s;">
+                        <h5 class="mb-3 ..."><i class="bi bi-file-earmark-text-fill me-2"></i>Observaciones e Indicaciones</h5>
+                        <div class="mb-3 ...">
                             <label for="diag_des_integral" class="form-label">Diagnóstico Desarrollo Integral</label>
                             <textarea class="form-control" id="diag_des_integral" name="diag_des_integral" rows="3">{{ control.diag_des_integral|default:'' }}</textarea>
                         </div>
-                         <div class="mb-3 animate-form-element" style="animation-delay: 1.3s;">
+                        <div class="mb-3 ...">
                             <label for="obs_desarrollo_integral" class="form-label">Observaciones Desarrollo Integral</label>
                             <textarea class="form-control" id="obs_desarrollo_integral" name="obs_desarrollo_integral" rows="3">{{ control.obs_desarrollo_integral|default:'' }}</textarea>
                         </div>
-                        <div class="mb-3 animate-form-element" style="animation-delay: 1.4s;">
+                        <div class="mb-3 ...">
                             <label for="observaciones" class="form-label">Observaciones Generales</label>
                             <textarea class="form-control" id="observaciones" name="observaciones" rows="3">{{ control.observaciones|default:'' }}</textarea>
                         </div>
-                        <div class="mb-4 animate-form-element" style="animation-delay: 1.5s;">
+                        <div class="mb-4 ...">
                             <label for="indicaciones" class="form-label">Indicaciones</label>
                             <textarea class="form-control" id="indicaciones" name="indicaciones" rows="3">{{ control.indicaciones|default:'' }}</textarea>
                         </div>
 
                         {# --- Sección Derivaciones --- #}
-                        <h5 class="mb-3 animate-form-element" style="animation-delay: 1.6s;"><i class="bi bi-sign-turn-right-fill me-2"></i>Derivaciones</h5>
-                        <div class="d-flex flex-wrap gap-3 mb-4 animate-form-element" style="animation-delay: 1.7s;"> 
-                            <div class="form-check form-switch"> 
+                        <h5 class="mb-3 ..."><i class="bi bi-sign-turn-right-fill me-2"></i>Derivaciones</h5>
+                        <div class="d-flex flex-wrap gap-3 mb-4 ..."> 
+                            <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" id="derivacion" name="derivacion" {% if control.derivacion %}checked{% endif %}>
                                 <label class="form-check-label" for="derivacion">Requiere Derivación</label>
                             </div>
@@ -150,25 +147,24 @@
                         </div>
 
                         {# --- Botones de Acción --- #}
-                        <div class="form-buttons animate-form-element" style="animation-delay: 1.8s;">
-                            <button type="submit" class="btn btn-primary">
+                        <div class="form-buttons ...">
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
                                 <i class="bi bi-check-circle-fill me-2"></i>Guardar Cambios
                             </button>
                             <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Cancelar
                             </a>
-                            {# --- BOTÓN NUEVO PARA DESHABILITAR --- #}
-                            <form method="post" action="{% url 'control:editar_control' control.id %}" class="d-inline ms-auto" onsubmit="return confirm('¿Estás seguro de que deseas marcar este control como NO APLICABLE o NO REALIZADO? Esta acción guardará el control como deshabilitado.');">
-                                {% csrf_token %}
-                                <button type="submit" name="action" value="disable" class="btn btn-danger">
-                                    <i class="bi bi-slash-circle-fill me-2"></i>Marcar como No Realizado/No Aplica
-                                </button>
-                            </form>
-                            {# --- FIN BOTÓN NUEVO --- #}
+                            
+                            <button type="submit" name="action" value="disable" class="btn btn-danger ms-auto" 
+                                    formnovalidate 
+                                    onclick="return confirm('¿Estás seguro de que deseas marcar este control como NO APLICABLE o NO REALIZADO?');">
+                                <i class="bi bi-slash-circle-fill me-2"></i>Marcar como No Realizado/No Aplica
+                            </button>
                         </div>
-                    </form>
-                </div> </div> </div>
+                        
+                    </form> </div> 
+            </div> 
+        </div>
     </div>
 </div>
-
 {% endblock %}

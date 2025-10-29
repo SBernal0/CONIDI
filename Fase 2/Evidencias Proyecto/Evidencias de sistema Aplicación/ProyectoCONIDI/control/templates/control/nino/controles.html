@@ -137,32 +137,38 @@
     <div class="tab-pane fade" id="vacunas-pane" role="tabpanel" aria-labelledby="vacunas-tab" tabindex="0">
         <div class="item-grid-container mt-3"> 
             {% for vacuna_app in vacunas_aplicadas %}
-             <div class="info-block animate-list-item" style="--i: {{ forloop.counter0 }};"> 
+            <div class="info-block animate-list-item {% if vacuna_app.deshabilitado %}disabled-item{% endif %}" style="--i: {{ forloop.counter0 }};"> 
                 <div class="list-item-header">
                     <h5>{{ vacuna_app.vacuna.nom_vacuna }}</h5>
-                     <span class="badge {{ vacuna_app.estado_css_class }} rounded-pill">
+                    <span class="badge {{ vacuna_app.estado_css_class }} rounded-pill">
                         {{ vacuna_app.estado_alerta }}
                     </span>
                 </div>
-                 <div class="list-item-content">
+                <div class="list-item-content">
                     <p><strong>Fecha Programada:</strong> {{ vacuna_app.fecha_programada|date:"d/m/Y" }}</p>
                     {% if vacuna_app.fecha_aplicacion %}
                         <small class="text-success mt-1 d-block">Aplicada el: {{ vacuna_app.fecha_aplicacion|date:"d/m/Y" }}</small>
+                    {% elif vacuna_app.deshabilitado %}
+                        <small class="text-muted mt-1 d-block">Vacuna marcada como no aplicable.</small>
                     {% endif %}
-                 </div>
-                 <div class="list-item-actions">
-                     {% if vacuna_app.fecha_aplicacion %}
+                </div>
+                <div class="list-item-actions">
+                    {% if vacuna_app.fecha_aplicacion %}
                         <a href="{% url 'control:ver_vacuna' vacuna_app.id %}" class="btn btn-sm btn-info text-white"><i class="bi bi-eye-fill me-1"></i> Ver</a>
                         {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
                             <a href="{% url 'control:editar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-fill me-1"></i> Editar</a>
+                        {% endif %}
+                    {% elif vacuna_app.deshabilitado %}
+                        {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
+                            <a href="{% url 'control:editar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-secondary"><i class="bi bi-pencil-fill me-1"></i> Editar/Reactivar</a>
                         {% endif %}
                     {% else %}
                         {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
                             <a href="{% url 'control:registrar_vacuna' vacuna_app.id %}" class="btn btn-sm btn-success"><i class="bi bi-plus-circle-fill me-1"></i> Registrar</a>
                         {% endif %}
                     {% endif %}
-                 </div>
-             </div>
+                </div>
+            </div>
             {% empty %}
                 <div class="alert alert-light w-100 text-center">El calendario de vacunación para este niño/a aún no ha sido generado.</div>
             {% endfor %}

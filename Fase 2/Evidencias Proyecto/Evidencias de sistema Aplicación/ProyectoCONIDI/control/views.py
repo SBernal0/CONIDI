@@ -135,7 +135,6 @@ def registrar_control(request, control_id):
     control = get_object_or_404(Control, pk=control_id)
     nino = control.nino
 
-    # Preparamos el contexto base para GET y para re-renderizar en caso de error POST
     contexto = {
         'control': control,
         'nino': nino,
@@ -148,10 +147,10 @@ def registrar_control(request, control_id):
         action = request.POST.get('action')
 
         if action == 'disable':
+            # ... (esta lógica ya está bien, limpia todos los campos) ...
             control.deshabilitado = True
             control.estado_control = 'Deshabilitado'
-            control.fecha_realizacion_control = None # Limpia fecha
-            # Limpia campos clínicos
+            control.fecha_realizacion_control = None
             control.pesokg = None
             control.talla_cm = None
             control.imc = None
@@ -168,41 +167,60 @@ def registrar_control(request, control_id):
             control.consulta_dental_realizada = None
             control.derivacion_dentista = None
             control.profesional = None
-
             control.save()
             messages.warning(request, f'El "{control.nombre_control}" ha sido marcado como No Realizado/No Aplica.')
             return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
-        # Si no es disable, es guardado normal
-        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
+        # --- VALIDACIÓN DE GUARDADO NORMAL ---
+        
+        errores_validacion = []
         try:
+            # 1. Validar y convertir campos numéricos
             pesokg_str = request.POST.get('pesokg')
             talla_cm_str = request.POST.get('talla_cm')
             control.pesokg = float(pesokg_str) if pesokg_str else None
             control.talla_cm = float(talla_cm_str) if talla_cm_str else None
-        except (ValueError, TypeError):
-            messages.error(request, 'El peso y la talla deben ser números válidos.')
-            # Re-renderiza el formulario manteniendo los datos ingresados
-            contexto['form_data'] = request.POST # Pasa los datos del POST para rellenar
-            return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
-
-        pc_cm_str = request.POST.get('pc_cm')
-        try:
+            
+            pc_cm_str = request.POST.get('pc_cm')
             control.pc_cm = float(pc_cm_str) if pc_cm_str else None
+
+            # 2. Validar rangos lógicos
+            if control.pesokg and (control.pesokg <= 0 or control.pesokg > 150):
+                errores_validacion.append(f"El peso ({control.pesokg} kg) está fuera del rango lógico (0-150 kg).")
+            if control.talla_cm and (control.talla_cm <= 20 or control.talla_cm > 250):
+                errores_validacion.append(f"La talla ({control.talla_cm} cm) está fuera del rango lógico (20-250 cm).")
+            if control.pc_cm and (control.pc_cm <= 10 or control.pc_cm > 100):
+                errores_validacion.append(f"El P. Craneal ({control.pc_cm} cm) está fuera del rango lógico (10-100 cm).")
+
+            # 3. Validar fecha
+            fecha_realizacion_str = request.POST.get('fecha_realizacion')
+            if not fecha_realizacion_str:
+                errores_validacion.append("La fecha de realización es obligatoria.")
+            else:
+                control.fecha_realizacion_control = date.fromisoformat(fecha_realizacion_str)
+                if control.fecha_realizacion_control > date.today():
+                    errores_validacion.append("La fecha de realización no puede ser en el futuro.")
+                if control.fecha_realizacion_control < nino.fecha_nacimiento:
+                     errores_validacion.append("La fecha de realización no puede ser anterior a la fecha de nacimiento del niño.")
+
         except (ValueError, TypeError):
-            messages.error(request, 'El perímetro craneal debe ser un número válido.')
+            errores_validacion.append('Peso, Talla o P. Craneal deben ser números válidos.')
+        
+        # Si se encontró algún error, regresar al formulario
+        if errores_validacion:
+            for error in errores_validacion:
+                messages.error(request, error)
             contexto['form_data'] = request.POST
             return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
-
-        # Cálculo IMC
+        # --- Si todo está bien, continuar con el guardado ---
+        
         if control.talla_cm and control.talla_cm > 0 and control.pesokg:
             talla_m = control.talla_cm / 100
             control.imc = round(control.pesokg / (talla_m ** 2), 2)
         else:
-            control.imc = None
+             control.imc = None
 
-        # Asignar resto de campos desde el POST
         control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
         control.calificacion_estatural = request.POST.get('calificacion_estatural')
         control.calificacion_pce = request.POST.get('calificacion_pce')
@@ -215,7 +233,7 @@ def registrar_control(request, control_id):
         control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
         control.derivacion_dentista = 'derivacion_dentista' in request.POST
         control.estado_control = 'Realizado'
-        control.deshabilitado = False # Si se guarda, no está deshabilitado
+        control.deshabilitado = False 
 
         try:
             control.profesional = request.user.perfil_profesional
@@ -226,7 +244,6 @@ def registrar_control(request, control_id):
         messages.success(request, f'El "{control.nombre_control}" ha sido registrado exitosamente.')
         return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
-    # Lógica GET: simplemente renderiza la plantilla con el contexto
     return render(request, 'control/control_nino_sano/registrar_control.html', contexto)
 
 
@@ -254,7 +271,7 @@ def editar_control(request, control_id):
     control = get_object_or_404(Control, pk=control_id)
     nino = control.nino
 
-    # Preparamos el contexto base
+    # Preparamos el contexto base para la vista GET y para errores en POST
     contexto = {
         'control': control,
         'nino': nino,
@@ -266,16 +283,16 @@ def editar_control(request, control_id):
     if request.method == 'POST':
         action = request.POST.get('action')
 
+        # --- LÓGICA PARA DESHABILITAR EL CONTROL ---
         if action == 'disable':
             control.deshabilitado = True
             control.estado_control = 'Deshabilitado'
-            control.fecha_realizacion_control = None # Limpia fecha
-            # Limpia campos clínicos
+            # Limpia todos los campos clínicos para evitar datos inconsistentes
+            control.fecha_realizacion_control = None
             control.pesokg = None
             control.talla_cm = None
             control.imc = None
             control.pc_cm = None
-            # ... (limpiar el resto si es necesario)
             control.calificacion_nutricional = None
             control.calificacion_estatural = None
             control.calificacion_pce = None
@@ -287,41 +304,71 @@ def editar_control(request, control_id):
             control.derivacion = False
             control.consulta_dental_realizada = None
             control.derivacion_dentista = None
-            # No limpiamos el profesional aquí, podríamos querer saber quién lo deshabilitó
-            # o mantener el original. Depende de la regla de negocio.
+            # Opcional: limpiar el profesional, depende de si quieres guardar quién lo deshabilitó
             # control.profesional = None
 
             control.save()
             messages.warning(request, f'El "{control.nombre_control}" ha sido marcado como No Realizado/No Aplica.')
             return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
-        # Si no es disable, es actualización normal
-        control.fecha_realizacion_control = request.POST.get('fecha_realizacion')
+        # --- LÓGICA PARA GUARDAR CAMBIOS (ACCIÓN 'save' O POR DEFECTO) ---
+
+        errores_validacion = []
         try:
+            # 1. Validar y convertir campos numéricos
             pesokg_str = request.POST.get('pesokg')
             talla_cm_str = request.POST.get('talla_cm')
-            control.pesokg = float(pesokg_str) if pesokg_str else None
-            control.talla_cm = float(talla_cm_str) if talla_cm_str else None
+            pc_cm_str = request.POST.get('pc_cm')
+
+            peso_kg = float(pesokg_str) if pesokg_str else None
+            talla_cm = float(talla_cm_str) if talla_cm_str else None
+            pc_cm = float(pc_cm_str) if pc_cm_str else None
+
+            # 2. Validar rangos lógicos
+            if peso_kg is not None and (peso_kg <= 0 or peso_kg > 150):
+                errores_validacion.append(f"El peso ({peso_kg} kg) está fuera del rango lógico (0-150 kg).")
+            if talla_cm is not None and (talla_cm <= 20 or talla_cm > 250):
+                errores_validacion.append(f"La talla ({talla_cm} cm) está fuera del rango lógico (20-250 cm).")
+            if pc_cm is not None and (pc_cm <= 10 or pc_cm > 100):
+                errores_validacion.append(f"El P. Craneal ({pc_cm} cm) está fuera del rango lógico (10-100 cm).")
+
+            # 3. Validar fecha
+            fecha_realizacion_str = request.POST.get('fecha_realizacion')
+            if not fecha_realizacion_str:
+                errores_validacion.append("La fecha de realización es obligatoria.")
+            else:
+                fecha_realizacion = date.fromisoformat(fecha_realizacion_str)
+                if fecha_realizacion > date.today():
+                    errores_validacion.append("La fecha de realización no puede ser en el futuro.")
+                if fecha_realizacion < nino.fecha_nacimiento:
+                     errores_validacion.append("La fecha de realización no puede ser anterior a la fecha de nacimiento del niño.")
+
         except (ValueError, TypeError):
-            messages.error(request, 'El peso y la talla deben ser números válidos.')
-            contexto['form_data'] = request.POST # Pasa datos para rellenar
+            errores_validacion.append('Peso, Talla o P. Craneal deben ser números válidos.')
+
+        # Si se encontró algún error, regresar al formulario mostrando los mensajes
+        if errores_validacion:
+            for error in errores_validacion:
+                messages.error(request, error)
+            contexto['form_data'] = request.POST # Pasa los datos del POST para rellenar el form
             return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
-        pc_cm_str = request.POST.get('pc_cm')
-        try:
-            control.pc_cm = float(pc_cm_str) if pc_cm_str else None
-        except (ValueError, TypeError):
-            messages.error(request, 'El perímetro craneal debe ser un número válido.')
-            contexto['form_data'] = request.POST
-            return render(request, 'control/control_nino_sano/editar_control.html', contexto)
+        # --- Si todo está bien, continuar con el guardado de datos ---
 
+        # Asignamos los valores ya validados y convertidos
+        control.fecha_realizacion_control = fecha_realizacion
+        control.pesokg = peso_kg
+        control.talla_cm = talla_cm
+        control.pc_cm = pc_cm
 
+        # Recalcular IMC
         if control.talla_cm and control.talla_cm > 0 and control.pesokg:
             talla_m = control.talla_cm / 100
             control.imc = round(control.pesokg / (talla_m ** 2), 2)
         else:
             control.imc = None
 
+        # Asignar resto de campos desde el POST
         control.calificacion_nutricional = request.POST.get('calificacion_nutricional')
         control.calificacion_estatural = request.POST.get('calificacion_estatural')
         control.calificacion_pce = request.POST.get('calificacion_pce')
@@ -333,8 +380,10 @@ def editar_control(request, control_id):
         control.derivacion = 'derivacion' in request.POST
         control.consulta_dental_realizada = 'consulta_dental_realizada' in request.POST
         control.derivacion_dentista = 'derivacion_dentista' in request.POST
-        control.estado_control = 'Realizado' # Si se edita, se asume que está realizado
-        control.deshabilitado = False # Si se edita, se asegura que no esté deshabilitado
+
+        # Actualizar estado y asegurar que no esté deshabilitado
+        control.estado_control = 'Realizado'
+        control.deshabilitado = False
 
         # Opcional: Actualizar el profesional que hizo la última edición
         try:
@@ -346,7 +395,7 @@ def editar_control(request, control_id):
         messages.success(request, f'El "{control.nombre_control}" ha sido actualizado exitosamente.')
         return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
-    # Lógica GET
+    # Lógica para la petición GET (cuando se carga la página por primera vez)
     return render(request, 'control/control_nino_sano/editar_control.html', contexto)
 
 @login_required
@@ -454,27 +503,41 @@ def registrar_vacuna(request, vacuna_aplicada_id):
     vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
     nino = vacuna_aplicada.nino
 
+    contexto = {
+        'vacuna_aplicada': vacuna_aplicada,
+        'nino': nino,
+        'via_choices': VacunaAplicada.VIA_CHOICES,
+    }
+
     if request.method == 'POST':
-        # Actualizamos el registro existente con los datos del formulario
+        action = request.POST.get('action') # Obtenemos la acción
+
+        if action == 'disable':
+            vacuna_aplicada.deshabilitado = True
+            vacuna_aplicada.fecha_aplicacion = None # Limpiamos
+            vacuna_aplicada.dosis = None
+            vacuna_aplicada.lugar = None
+            vacuna_aplicada.profesional = None
+            vacuna_aplicada.save()
+            messages.warning(request, f"La vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' ha sido marcada como No Aplica.")
+            return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+        # Si no es 'disable', es guardado normal
         vacuna_aplicada.fecha_aplicacion = request.POST.get('fecha_aplicacion')
         vacuna_aplicada.dosis = request.POST.get('dosis')
         vacuna_aplicada.lugar = request.POST.get('lugar')
         vacuna_aplicada.via = request.POST.get('via')
+        vacuna_aplicada.deshabilitado = False # Nos aseguramos que esté activa
 
         try:
             vacuna_aplicada.profesional = request.user.perfil_profesional
-        except:
-            pass # Si es un admin, no tiene perfil de profesional
+        except Profesional.DoesNotExist:
+            pass 
 
         vacuna_aplicada.save()
         messages.success(request, f"Vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' registrada exitosamente.")
         return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
 
-    contexto = {
-        'vacuna_aplicada': vacuna_aplicada,
-        'nino': nino,
-        'via_choices': VacunaAplicada.VIA_CHOICES, # Pasamos las opciones para el menú
-    }
     return render(request, 'control/vacuna/registrar_vacuna.html', contexto)
 
 @login_required
@@ -499,33 +562,41 @@ def editar_vacuna(request, vacuna_aplicada_id):
     vacuna_aplicada = get_object_or_404(VacunaAplicada, pk=vacuna_aplicada_id)
     nino = vacuna_aplicada.nino
 
-    if request.method == 'POST':
-        # La lógica de guardar los datos del formulario no cambia
-        vacuna_aplicada.fecha_aplicacion = request.POST.get('fecha_aplicacion')
-        vacuna_aplicada.dosis = request.POST.get('dosis')
-        vacuna_aplicada.lugar = request.POST.get('lugar')
-        vacuna_aplicada.via = request.POST.get('via')
-        
-        # --- LÓGICA AÑADIDA PARA REGISTRAR QUIÉN EDITA ---
-        # Se actualiza el profesional al que realizó la última modificación.
-        try:
-            vacuna_aplicada.profesional = request.user.perfil_profesional
-        except:
-            # Si el usuario es un Admin sin perfil de profesional, el campo no se modifica.
-            pass
-        # -------------------------------------------------
-
-        vacuna_aplicada.save()
-        
-        messages.success(request, f"Registro de vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' actualizado.")
-        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
-
-    # La lógica para la petición GET no cambia
     contexto = {
         'vacuna_aplicada': vacuna_aplicada,
         'nino': nino,
         'via_choices': VacunaAplicada.VIA_CHOICES,
     }
+
+    if request.method == 'POST':
+        action = request.POST.get('action') # Obtenemos la acción
+
+        if action == 'disable':
+            vacuna_aplicada.deshabilitado = True
+            vacuna_aplicada.fecha_aplicacion = None
+            vacuna_aplicada.dosis = None
+            vacuna_aplicada.lugar = None
+            # No limpiamos el profesional, para saber quién la deshabilitó
+            vacuna_aplicada.save()
+            messages.warning(request, f"La vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' ha sido marcada como No Aplica.")
+            return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
+        # Si no es 'disable', es guardado normal
+        vacuna_aplicada.fecha_aplicacion = request.POST.get('fecha_aplicacion')
+        vacuna_aplicada.dosis = request.POST.get('dosis')
+        vacuna_aplicada.lugar = request.POST.get('lugar')
+        vacuna_aplicada.via = request.POST.get('via')
+        vacuna_aplicada.deshabilitado = False # La reactivamos si se edita
+
+        try:
+            vacuna_aplicada.profesional = request.user.perfil_profesional
+        except Profesional.DoesNotExist:
+            pass
+
+        vacuna_aplicada.save()
+        messages.success(request, f"Registro de vacuna '{vacuna_aplicada.vacuna.nom_vacuna}' actualizado.")
+        return redirect('control:detalle_nino', nino_rut=nino.rut_nino)
+
     return render(request, 'control/vacuna/editar_vacuna.html', contexto)
 
 @login_required

@@ -311,6 +311,8 @@ class Vacuna(models.Model):
     def __str__(self):
         return self.nom_vacuna
 
+# control/models.py
+
 class VacunaAplicada(models.Model):
     VIA_CHOICES = [
         ('I.D', 'Intradérmica'), 
@@ -324,13 +326,14 @@ class VacunaAplicada(models.Model):
     nino = models.ForeignKey(Nino, on_delete=models.CASCADE, db_column='rut_nino', related_name='vacunas_aplicadas')
     vacuna = models.ForeignKey(Vacuna, on_delete=models.PROTECT)
 
-    # --- CAMPOS CORREGIDOS ---
-    # Fecha en que DEBERÍA aplicarse (obligatoria para el calendario)
     fecha_programada = models.DateField()
-    # Fecha en que REALMENTE se aplicó (opcional, se rellena al registrar)
     fecha_aplicacion = models.DateField(null=True, blank=True)
+
+    # --- CAMPO NUEVO AÑADIDO ---
+    deshabilitado = models.BooleanField(default=False, help_text="Marcar si esta vacuna no aplica o no se realizó.")
+
     history = HistoricalRecords()
-    # Hacemos el resto de campos opcionales, ya que se llenarán al registrar
+
     dosis = models.CharField(max_length=50, null=True, blank=True)
     lugar = models.CharField(max_length=100, null=True, blank=True)
     profesional = models.ForeignKey('login.Profesional', on_delete=models.SET_NULL, null=True, blank=True)
@@ -338,14 +341,15 @@ class VacunaAplicada(models.Model):
     via = models.CharField(max_length=10, choices=VIA_CHOICES, null=True, blank=True)
     fecha_inoculacion = models.DateField(null=True, blank=True)
 
-    # --- LÓGICA DE ALERTAS ---
     @property
     def estado_alerta(self):
+        # --- LÓGICA ACTUALIZADA ---
+        if self.deshabilitado:
+            return "Deshabilitado" # Prioridad 1
         if self.fecha_aplicacion:
-            return "Realizado"
-        
+            return "Realizado" # Prioridad 2
+
         hoy = date.today()
-        # Usaremos un margen fijo de 30 días para las vacunas por ahora
         if hoy <= self.fecha_programada:
             return "Pendiente"
         elif hoy <= self.fecha_programada + timedelta(days=30):
@@ -357,15 +361,19 @@ class VacunaAplicada(models.Model):
     def estado_css_class(self):
         estado = self.estado_alerta
         if estado == "Realizado":
-            return "bg-success"
+            return "bg-success text-white"
         elif estado == "Pendiente":
-            return "bg-secondary"
-        else: # Atrasado y Muy Atrasado
-            return "bg-danger"
-    
+            return "bg-secondary text-white"
+        elif estado == "Atrasado":
+            return "bg-warning text-dark" # Cambiado para diferenciar
+        elif estado == "Muy Atrasado":
+            return "bg-danger text-white"
+        elif estado == "Deshabilitado":
+            return "bg-secondary text-white opacity-75" # Gris
+        return "bg-light text-dark"
+
     def __str__(self):
         return f"{self.vacuna.nom_vacuna} para {self.nino.nombre}"
-
 
 
 class EntregaAlimentos(models.Model):
