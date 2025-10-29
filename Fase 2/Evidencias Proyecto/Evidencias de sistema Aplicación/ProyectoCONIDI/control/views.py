@@ -768,53 +768,66 @@ def historial_categorias_alergia(request): # <-- Asegúrate que la función teng
 @rol_requerido(['Administrador'])
 def reportes(request):
     # Obtenemos todos los profesionales y el que está actualmente como encargado
-    profesionales = Profesional.objects.select_related('usuario').all()
-    encargado_actual = profesionales.filter(encargado=True).first()
+    profesionales_todos = Profesional.objects.select_related('usuario').all()
+    encargados_actuales = profesionales_todos.filter(encargado=True)
+    # Profesionales que aún no son encargados, para el selector de "agregar"
+    profesionales_no_encargados = profesionales_todos.filter(encargado=False)
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # --- ACCIÓN: Cambiar el profesional encargado ---
-        if action == 'cambiar_encargado':
-            nuevo_encargado_rut = request.POST.get('profesional_encargado')
-            
-            try:
-                with transaction.atomic():
-                    # 1. Quitamos el estado de 'encargado' a todos
-                    Profesional.objects.update(encargado=False)
-                    
-                    # 2. Asignamos el nuevo encargado si se seleccionó uno
-                    if nuevo_encargado_rut:
-                        nuevo_encargado = get_object_or_404(Profesional, rut=nuevo_encargado_rut)
-                        nuevo_encargado.encargado = True
-                        nuevo_encargado.save()
-                        messages.success(request, f'Se ha asignado a {nuevo_encargado.nombre_completo} como nuevo encargado de reportes.')
-                    else:
-                        messages.info(request, 'Se ha quitado el encargado de reportes. Nadie recibirá los correos.')
-                
-                return redirect('control:reportes')
+        # --- ACCIÓN: Agregar uno o más profesionales encargados ---
+        if action == 'agregar_encargados':
+            nuevos_encargados_ruts = request.POST.getlist('profesionales_a_agregar')
+            if not nuevos_encargados_ruts:
+                messages.warning(request, 'No se seleccionó ningún profesional para agregar.')
+            else:
+                try:
+                    profesionales_a_actualizar = Profesional.objects.filter(rut__in=nuevos_encargados_ruts)
+                    count = profesionales_a_actualizar.update(encargado=True)
+                    messages.success(request, f'Se agregaron {count} nuevos encargados de reportes.')
+                except Exception as e:
+                    messages.error(request, f'Ocurrió un error al agregar encargados: {e}')
+            return redirect('control:reportes')
 
+        # --- ACCIÓN: Remover un profesional encargado ---
+        elif action == 'remover_encargado':
+            encargado_a_remover_rut = request.POST.get('encargado_rut')
+            try:
+                profesional = get_object_or_404(Profesional, rut=encargado_a_remover_rut)
+                profesional.encargado = False
+                profesional.save()
+                messages.info(request, f'Se ha removido a {profesional.nombre_completo} de la lista de encargados.')
             except Profesional.DoesNotExist:
                 messages.error(request, 'El profesional seleccionado no existe.')
             except Exception as e:
-                messages.error(request, f'Ocurrió un error al actualizar el encargado: {e}')
+                messages.error(request, f'Ocurrió un error al remover al encargado: {e}')
+            return redirect('control:reportes')
 
         # --- ACCIÓN: Enviar el reporte por correo ---
         elif action == 'enviar_reporte':
-            if not encargado_actual:
+            if not encargados_actuales.exists():
                 messages.error(request, 'No se puede enviar el reporte porque no hay un profesional encargado asignado.')
                 return redirect('control:reportes')
 
             # Buscamos los niños con controles atrasados
             controles_atrasados = Control.objects.filter(
                 fecha_realizacion_control__isnull=True,
-                fecha_control_programada__lt=date.today()
+                deshabilitado=False, # Añadido para no reportar los deshabilitados
+                fecha_control_programada__lt=date.today() - timedelta(days=7) # Atrasados por más de 7 días
             ).select_related('nino').order_by('nino__ap_paterno', 'nino__nombre')
 
             # --- Construcción del mensaje del correo directamente en la vista ---
             fecha_reporte = date.today().strftime("%d/%m/%Y")
             asunto = f'Reporte de Controles Atrasados - {fecha_reporte}'
-            
+            destinatarios = [enc.email for enc in encargados_actuales]
+
+            # Usamos un template para el cuerpo del correo para mayor flexibilidad
+            mensaje_html = render_to_string('control/reportes_mail/cuerpo_reporte_mail.html', {
+                'controles_atrasados': controles_atrasados,
+                'fecha_reporte': fecha_reporte,
+            })
+            """
             mensaje_body = (
                 f'Estimado/a {encargado_actual.nombre_completo},\n\n'
                 f'A continuación se presenta el listado de niños y niñas con controles de salud pendientes al {fecha_reporte}.\n\n'
@@ -834,22 +847,23 @@ def reportes(request):
                 mensaje_body += "¡Buenas noticias! No hay controles atrasados para reportar en este momento.\n\n"
 
             mensaje_body += "\nAtentamente,\nSistema de Gestión CESFAM."
-            
+            """
             try:
                 send_mail(
                     subject=asunto,
-                    message=mensaje_body,
+                    message="Este es un correo HTML. Si no puede verlo, por favor active la vista HTML en su cliente de correo.", # Mensaje plano alternativo
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[encargado_actual.email],
+                    recipient_list=destinatarios,
+                    html_message=mensaje_html, # Usamos el mensaje en formato HTML
                 )
-                messages.success(request, f'Reporte enviado exitosamente a {encargado_actual.email}.')
+                messages.success(request, f'Reporte enviado exitosamente a {len(destinatarios)} encargado(s).')
             except Exception as e:
                 messages.error(request, f'Error al enviar el correo: {e}')
             
             return redirect('control:reportes')
 
     contexto = {
-        'profesionales': profesionales,
-        'encargado_actual': encargado_actual
+        'profesionales_no_encargados': profesionales_no_encargados,
+        'encargados_actuales': encargados_actuales
     }
     return render(request, 'control/reportes_mail/enviar_reporte.html', contexto)

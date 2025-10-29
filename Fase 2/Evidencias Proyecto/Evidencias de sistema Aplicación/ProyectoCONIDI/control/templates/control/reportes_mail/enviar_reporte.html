@@ -1,97 +1,105 @@
 {% extends 'base.html' %}
 {% load static %}
-
+ 
 {% block title %}Configurar y Enviar Reportes{% endblock %}
-
+ 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
 {% endblock %}
-
+ 
 {% block content %}
-
-<div class="page-header mb-4 animate-fade-in-up">
-    <h2><i class="bi bi-gear-wide-connected me-2"></i>Configurar y Enviar Reportes</h2>
-</div>
-
-<div class="row">
-    <div class="col-lg-6 mb-4 animate-form-element" style="animation-delay: 0.1s;">
-        <div class="card form-card h-100"> 
-            <div class="form-header"> 
-                <div class="form-icon"><i class="bi bi-person-check-fill"></i></div>
-                <h5 class="mb-0">Asignar Encargado de Reportes</h5>
+ 
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+ 
+            <div class="card form-card mb-4">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-people-fill"></i></div>
+                    <h2>Encargados Actuales de Reportes</h2>
+                </div>
+                <div class="form-body">
+                    {% if encargados_actuales %}
+                        <ul class="list-group">
+                            {% for encargado in encargados_actuales %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-person-check-fill me-2"></i>
+                                        <strong>{{ encargado.nombre_completo }}</strong>
+                                        <small class="text-muted ms-2">({{ encargado.email }})</small>
+                                    </div>
+                                    <form method="post" class="mb-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remover_encargado">
+                                        <input type="hidden" name="encargado_rut" value="{{ encargado.rut }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover de la lista de encargados">
+                                            <i class="bi bi-person-x-fill"></i> Remover
+                                        </button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            Actualmente no hay profesionales encargados de recibir reportes.
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="form-body"> 
-                <p class="card-text text-muted mb-3">
-                    Seleccione al profesional destinatario de los reportes. Solo puede haber uno a la vez.
-                </p>
-
-                <form id="form-encargado" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="cambiar_encargado">
-
-                    <div class="mb-3">
-                        <label for="profesional_encargado" class="form-label">Profesional Encargado:</label>
-                        <div class="input-group"> 
-                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                            <select name="profesional_encargado" id="profesional_encargado" class="form-select">
-                                <option value="">-- Ninguno --</option>
-                                {% for prof in profesionales %}
-                                    <option value="{{ prof.rut }}" {% if encargado_actual and encargado_actual.rut == prof.rut %}selected{% endif %}>
-                                        {{ prof.nombre_completo }}
-                                    </option>
+ 
+            <div class="card form-card mb-4"> 
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-person-plus-fill"></i></div>
+                    <h2>Agregar Encargados</h2>
+                </div>
+                <div class="form-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="agregar_encargados">
+                        <div class="mb-3">
+                            <label for="profesionales_a_agregar" class="form-label">Buscar y seleccionar uno o más profesionales para agregar como encargados:</label>
+                            <select name="profesionales_a_agregar" id="profesionales_a_agregar" class="form-select select2-multiple" multiple>
+                                {% for prof in profesionales_no_encargados %}
+                                    <option value="{{ prof.rut }}">{{ prof.nombre_completo }}</option>
+                                {% empty %}
+                                    <option disabled>No hay más profesionales para agregar.</option>
                                 {% endfor %}
                             </select>
+                            <small class="form-text text-muted">Utilice el campo de búsqueda para encontrar y seleccionar profesionales.</small>
                         </div>
-                    </div>
-
-                    <div class="alert alert-info mt-3 mb-4" role="alert"> 
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        {% if encargado_actual %}
-                            El encargado actual es <strong> {{ encargado_actual.nombre_completo }}</strong> ({{ encargado_actual.email }}).
-                        {% else %}
-                            Actualmente <strong> no hay un encargado </strong> asignado.
-                        {% endif %}
-                    </div>
-
-                    
-                    <div class="d-grid"> 
-                        <button type="button" class="btn btn-cesfam" data-bs-toggle="modal" data-bs-target="#confirmarCambioModal">
-                            <i class="bi bi-save me-2"></i>Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary" {% if not profesionales_no_encargados %}disabled{% endif %}>
+                                <i class="bi bi-plus-circle-fill me-2"></i>Agregar Seleccionados
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="col-lg-6 mb-4 animate-form-element" style="animation-delay: 0.2s;">
-        <div class="card form-card h-100"> 
-             <div class="form-header"> 
-                <div class="form-icon"><i class="bi bi-envelope-paper-fill"></i></div>
-                <h5 class="mb-0">Enviar Reporte Manual</h5>
-            </div>
-            <div class="form-body d-flex flex-column"> 
-                <p class="card-text text-muted mb-3">
-                    Envíe un reporte inmediato con niños con controles atrasados al profesional encargado.
-                </p>
-
-                <div class="mt-auto"> 
-                    {% if encargado_actual %}
+ 
+            <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-envelope-paper-fill"></i></div>
+                    <h2>Enviar Reporte Manual</h2>
+                </div>
+                <div class="form-body">
+                    <p>Envíe un reporte inmediato con el listado de niños con controles de salud atrasados a todos los profesionales encargados.</p>
+                    {% if encargados_actuales %}
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="enviar_reporte">
-                            <div class="d-grid"> 
+                            <div class="form-buttons">
                                 <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-send-fill me-2"></i>Enviar Reporte a {{ encargado_actual.nombre_completo }}
+                                    <i class="bi bi-send-fill me-2"></i>Enviar Reporte a {{ encargados_actuales|length }} Encargado(s)
                                 </button>
                             </div>
                         </form>
                     {% else %}
-                        <div class="alert alert-warning text-center" role="alert">
+                        <div class="alert alert-warning text-center">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Debe asignar un encargado para enviar el reporte.
+                            Debe asignar al menos un profesional encargado para poder enviar el reporte.
                         </div>
-                        <div class="d-grid"> {# d-grid para botón ancho #}
+                        <div class="form-buttons">
                             <button class="btn btn-success" disabled>
                                 <i class="bi bi-send-fill me-2"></i>Enviar Reporte
                             </button>
@@ -99,64 +107,29 @@
                     {% endif %}
                 </div>
             </div>
+ 
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="confirmarCambioModal" tabindex="-1" aria-labelledby="confirmarCambioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"> 
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark"> 
-                <h5 class="modal-title" id="confirmarCambioModalLabel">
-                   <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Cambio
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea actualizar el profesional encargado?
-                <div id="modal-text-confirmacion" class="alert alert-secondary mt-3 mb-0"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg me-1"></i> Cancelar
-                </button>
-                <button type="button" class="btn btn-primary" id="btn-confirmar-guardado">
-                    <i class="bi bi-check-lg me-1"></i> Sí, Guardar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
+ 
 {% endblock %}
 
-{# --- BLOQUE JAVASCRIPT --- #}
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const formEncargado = document.getElementById('form-encargado');
-    const btnConfirmarGuardado = document.getElementById('btn-confirmar-guardado');
-    const selectProfesional = document.getElementById('profesional_encargado');
-    const modalText = document.getElementById('modal-text-confirmacion');
-    // Asegúrate que el modal se inicialice si Bootstrap no lo hace automáticamente
-    // const confirmarModal = new bootstrap.Modal(document.getElementById('confirmarCambioModal'));
-
-    document.getElementById('confirmarCambioModal').addEventListener('show.bs.modal', function () {
-        const selectedOption = selectProfesional.options[selectProfesional.selectedIndex];
-        modalText.classList.remove('alert-warning', 'alert-success', 'alert-danger', 'alert-secondary'); // Limpia clases previas
-
-        if (selectedOption.value) {
-            modalText.innerHTML = `<i class="bi bi-person-check-fill me-2"></i> Se asignará a <strong>${selectedOption.text.trim()}</strong> como nuevo encargado.`;
-            modalText.classList.add('alert-success'); // Verde para confirmación positiva
-        } else {
-            modalText.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> Se quitará el encargado actual. <strong>Nadie</strong> recibirá los reportes.`;
-             modalText.classList.add('alert-warning'); // Amarillo para advertencia
-        }
+    $(document).ready(function() {
+        // Inicializar Select2 en el campo de selección múltiple
+        $('#profesionales_a_agregar').select2({
+            placeholder: "Buscar y seleccionar profesionales...", // Texto de placeholder
+            allowClear: true, // Permite deseleccionar todos los elementos
+            language: {
+                noResults: function() {
+                    return "No se encontraron resultados";
+                },
+                searching: function() {
+                    return "Buscando...";
+                }
+            }
+        });
     });
-
-    btnConfirmarGuardado.addEventListener('click', function() {
-        formEncargado.submit();
-    });
-});
 </script>
 {% endblock %}
