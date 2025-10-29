@@ -3,86 +3,99 @@
 
 {% block title %}Configurar y Enviar Reportes{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<div class="page-header mb-4">
-    <h2>Configurar y Enviar Reportes</h2>
+<div class="page-header mb-4 animate-fade-in-up">
+    <h2><i class="bi bi-gear-wide-connected me-2"></i>Configurar y Enviar Reportes</h2>
 </div>
 
 <div class="row">
-    <!-- Columna para configurar el encargado -->
-    <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-person-check-fill me-2"></i>Asignar Encargado de Reportes</h5>
+    <div class="col-lg-6 mb-4 animate-form-element" style="animation-delay: 0.1s;">
+        <div class="card form-card h-100"> 
+            <div class="form-header"> 
+                <div class="form-icon"><i class="bi bi-person-check-fill"></i></div>
+                <h5 class="mb-0">Asignar Encargado de Reportes</h5>
             </div>
-            <div class="card-body">
-                <p class="card-text">
-                    Seleccione al profesional que será el destinatario principal de los reportes automáticos y manuales del sistema.
-                    Solo puede haber un encargado a la vez.
+            <div class="form-body"> 
+                <p class="card-text text-muted mb-3">
+                    Seleccione al profesional destinatario de los reportes. Solo puede haber uno a la vez.
                 </p>
-                
+
                 <form id="form-encargado" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="cambiar_encargado">
-                    
+
                     <div class="mb-3">
                         <label for="profesional_encargado" class="form-label">Profesional Encargado:</label>
-                        <select name="profesional_encargado" id="profesional_encargado" class="form-select">
-                            <option value="">-- Ninguno --</option>
-                            {% for prof in profesionales %}
-                                <option value="{{ prof.rut }}" {% if encargado_actual and encargado_actual.rut == prof.rut %}selected{% endif %}>
-                                    {{ prof.nombre_completo }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <div class="input-group"> 
+                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                            <select name="profesional_encargado" id="profesional_encargado" class="form-select">
+                                <option value="">-- Ninguno --</option>
+                                {% for prof in profesionales %}
+                                    <option value="{{ prof.rut }}" {% if encargado_actual and encargado_actual.rut == prof.rut %}selected{% endif %}>
+                                        {{ prof.nombre_completo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="alert alert-info" role="alert">
+                    <div class="alert alert-info mt-3 mb-4" role="alert"> 
                         <i class="bi bi-info-circle-fill me-2"></i>
                         {% if encargado_actual %}
                             El encargado actual es <strong> {{ encargado_actual.nombre_completo }}</strong> ({{ encargado_actual.email }}).
                         {% else %}
-                            Actualmente <strong>no hay un encargado</strong> asignado.
+                            Actualmente <strong> no hay un encargado </strong> asignado.
                         {% endif %}
                     </div>
 
-                    <button type="button" class="btn btn-cesfam w-100" data-bs-toggle="modal" data-bs-target="#confirmarCambioModal">
-                        <i class="bi bi-save me-2"></i>Guardar Cambios
-                    </button>
+                    
+                    <div class="d-grid"> 
+                        <button type="button" class="btn btn-cesfam" data-bs-toggle="modal" data-bs-target="#confirmarCambioModal">
+                            <i class="bi bi-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Columna para enviar el reporte manual -->
-    <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-envelope-paper-fill me-2"></i>Enviar Reporte Manual</h5>
+    <div class="col-lg-6 mb-4 animate-form-element" style="animation-delay: 0.2s;">
+        <div class="card form-card h-100"> 
+             <div class="form-header"> 
+                <div class="form-icon"><i class="bi bi-envelope-paper-fill"></i></div>
+                <h5 class="mb-0">Enviar Reporte Manual</h5>
             </div>
-            <div class="card-body d-flex flex-column">
-                <p class="card-text">
-                    Envíe un reporte inmediato con el listado de todos los niños con controles de salud atrasados al profesional encargado.
+            <div class="form-body d-flex flex-column"> 
+                <p class="card-text text-muted mb-3">
+                    Envíe un reporte inmediato con niños con controles atrasados al profesional encargado.
                 </p>
-                
-                <div class="mt-auto">
+
+                <div class="mt-auto"> 
                     {% if encargado_actual %}
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="enviar_reporte">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-send-fill me-2"></i>Enviar Reporte a {{ encargado_actual.nombre_completo }}
-                            </button>
+                            <div class="d-grid"> 
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-send-fill me-2"></i>Enviar Reporte a {{ encargado_actual.nombre_completo }}
+                                </button>
+                            </div>
                         </form>
                     {% else %}
                         <div class="alert alert-warning text-center" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Debe asignar un profesional encargado para poder enviar el reporte.
+                            Debe asignar un encargado para enviar el reporte.
                         </div>
-                        <button class="btn btn-success w-100" disabled>
-                            <i class="bi bi-send-fill me-2"></i>Enviar Reporte
-                        </button>
+                        <div class="d-grid"> {# d-grid para botón ancho #}
+                            <button class="btn btn-success" disabled>
+                                <i class="bi bi-send-fill me-2"></i>Enviar Reporte
+                            </button>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -90,21 +103,26 @@
     </div>
 </div>
 
-<!-- Modal de Confirmación para Cambiar Encargado -->
 <div class="modal fade" id="confirmarCambioModal" tabindex="-1" aria-labelledby="confirmarCambioModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered"> 
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmarCambioModalLabel">Confirmar Cambio de Encargado</h5>
+            <div class="modal-header bg-warning text-dark"> 
+                <h5 class="modal-title" id="confirmarCambioModalLabel">
+                   <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Cambio
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                ¿Está seguro de que desea actualizar el profesional encargado de los reportes?
-                <div id="modal-text-confirmacion" class="alert alert-warning mt-3"></div>
+                ¿Está seguro de que desea actualizar el profesional encargado?
+                <div id="modal-text-confirmacion" class="alert alert-secondary mt-3 mb-0"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btn-confirmar-guardado">Sí, Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-confirmar-guardado">
+                    <i class="bi bi-check-lg me-1"></i> Sí, Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -112,6 +130,7 @@
 
 {% endblock %}
 
+{# --- BLOQUE JAVASCRIPT --- #}
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -119,19 +138,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnConfirmarGuardado = document.getElementById('btn-confirmar-guardado');
     const selectProfesional = document.getElementById('profesional_encargado');
     const modalText = document.getElementById('modal-text-confirmacion');
-    const confirmarModal = new bootstrap.Modal(document.getElementById('confirmarCambioModal'));
+    // Asegúrate que el modal se inicialice si Bootstrap no lo hace automáticamente
+    // const confirmarModal = new bootstrap.Modal(document.getElementById('confirmarCambioModal'));
 
-    // Actualizar el texto del modal cuando se abre
     document.getElementById('confirmarCambioModal').addEventListener('show.bs.modal', function () {
         const selectedOption = selectProfesional.options[selectProfesional.selectedIndex];
+        modalText.classList.remove('alert-warning', 'alert-success', 'alert-danger', 'alert-secondary'); // Limpia clases previas
+
         if (selectedOption.value) {
-            modalText.innerHTML = `Se asignará a <strong>${selectedOption.text.trim()}</strong> como nuevo encargado.`;
+            modalText.innerHTML = `<i class="bi bi-person-check-fill me-2"></i> Se asignará a <strong>${selectedOption.text.trim()}</strong> como nuevo encargado.`;
+            modalText.classList.add('alert-success'); // Verde para confirmación positiva
         } else {
-            modalText.innerHTML = `Se quitará el encargado actual. <strong>Nadie</strong> recibirá los reportes.`;
+            modalText.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> Se quitará el encargado actual. <strong>Nadie</strong> recibirá los reportes.`;
+             modalText.classList.add('alert-warning'); // Amarillo para advertencia
         }
     });
 
-    // Enviar el formulario al confirmar en el modal
     btnConfirmarGuardado.addEventListener('click', function() {
         formEncargado.submit();
     });

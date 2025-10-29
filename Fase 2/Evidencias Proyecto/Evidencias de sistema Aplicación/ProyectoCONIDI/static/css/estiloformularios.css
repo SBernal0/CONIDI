@@ -314,3 +314,27 @@
     color: transparent;
     transition: color 0.2s ease-out;
 }
+
+/* Estilos adicionales para configuración reportes */
+
+/* Asegura que el select dentro de input-group se vea bien */
+.form-card .form-body .input-group > .form-select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Mejora visual de la alerta informativa dentro del form-body */
+.form-body .alert-info {
+    display: flex; /* Para alinear el ícono */
+    align-items: center;
+    font-size: 0.9rem;
+}
+.form-body .alert-info strong {
+    color: var(--cesfam-primary);
+}
+
+/* Estilo para el botón deshabilitado */
+.form-body button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
