@@ -62,7 +62,7 @@ def listar_ninos(request):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        if action == 'enviar_correo_penac':
+        if action == 'enviar_correo_pnac':
             nino_rut = request.POST.get('nino_rut')
             nino = get_object_or_404(Nino, rut_nino=nino_rut)
             
@@ -71,10 +71,10 @@ def listar_ninos(request):
 
             if relacion and relacion.tutor and relacion.tutor.email:
                 tutor = relacion.tutor
-                asunto = "Notificación: Arribo de Alimentos PENAC"
+                asunto = "Notificación: Arribo de Alimentos PNAC"
                 mensaje = (
                     f"Estimado/a {tutor.nombre_completo},\n\n"
-                    f"Le informamos que han llegado los alimentos del Programa de Alimentación Complementaria (PENAC) para {nino.nombre} {nino.ap_paterno} {nino.ap_materno}.\n\n"
+                    f"Le informamos que han llegado los alimentos del Programa de Alimentación Complementaria (PNAC) para {nino.nombre} {nino.ap_paterno} {nino.ap_materno}.\n\n"
                     "Puede acercarse a nuestro CESFAM para realizar el retiro.\n\n"
                     "Horario de atención: [Completar con el horario de retiro]\n\n"
                     "Atentamente,\n"
@@ -82,7 +82,7 @@ def listar_ninos(request):
                 )
                 try:
                     send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [tutor.email])
-                    messages.success(request, f"Correo de notificación PENAC enviado exitosamente a {tutor.email}.")
+                    messages.success(request, f"Correo de notificación PNAC enviado exitosamente a {tutor.email}.")
                 except Exception as e:
                     messages.error(request, f"Error al enviar el correo a {tutor.email}: {e}")
             else:
