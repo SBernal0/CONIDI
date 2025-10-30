@@ -6,7 +6,7 @@ from unidecode import unidecode
 from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, RegistroAlergias, CategoriaAlergia
 from django.contrib.auth.decorators import login_required
 from login.models import Tutor, Profesional
-from django.core.exceptions import PermissionDenied 
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from login.decorators import rol_requerido
 from django.core.management import call_command
@@ -17,6 +17,11 @@ from simple_history.admin import SimpleHistoryAdmin
 from django.db.models import Q
 from django.db import IntegrityError
 from django.urls import reverse
+from django.core.mail import EmailMultiAlternatives
+import threading
+import pandas as pd
+import io
+
 
 
 
@@ -793,7 +798,7 @@ def historial_alergia(request, registro_alergia_id):
 
 @login_required
 @rol_requerido(['Administrador'])
-def configurar_categorias_alergia(request): # <- Nombre actualizado
+def configurar_categorias_alergia(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
@@ -863,6 +868,92 @@ def historial_categorias_alergia(request): # <-- Asegúrate que la función teng
     }
     return render(request, 'control/config/historial_categorias_alergia.html', contexto)
 
+def _enviar_reporte_atrasados_async(destinatarios, controles_atrasados):
+    """
+    Función que se ejecuta en un hilo separado para enviar el correo electrónico.
+    Esto evita que la vista principal se bloquee esperando la respuesta del servidor de correo.
+    """
+    try:
+        today = date.today()
+        fecha_reporte_str = today.strftime("%d/%m/%Y")
+        asunto = f'Reporte de Controles Atrasados - {fecha_reporte_str}'
+
+        # --- 1. Preparar datos para el Excel ---
+        datos_excel = []
+        for control in controles_atrasados:
+            nino = control.nino
+            relacion_tutor = nino.ninotutor_set.select_related('tutor').first()
+            
+            datos_fila = {
+                'RUT Niño': nino.rut_nino,
+                'Nombre Niño': f"{nino.nombre} {nino.ap_paterno} {nino.ap_materno}".strip(),
+                'Control Atrasado': control.nombre_control,
+                'Fecha Programada': control.fecha_control_programada.strftime("%d-%m-%Y"),
+                'Nombre Tutor': relacion_tutor.tutor.nombre_completo if relacion_tutor else 'No asignado',
+                'Parentesco': relacion_tutor.get_parentesco_display() if relacion_tutor else 'N/A',
+                'Email Tutor': relacion_tutor.tutor.email if relacion_tutor and relacion_tutor.tutor.email else 'No disponible',
+                'Teléfono Tutor': relacion_tutor.tutor.telefono if relacion_tutor and relacion_tutor.tutor.telefono else 'No disponible',
+            }
+            datos_excel.append(datos_fila)
+
+        # --- 2. Crear el archivo Excel en memoria con columnas autoajustadas ---
+        df = pd.DataFrame(datos_excel)
+        excel_buffer = io.BytesIO()
+
+        # Usamos ExcelWriter para tener más control sobre el archivo y poder ajustar las columnas
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Controles Atrasados')
+
+            # Obtenemos la hoja de trabajo (worksheet) de openpyxl para manipularla
+            worksheet = writer.sheets['Controles Atrasados']
+
+            # Iteramos sobre cada columna para ajustar su ancho al contenido más largo
+            for column_cells in worksheet.columns:
+                max_length = 0
+                column_letter = column_cells[0].column_letter  # Obtener la letra de la columna (A, B, C...)
+                for cell in column_cells:
+                    try:
+                        # Buscamos la longitud del valor más largo en la columna
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = (max_length + 2)  # Añadimos un pequeño margen para que no quede apretado
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # CORRECCIÓN: Rebobinamos el buffer al inicio después de escribir en él.
+        excel_buffer.seek(0)
+
+        # --- 3. Construir el correo y adjuntar el archivo ---
+        # Renderizamos el cuerpo del correo desde una plantilla HTML
+        mensaje_html = render_to_string('control/reportes_mail/email_reporte_atrasados.html', {
+            'controles_atrasados': controles_atrasados,
+            'fecha_reporte': fecha_reporte_str,
+        })
+
+        # Usamos EmailMultiAlternatives para poder adjuntar archivos
+        email = EmailMultiAlternatives(
+            subject=asunto,
+            body="Este es un correo HTML. Si no puede verlo, por favor active la vista HTML en su cliente de correo.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=destinatarios
+        )
+        email.attach_alternative(mensaje_html, "text/html")
+
+        # Adjuntamos el archivo Excel
+        nombre_archivo = f'Reporte_Atrasados_{today.strftime("%Y-%m-%d")}.xlsx'
+        email.attach(
+            nombre_archivo,
+            excel_buffer.read(),
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+        email.send()
+        print(f"Reporte en segundo plano enviado exitosamente a: {', '.join(destinatarios)}")
+
+    except Exception as e:
+        # En un sistema de producción, aquí se debería registrar el error en un log
+        print(f"Error al enviar el reporte en segundo plano: {e}")
 
 @login_required
 @rol_requerido(['Administrador'])
@@ -876,7 +967,7 @@ def reportes(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # --- ACCIÓN: Agregar uno o más profesionales encargados ---
+        # Agregar uno o más profesionales encargados
         if action == 'agregar_encargados':
             nuevos_encargados_ruts = request.POST.getlist('profesionales_a_agregar')
             if not nuevos_encargados_ruts:
@@ -890,7 +981,7 @@ def reportes(request):
                     messages.error(request, f'Ocurrió un error al agregar encargados: {e}')
             return redirect('control:reportes')
 
-        # --- ACCIÓN: Remover un profesional encargado ---
+        # Remover un profesional encargado
         elif action == 'remover_encargado':
             encargado_a_remover_rut = request.POST.get('encargado_rut')
             try:
@@ -904,61 +995,34 @@ def reportes(request):
                 messages.error(request, f'Ocurrió un error al remover al encargado: {e}')
             return redirect('control:reportes')
 
-        # --- ACCIÓN: Enviar el reporte por correo ---
+        # Enviar el reporte por correo
         elif action == 'enviar_reporte':
             if not encargados_actuales.exists():
                 messages.error(request, 'No se puede enviar el reporte porque no hay un profesional encargado asignado.')
                 return redirect('control:reportes')
 
-            # Buscamos los niños con controles atrasados
+            # Buscamos los niños con controles atrasados para el REPORTE A PROFESIONALES.
+            # Esta lógica es independiente de las notificaciones a tutores (campo 'notificacion_enviada').
+            # Un control se reporta aquí si está atrasado, sin importar si el tutor ya fue notificado.
             controles_atrasados = Control.objects.filter(
                 fecha_realizacion_control__isnull=True,
-                deshabilitado=False, # Añadido para no reportar los deshabilitados
+                deshabilitado=False,
                 fecha_control_programada__lt=date.today() - timedelta(days=7) # Atrasados por más de 7 días
             ).select_related('nino').order_by('nino__ap_paterno', 'nino__nombre')
 
-            # --- Construcción del mensaje del correo directamente en la vista ---
-            fecha_reporte = date.today().strftime("%d/%m/%Y")
-            asunto = f'Reporte de Controles Atrasados - {fecha_reporte}'
             destinatarios = [enc.email for enc in encargados_actuales]
 
-            # Usamos un template para el cuerpo del correo para mayor flexibilidad
-            mensaje_html = render_to_string('control/reportes_mail/cuerpo_reporte_mail.html', {
-                'controles_atrasados': controles_atrasados,
-                'fecha_reporte': fecha_reporte,
-            })
-            """
-            mensaje_body = (
-                f'Estimado/a {encargado_actual.nombre_completo},\n\n'
-                f'A continuación se presenta el listado de niños y niñas con controles de salud pendientes al {fecha_reporte}.\n\n'
+            # EJECUCIÓN EN SEGUNDO PLANO DE ENVIO DE CORREO SOBRE REPORTES ATRASADOS
+            thread = threading.Thread(
+                target=_enviar_reporte_atrasados_async,
+                args=(destinatarios, controles_atrasados)
             )
+            thread.start()
 
-            if controles_atrasados.exists():
-                mensaje_body += "--------------------------------------------------\n"
-                for control in controles_atrasados:
-                    mensaje_body += (
-                        f"  - Niño/a: {control.nino.nombre} {control.nino.ap_paterno} {control.nino.ap_materno}\n"
-                        f"  - RUT: {control.nino.rut_nino}\n"
-                        f"  - Control: {control.nombre_control}\n"
-                        f"  - Fecha Programada: {control.fecha_control_programada.strftime('%d/%m/%Y')}\n"
-                        "--------------------------------------------------\n"
-                    )
-            else:
-                mensaje_body += "¡Buenas noticias! No hay controles atrasados para reportar en este momento.\n\n"
-
-            mensaje_body += "\nAtentamente,\nSistema de Gestión CESFAM."
-            """
-            try:
-                send_mail(
-                    subject=asunto,
-                    message="Este es un correo HTML. Si no puede verlo, por favor active la vista HTML en su cliente de correo.", # Mensaje plano alternativo
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=destinatarios,
-                    html_message=mensaje_html, # Usamos el mensaje en formato HTML
-                )
-                messages.success(request, f'Reporte enviado exitosamente a {len(destinatarios)} encargado(s).')
-            except Exception as e:
-                messages.error(request, f'Error al enviar el correo: {e}')
+            messages.info(
+                request, 
+                f'El envío del reporte a {len(destinatarios)} encargado(s) ha comenzado en segundo plano. Recibirán el correo en breve.'
+            )
             
             return redirect('control:reportes')
 

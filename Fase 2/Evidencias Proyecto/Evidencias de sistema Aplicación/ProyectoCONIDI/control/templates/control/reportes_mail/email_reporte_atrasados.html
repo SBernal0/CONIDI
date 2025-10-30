@@ -26,11 +26,11 @@
 <body>
     <div class="container">
         <h1>Reporte de Controles de Niño Sano Atrasados</h1>
-        <p><strong>Fecha del reporte:</strong> {{ fecha|date:"d/m/Y" }}</p>
-        <p>Estimado/a <strong>{{ encargado.nombre_completo }}</strong>,</p>
+        <p><strong>Fecha del reporte:</strong> {{ fecha_reporte }}</p>
+        <p>Estimados encargados,</p>
         <p>A continuación se presenta el listado de niños y niñas con controles de salud pendientes que han superado su fecha programada.</p>
-
-        {% if controles %}
+        
+        {% if controles_atrasados %}
             <table>
                 <thead>
                     <tr>
@@ -41,10 +41,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for control in controles %}
+                    {% for control in controles_atrasados %}
                         <tr>
                             <td>{{ control.nino.rut_nino }}</td>
-                            <td>{{ control.nino.nombre_completo }}</td>
+                            <td>{{ control.nino.nombre }} {{ control.nino.ap_paterno }} {{ control.nino.ap_materno }}</td>
                             <td>{{ control.nombre_control }}</td>
                             <td>{{ control.fecha_control_programada|date:"d/m/Y" }}</td>
                         </tr>
