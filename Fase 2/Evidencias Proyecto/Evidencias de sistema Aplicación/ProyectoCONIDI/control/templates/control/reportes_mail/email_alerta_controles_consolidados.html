@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta de Controles de Salud Atrasados</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { width: 90%; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
+        h1 { color: #d9534f; font-size: 24px; margin-bottom: 15px; }
+        h2 { color: #337ab7; font-size: 20px; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        p { margin-bottom: 10px; }
+        ul { list-style-type: none; padding: 0; margin: 0; }
+        li { margin-bottom: 5px; }
+        .control-item { background-color: #fff; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .control-item strong { color: #5cb85c; }
+        .footer { margin-top: 30px; font-size: 12px; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        .alert-icon { color: #d9534f; font-size: 20px; vertical-align: middle; margin-right: 5px; }
+        .test-notice {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="alert-icon">&#9888;</span> Alerta Importante: Controles de Salud Atrasados</h1>
+        <p><strong>Fecha del reporte:</strong> {{ fecha_reporte }}</p>
+        <p>Estimado/a <strong>{{ tutor_nombre }}</strong>,</p>
+        <p>Le informamos que se han detectado uno o más controles de salud atrasados para los niños/as bajo su cuidado. Es fundamental que estos controles se realicen a tiempo para asegurar el correcto seguimiento de su desarrollo y salud.</p>
+        
+        {% for child_data in children_data %}
+            <h2>Niño/a: {{ child_data.nino_obj.nombre }} {{ child_data.nino_obj.ap_paterno }} {{ child_data.nino_obj.ap_materno }} (RUT: {{ child_data.nino_obj.rut_nino }})</h2>
+            {% if child_data.controles %}
+                <ul>
+                    {% for control in child_data.controles %}
+                        <li class="control-item">
+                            <strong>Control:</strong> {{ control.nombre_control }}<br>
+                            <strong>Fecha Programada:</strong> {{ control.fecha_control_programada|date:"d/m/Y" }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No se encontraron controles atrasados para este niño/a.</p>
+            {% endif %}
+        {% endfor %}
+
+        <p>Por favor, acérquese a nuestro CESFAM lo antes posible para reagendar y realizar estos controles. Puede contactarnos al [Número de Teléfono del CESFAM] o visitar nuestra página web [URL del CESFAM] para más información.</p>
+        <p>Agradecemos su pronta atención a este asunto.</p>
+
+        <div class="test-notice">
+            Este es un correo de prueba, por favor no tomar en cuenta.
+        </div>
+
+        <div class="footer">
+            <p>Atentamente,<br>Equipo de Salud CESFAM</p>
+            <p>Este es un correo generado automáticamente por el Sistema de Gestión CESFAM. Por favor, no responda a este mensaje.</p>
+        </div>
+    </div>
+</body>
+</html>

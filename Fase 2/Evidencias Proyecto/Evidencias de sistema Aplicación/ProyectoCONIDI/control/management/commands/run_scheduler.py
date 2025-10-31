@@ -57,8 +57,8 @@ class Command(BaseCommand):
                 'cron', 
                 # Define aquí la hora y el minuto para la ejecución diaria.
                 # Formato 24 horas (hora: 0-23, minuto: 0-59).
-                hour=2,    # <-- Cambia este valor por la hora deseada (ej: 2 para las 2 AM)
-                minute=26, # <-- Cambia este valor por el minuto deseado (ej: 30)
+                hour=0,    # <-- Cambia este valor por la hora deseada (ej: 2 para las 2 AM)
+                minute=17, # <-- Cambia este valor por el minuto deseado (ej: 30)
                 id='enviar_alertas_diarias', replace_existing=True
             )
             logging.info("Tarea añadida. Iniciando el planificador... (Presiona Ctrl+C para detener)")
