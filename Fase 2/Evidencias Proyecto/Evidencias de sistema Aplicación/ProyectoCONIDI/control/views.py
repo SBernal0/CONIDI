@@ -36,7 +36,7 @@ def controles(request, nino_rut): # Vista renombrada mentalmente a 'detalle_nino
             if not user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
                 raise PermissionDenied
         except Tutor.DoesNotExist:
-             raise PermissionDenied # Si es rol tutor pero no tiene perfil, denegar
+            raise PermissionDenied # Si es rol tutor pero no tiene perfil, denegar
 
     # Obtención de datos para las pestañas
     lista_controles = nino.controles.select_related('periodo').all().order_by('fecha_control_programada')
