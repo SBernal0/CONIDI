@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from django.db import transaction
 from django.urls import reverse
 from unidecode import unidecode
-from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, RegistroAlergias, CategoriaAlergia
+from .models import Nino, Control, PeriodoControl, Vacuna, VacunaAplicada, RegistroAlergias, CategoriaAlergia, HistorialEnvioReporte
 from django.contrib.auth.decorators import login_required
 from login.models import Tutor, Profesional
 from django.core.exceptions import PermissionDenied
@@ -1018,6 +1018,14 @@ def reportes(request):
                 args=(destinatarios, controles_atrasados)
             )
             thread.start()
+            
+            # --- GUARDAR EN EL HISTORIAL ---
+            HistorialEnvioReporte.objects.create(
+                enviado_por=request.user,
+                destinatarios=", ".join(destinatarios),
+                controles_reportados_count=len(controles_atrasados)
+            )
+            # --------------------------------
 
             messages.info(
                 request, 
@@ -1031,3 +1039,12 @@ def reportes(request):
         'encargados_actuales': encargados_actuales
     }
     return render(request, 'control/reportes_mail/enviar_reporte.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador'])
+def historial_envio_reportes(request):
+    historial = HistorialEnvioReporte.objects.select_related('enviado_por').all().order_by('-fecha_envio')
+    contexto = {
+        'historial': historial
+    }
+    return render(request, 'control/config/historial_envio_reportes.html', contexto)

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historial de Envío de Reportes{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/estiloformularios.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+
+            <div class="card form-card">
+                <div class="form-header">
+                    <div class="form-icon"><i class="bi bi-clock-history"></i></div>
+                    <h2>Historial de Envío de Reportes</h2>
+                </div>
+                <div class="form-body">
+                    <p class="text-muted">
+                        Aquí se muestra un registro de todos los reportes de controles atrasados que han sido enviados manualmente.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y Hora de Envío</th>
+                                    <th>Enviado Por</th>
+                                    <th>Destinatarios</th>
+                                    <th class="text-center">N° Controles</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registro in historial %}
+                                <tr>
+                                    <td>{{ registro.fecha_envio|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ registro.enviado_por.nombre_completo|default:"Usuario eliminado" }}</td>
+                                    <td>{{ registro.destinatarios }}</td>
+                                    <td class="text-center">{{ registro.controles_reportados_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No se han enviado reportes manualmente todavía.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

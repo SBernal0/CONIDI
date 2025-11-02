@@ -92,6 +92,9 @@
                                 <button type="submit" class="btn btn-success">
                                     <i class="bi bi-send-fill me-2"></i>Enviar Reporte a {{ encargados_actuales|length }} Encargado(s)
                                 </button>
+                                <a href="{% url 'control:historial_envio_reportes' %}" class="btn btn-info text-white" style="text-decoration: none;">
+                                    <i class="bi bi-clock-history me-2"></i>Ver Historial de Envíos
+                                </a>
                             </div>
                         </form>
                     {% else %}
@@ -103,6 +106,9 @@
                             <button class="btn btn-success" disabled>
                                 <i class="bi bi-send-fill me-2"></i>Enviar Reporte
                             </button>
+                            <a href="{% url 'control:historial_envio_reportes' %}" class="btn btn-info text-white" style="text-decoration: none;">
+                                <i class="bi bi-clock-history me-2"></i>Ver Historial de Envíos
+                            </a>
                         </div>
                     {% endif %}
                 </div>

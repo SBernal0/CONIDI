@@ -1,6 +1,7 @@
 # control/models.py
 from django.db import models
 from datetime import date, timedelta # Asegúrate de tener este import
+from django.conf import settings
 from simple_history.models import HistoricalRecords
 from unidecode import unidecode
 
@@ -385,3 +386,17 @@ class EntregaAlimentos(models.Model):
 
     def __str__(self):
         return f"Alimentos para {self.nino.nombre} en fecha {self.fecha_entrega}"
+
+class HistorialEnvioReporte(models.Model):
+    id = models.AutoField(primary_key=True)
+    fecha_envio = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Envío")
+    enviado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Enviado por")
+    destinatarios = models.TextField(verbose_name="Destinatarios", help_text="Lista de correos a los que se envió el reporte, separados por coma.")
+    controles_reportados_count = models.IntegerField(verbose_name="Cantidad de Controles Reportados")
+
+    class Meta:
+        verbose_name = "Historial de Envío de Reporte"
+        verbose_name_plural = "Historial de Envíos de Reportes"
+
+    def __str__(self):
+        return f"Reporte enviado por {self.enviado_por} el {self.fecha_envio.strftime('%d/%m/%Y %H:%M')}"

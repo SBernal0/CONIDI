@@ -42,5 +42,7 @@ urlpatterns = [
     path('configuracion/alergias/categorias/historial/', views.historial_categorias_alergia, name='historial_categorias_alergia'),
     # Reportes por correo
     path('configuracion/reportes/', views.reportes, name='reportes'),
+    path('configuracion/reportes/historial/', views.historial_envio_reportes, name='historial_envio_reportes'),
+
 
 ]
