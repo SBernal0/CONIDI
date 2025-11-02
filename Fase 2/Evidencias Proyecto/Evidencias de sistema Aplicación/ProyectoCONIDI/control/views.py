@@ -26,38 +26,65 @@ import io
 
 
 @login_required
-def controles(request, nino_rut): # Vista renombrada mentalmente a 'detalle_nino'
-    nino = get_object_or_404(Nino.objects.select_related('comuna'), pk=nino_rut) # Optimizamos comuna
+def controles(request, nino_rut):
+    nino = get_object_or_404(Nino.objects.select_related('comuna'), pk=nino_rut)
     user = request.user
 
-    # Verificación de permisos para tutores
+    # --- Verificación de permisos (sin cambios) ---
     if user.rol.nombre_rol.lower() == 'tutor':
         try:
             if not user.perfil_tutor.ninos.filter(pk=nino.pk).exists():
                 raise PermissionDenied
         except Tutor.DoesNotExist:
-            raise PermissionDenied # Si es rol tutor pero no tiene perfil, denegar
+             raise PermissionDenied
 
-    # Obtención de datos para las pestañas
+    # --- LÓGICA POST (CON LA CORRECCIÓN) ---
+    if request.method == 'POST' and request.user.rol.nombre_rol.lower() in ['administrador', 'profesional']:
+        # 1. Actualizar el estado (este campo <select> siempre tendrá un valor)
+        nino.estado_seguimiento = request.POST.get('estado_seguimiento')
+        
+        # 2. Obtener la fecha de fallecimiento
+        fecha_fallecimiento_str = request.POST.get('fecha_fallecimiento')
+        if fecha_fallecimiento_str:
+            nino.fecha_fallecimiento = fecha_fallecimiento_str
+        else:
+            nino.fecha_fallecimiento = None
+            
+        # 3. --- LÓGICA DE SECTOR CORREGIDA ---
+        #    Obtenemos el nuevo valor del formulario
+        nuevo_sector = request.POST.get('sector')
+        
+        #    Solo actualizamos el campo si el usuario escribió algo.
+        #    Si 'nuevo_sector' es un string vacío (''), este 'if' será Falso
+        #    y el valor original de 'nino.sector' no se tocará.
+        if nuevo_sector:
+            nino.sector = nuevo_sector
+        # --- FIN DE LA CORRECCIÓN ---
+
+        nino.save()
+        messages.success(request, f'Los datos administrativos de {nino.nombre} han sido actualizados.')
+        
+        url_base = reverse('control:detalle_nino', kwargs={'nino_rut': nino.rut_nino})
+        return redirect(f"{url_base}#gestion-pane")
+
+    # --- Lógica GET (sin cambios) ---
     lista_controles = nino.controles.select_related('periodo').all().order_by('fecha_control_programada')
     vacunas_aplicadas = nino.vacunas_aplicadas.select_related('vacuna').all().order_by('fecha_programada')
     alergias_registradas = nino.alergias_registradas.select_related('categoria').all().order_by('-fecha_aparicion')
 
-    # --- LÓGICA NECESARIA PARA LA PESTAÑA RESUMEN ---
     ultimo_control = nino.controles.filter(
-        fecha_realizacion_control__isnull=False, 
-        deshabilitado=False                     
-    ).order_by('-fecha_realizacion_control').first() 
-    # ---------------------------------------------------
+        fecha_realizacion_control__isnull=False,
+        deshabilitado=False
+    ).order_by('-fecha_realizacion_control').first()
 
     contexto = {
         "nino": nino,
         "controles": lista_controles,
         "vacunas_aplicadas": vacunas_aplicadas,
         "alergias_registradas": alergias_registradas,
-        "ultimo_control": ultimo_control, # <-- Variable añadida para la pestaña Resumen
+        "ultimo_control": ultimo_control,
+        "estado_seguimiento_choices": Nino.ESTADO_SEGUIMIENTO_CHOICES,
     }
-    # Asegúrate que la ruta de la plantilla sea correcta
     return render(request, 'control/nino/controles.html', contexto)
 
 @login_required
@@ -65,13 +92,13 @@ def listar_ninos(request):
     user = request.user
     rol_usuario = user.rol.nombre_rol.lower()
 
+    # --- Lógica de Envío de Correo (POST) ---
     if request.method == 'POST':
         action = request.POST.get('action')
-        if action == 'enviar_correo_pnac':
+        if action == 'enviar_correo_penac':
             nino_rut = request.POST.get('nino_rut')
             nino = get_object_or_404(Nino, rut_nino=nino_rut)
             
-            # Buscamos la primera relación tutor-niño para obtener el tutor
             relacion = nino.ninotutor_set.select_related('tutor').first()
 
             if relacion and relacion.tutor and relacion.tutor.email:
@@ -79,7 +106,7 @@ def listar_ninos(request):
                 asunto = "Notificación: Arribo de Alimentos PNAC"
                 mensaje = (
                     f"Estimado/a {tutor.nombre_completo},\n\n"
-                    f"Le informamos que han llegado los alimentos del Programa de Alimentación Complementaria (PNAC) para {nino.nombre} {nino.ap_paterno} {nino.ap_materno}.\n\n"
+                    f"Le informamos que han llegado los alimentos del Programa de Alimentación Complementaria (PENAC) para {nino.nombre} {nino.ap_paterno} {nino.ap_materno}.\n\n"
                     "Puede acercarse a nuestro CESFAM para realizar el retiro.\n\n"
                     "Horario de atención: [Completar con el horario de retiro]\n\n"
                     "Atentamente,\n"
@@ -91,30 +118,25 @@ def listar_ninos(request):
                 except Exception as e:
                     messages.error(request, f"Error al enviar el correo a {tutor.email}: {e}")
             else:
-                messages.warning(request, f"No se pudo enviar el correo: el niño/a {nino.nombre_completo} no tiene un tutor con email asignado.")
+                messages.warning(request, f"No se pudo enviar el correo: el niño/a {nino.nombre} no tiene un tutor con email asignado.")
             return redirect('control:listar_ninos')
 
-    # --- Capturamos los datos del formulario de filtros ---
+    # --- Lógica de Filtros (GET) ---
     nombre_query = request.GET.get('nombre', '')
     rut_query = request.GET.get('rut', '')
 
-    # Obtener la lista base de niños
-    lista_ninos = Nino.objects.none() # Por defecto, una lista vacía
+    lista_ninos = Nino.objects.none() 
 
     if rol_usuario in ['administrador', 'profesional']:
-        # Si es admin o profesional, la lista base son todos los niños
         lista_ninos = Nino.objects.prefetch_related('ninotutor_set__tutor').all()
     
     elif rol_usuario == 'tutor':
-        # Si es tutor, la lista base son solo sus niños asignados
         try:
             lista_ninos = user.perfil_tutor.ninos.prefetch_related('ninotutor_set__tutor').all()
         except Tutor.DoesNotExist:
             lista_ninos = Nino.objects.none()
 
-    # Se aplican los filtros sobre la lista base que obtuvimos 
     if nombre_query:
-        # Si se buscó un nombre, filtramos la lista usando Q para buscar en múltiples campos
         nombre_query_norm = unidecode(nombre_query).lower()
         lista_ninos = lista_ninos.filter(
             Q(nombre_norm__icontains=nombre_query_norm) |
@@ -123,14 +145,17 @@ def listar_ninos(request):
         )
 
     if rut_query:
-        # Si se buscó un RUT, filtramos la lista (que ya podría estar filtrada por nombre)
         lista_ninos = lista_ninos.filter(rut_nino__icontains=rut_query)
 
-    # Enviamos la lista final (ya filtrada y ordenada) al contexto
+    # --- LÓGICA DE ORDENAMIENTO APLICADA ANTES DE PASAR AL CONTEXTO ---
+    # Al ordenar por 'estado_seguimiento' primero, "ACTIVO" siempre irá al principio.
+    lista_ninos_ordenada = lista_ninos.order_by('estado_seguimiento', 'ap_paterno', 'nombre')
+
     contexto = {
-        # Aseguramos el orden después de todos los filtros
-        'ninos': lista_ninos.order_by('nombre', 'ap_paterno'),
-        'rol_usuario': rol_usuario, # <--- Pasa el rol a la plantilla
+        'ninos': lista_ninos_ordenada, # <-- Usamos la lista ya ordenada
+        'rol_usuario': rol_usuario,
+        'nombre_query': nombre_query,
+        'rut_query': rut_query,
     }
     return render(request, 'control/nino/listar_ninos.html', contexto)
 

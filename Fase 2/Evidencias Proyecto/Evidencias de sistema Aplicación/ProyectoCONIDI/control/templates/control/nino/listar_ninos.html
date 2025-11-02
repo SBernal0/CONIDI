@@ -51,6 +51,8 @@
 {% endif %}
 {# --- Condición para mostrar filtros final--- #}
 
+{# --- Condición para mostrar filtros final--- #}
+
 <div class="card table-card">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -60,71 +62,85 @@
                         <th>Nombre Completo</th>
                         <th>RUT</th>
                         <th>Fecha de Nacimiento</th>
-                        <th class="text-center">Acciones</th>
+                        <th>Estado</th> <th class="text-center">Acciones</th>
                         <th class="text-center">Detalles</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for nino in ninos %}
-                        {# Animación de entrada escalonada para cada fila #}
-                        <tr class="animate-row" style="--i: {{ forloop.counter0 }};" id="nino-{{ nino.rut_nino }}">
-                            <td><strong>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }} {{tutor.}}</strong></td>
-                            <td>{{ nino.rut_nino }}</td>
-                            <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
-                            <td class="text-center">
-                                <div class="action-buttons justify-content-center">
-                                    <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-eye-fill me-1"></i> Ver Controles
-                                    </a>
-                                    <!-- Nuevo botón para enviar correo PNAC -->
-                                    {% with relacion=nino.ninotutor_set.first %}
-                                        {% if relacion and relacion.tutor and relacion.tutor.email and rol_usuario != 'tutor' %}
-                                            <form method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas enviar el correo de notificación PNAC al tutor de {{ nino.nombre }}?');">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="enviar_correo_pnac">
-                                                <input type="hidden" name="nino_rut" value="{{ nino.rut_nino }}">
-                                                <button type="submit" class="btn btn-sm btn-success" title="Notificar arribo de alimentos PNAC al tutor: {{ relacion.tutor.email }}">
-                                                    <i class="bi bi-envelope-paper-heart me-1"></i> Notificar PNAC
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    {% endwith %}
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="action-buttons justify-content-center">
-                                    <!-- Segundo botón, ahora para abrir el modal -->
-                                    {% with relacion=nino.ninotutor_set.first %}
-                                    <button type="button" class="btn btn-sm btn-info"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#detalleModal"
-                                            data-nombre="{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}"
-                                            data-rut="{{ nino.rut_nino }}"
-                                            data-fecha="{{ nino.fecha_nacimiento|date:"d/m/Y" }}"
-                                            {# Si existe una relación con tutor, pasamos los datos del tutor #}
-                                            {% if relacion and relacion.tutor %}
-                                            data-nombre-tutor="{{ relacion.tutor.nombre_completo }}"
-                                            data-parentesco="{{ relacion.get_parentesco_display }}"
-                                            data-correo-tutor="{{ relacion.tutor.email }}"
-                                            {% endif %}>
-                                        <i class="bi bi-info-circle me-1"></i> Ver Detalles
-                                    </button>
-                                    {% endwith %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center p-4">
-                                No se encontraron niños con los filtros aplicados.
-                            </td>
-                        </tr>
-                    {% endfor %}
+                    {# --- LÓGICA DE CLASE CORREGIDA --- #}
+                    {# Ahora solo aplica la clase 'disabled-row' si el estado es 'FALLECIDO' o 'TRASLADADO' #}
+                    <tr class="animate-row {% if nino.estado_seguimiento == 'FALLECIDO' or nino.estado_seguimiento == 'TRASLADADO' %}disabled-row{% endif %}" style="--i: {{ forloop.counter0 }};" id="nino-{{ nino.rut_nino }}">
+                        
+                        <td><strong>{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}</strong></td>
+                        <td>{{ nino.rut_nino }}</td>
+                        <td>{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
+                        
+                        <td>
+                            {# --- LÓGICA DE BADGE CORREGIDA --- #}
+                            {# Mantenemos los colores específicos para cada estado #}
+                            {% if nino.estado_seguimiento == 'ACTIVO' %}
+                                <span class="badge bg-success">{{ nino.get_estado_seguimiento_display }}</span>
+                            {% elif nino.estado_seguimiento == 'COMPLETADO' %}
+                                <span class="badge bg-primary">{{ nino.get_estado_seguimiento_display }}</span>
+                            {% else %}
+                                {# Para 'FALLECIDO', 'TRASLADADO', 'OTRO' #}
+                                <span class="badge bg-secondary">{{ nino.get_estado_seguimiento_display }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            <div class="action-buttons justify-content-center">
+                                <a href="{% url 'control:detalle_nino' nino.rut_nino %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye-fill me-1"></i> Ver Controles
+                                </a>
+                                {% with relacion=nino.ninotutor_set.first %}
+                                    {% if relacion and relacion.tutor and relacion.tutor.email and rol_usuario != 'tutor' %}
+                                        <form method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas enviar el correo de notificación PNAC al tutor de {{ nino.nombre }}?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="enviar_correo_pnac">
+                                            <input type="hidden" name="nino_rut" value="{{ nino.rut_nino }}">
+                                            <button type="submit" class="btn btn-sm btn-success" title="Notificar arribo de alimentos PNAC al tutor: {{ relacion.tutor.email }}">
+                                                <i class="bi bi-envelope-paper-heart me-1"></i> Notificar PNAC
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons justify-content-center">
+                                {% with relacion=nino.ninotutor_set.first %}
+                                <button type="button" class="btn btn-sm btn-info"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#detalleModal"
+                                        data-nombre="{{ nino.nombre }} {{ nino.ap_paterno }} {{ nino.ap_materno }}"
+                                        data-rut="{{ nino.rut_nino }}"
+                                        data-fecha="{{ nino.fecha_nacimiento|date:"d/m/Y" }}"
+                                        {% if relacion and relacion.tutor %}
+                                        data-nombre-tutor="{{ relacion.tutor.nombre_completo }}"
+                                        data-parentesco="{{ relacion.get_parentesco_display }}"
+                                        data-correo-tutor="{{ relacion.tutor.email }}"
+                                        {% endif %}>
+                                    <i class="bi bi-info-circle me-1"></i> Ver Detalles
+                                </button>
+                                {% endwith %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center p-4"> 
+                            No se encontraron niños con los filtros aplicados.
+                        </td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -133,7 +149,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Aquí se inyectarán los datos dinámicos -->
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Nombre completo:</strong> <span id="modal-nombre"></span></p>

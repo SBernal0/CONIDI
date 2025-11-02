@@ -70,8 +70,18 @@
     padding: 0.9rem;
 }
 
+tr.disabled-row {
+    opacity: 0.4 !important; /* !important fuerza la opacidad */
+    background-color: #3c3f42 !important; /* !important fuerza el fondo gris claro */
+    font-style: italic !important;
+}
 
-
+/* Anula el efecto hover azulado en las filas deshabilitadas */
+.table-hover tbody tr.disabled-row:hover {
+    background-color: #474a4d !important; /* Mantiene el mismo gris claro en hover */
+    transform: none !important; /* Quita el efecto de zoom */
+    box-shadow: none !important;
+}
 /* Badges de estado y rol personalizados */
 .badge {
     padding: 0.4em 0.8em;
@@ -111,6 +121,7 @@
     animation-fill-mode: forwards;
     animation-delay: calc(var(--i) * 0.05s);
 }
+
 
 /* Keyframes (Definiciones de las animaciones) */
 @keyframes fadeInUp {

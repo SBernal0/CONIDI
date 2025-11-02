@@ -37,6 +37,7 @@ class Nino(models.Model):
         ('ACTIVO', 'Seguimiento Activo'),
         ('COMPLETADO', 'Programa Completado'),
         ('TRASLADADO', 'Trasladado/Inactivo'),
+        ('FALLECIDO', 'Fallecido'),  
         ('OTRO', 'Otro'),
     ]
 
@@ -66,6 +67,11 @@ class Nino(models.Model):
         null=True,
         verbose_name="Sector Asignado"
     )
+    fecha_fallecimiento = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="Fecha de Fallecimiento"
+    )
 
     # AÑADE LOS CAMPOS NORMALIZADOS 
     nombre_norm = models.CharField(
@@ -85,7 +91,7 @@ class Nino(models.Model):
         editable=False,
         db_index=True
     )
-   
+    history = HistoricalRecords()
    # AÑADE LA FUNCIÓN DE NORMALIZACIÓN 
     def _normalize_text(self, text):
         """Convierte texto a minúsculas y quita acentos."""

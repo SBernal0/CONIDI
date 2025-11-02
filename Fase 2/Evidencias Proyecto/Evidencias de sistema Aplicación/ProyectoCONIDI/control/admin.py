@@ -22,9 +22,15 @@ class ComunaAdmin(admin.ModelAdmin):
     list_filter = ('ciudad__region',)
 
 @admin.register(Nino)
-class NinoAdmin(admin.ModelAdmin):
-    list_display = ('rut_nino', 'nombre', 'ap_paterno', 'fecha_nacimiento', 'comuna')
-    search_fields = ('rut_nino', 'nombre', 'ap_paterno')
+class NinoAdmin(SimpleHistoryAdmin): # <-- Cambia 'admin.ModelAdmin' por 'SimpleHistoryAdmin'
+    list_display = (
+        'rut_nino', 'nombre', 'ap_paterno', 'fecha_nacimiento',
+        'comuna', 'sector', 'estado_seguimiento'
+    )
+    list_filter = ('estado_seguimiento', 'sector', 'comuna__ciudad__region', 'sexo')
+    list_editable = ('sector', 'estado_seguimiento')
+    search_fields = ('rut_nino', 'nombre_norm', 'ap_paterno_norm', 'ap_materno_norm')
+    ordering = ('ap_paterno', 'ap_materno', 'nombre')
 
 @admin.register(Control)
 class ControlAdmin(SimpleHistoryAdmin):
