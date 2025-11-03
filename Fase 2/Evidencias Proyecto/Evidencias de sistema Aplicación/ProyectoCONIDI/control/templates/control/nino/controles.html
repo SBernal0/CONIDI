@@ -91,6 +91,33 @@
                 </div>
             </div>
         </div>
+        <div class="row mt-3">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card summary-card">
+                    <div class="card-header"><i class="bi bi-graph-up me-2"></i>Curva de Peso (kg)</div>
+                    <div class="card-body" style="position: relative; height: 300px;">
+                        <canvas id="graficoPeso"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card summary-card">
+                    <div class="card-header"><i class="bi bi-graph-up me-2"></i>Curva de Talla (cm)</div>
+                    <div class="card-body" style="position: relative; height: 300px;">
+                        <canvas id="graficoTalla"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card summary-card">
+                    <div class="card-header"><i class="bi bi-graph-up me-2"></i>Curva de IMC</div>
+                    <div class="card-body" style="position: relative; height: 300px;">
+                        <canvas id="graficoIMC"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     {# --- Pestaña Controles Niño Sano --- #}
@@ -140,6 +167,20 @@
                 <div class="alert alert-light w-100 text-center">No hay controles programados para este niño/a.</div>
             {% endfor %}
         </div>
+    </div>
+    <div class="tab-pane fade show active" id="resumen-pane" role="tabpanel" aria-labelledby="resumen-tab" tabindex="0">
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card summary-card">
+                </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card summary-card">
+                </div>
+        </div>
+    </div>
+    
+    
     </div>
 
     {# --- Pestaña Historial de Vacunación --- #}
@@ -274,3 +315,118 @@
     {% endif %}
 
 </div> {% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    
+    // --- 1. Preparamos TODOS los controles del niño ---
+    const todosLosControles = [
+        {% for control in controles %}
+            {% if not control.deshabilitado and control.periodo %}
+            {
+                fecha: "{% if control.fecha_realizacion_control %}{{ control.fecha_realizacion_control|date:'Y-m-d' }}{% else %}{{ control.fecha_control_programada|date:'Y-m-d' }}{% endif %}",
+                meses: {{ control.periodo.mes_control }},
+                peso_real: {{ control.pesokg|default:"null" }},
+                talla_real: {{ control.talla_cm|default:"null" }},
+                imc_real: {{ control.imc|default:"null" }}
+            },
+            {% endif %}
+        {% endfor %}
+    ];
+    
+    todosLosControles.sort((a, b) => new Date(a.fecha.replace(/-/g, '/')) - new Date(b.fecha.replace(/-/g, '/')));
+
+    // --- 2. Funciones para simular el P50 (Promedio) ---
+    function getPesoPromedio(meses) {
+        if (meses <= 12) return (3.5 + (meses * 0.7)).toFixed(1);
+        else return (11.9 + ((meses - 12) * 0.21)).toFixed(1);
+    }
+    
+    function getTallaPromedio(meses) {
+        if (meses <= 12) return (50 + (meses * 2.5)).toFixed(1);
+        else return (80 + ((meses - 12) * 0.5)).toFixed(1);
+    }
+    
+    function getIMCPromedio(meses) {
+        if (meses <= 6) return (17.5 - (meses * 0.2)).toFixed(1);
+        if (meses <= 24) return (16.3 + ((meses - 6) * 0.01)).toFixed(1);
+        if (meses <= 72) return (15.5 - ((meses - 24) * 0.03)).toFixed(1); 
+        return (15.0 + ((meses - 72) * 0.05)).toFixed(1);
+    }
+    
+    // --- 3. Creamos los arrays de datos para los gráficos ---
+    const labels = [];
+    const dataPesoReal = [];
+    const dataPesoPromedio = [];
+    const dataTallaReal = [];
+    const dataTallaPromedio = [];
+    const dataIMCReal = [];
+    const dataIMCPromedio = [];
+
+    for (const control of todosLosControles) {
+        const fechaLabel = new Date(control.fecha.replace(/-/g, '/')).toLocaleDateString('es-CL');
+        labels.push(fechaLabel);
+        
+        dataPesoReal.push(control.peso_real);
+        dataTallaReal.push(control.talla_real);
+        dataIMCReal.push(control.imc_real);
+        
+        dataPesoPromedio.push(getPesoPromedio(control.meses));
+        dataTallaPromedio.push(getTallaPromedio(control.meses));
+        dataIMCPromedio.push(getIMCPromedio(control.meses));
+    }
+
+    // --- 4. Función genérica para dibujar un gráfico ---
+    function crearGrafico(canvasId, labelReal, dataReal, labelPromedio, dataPromedio, colorReal, ejeYLabel) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return; // Si no encuentra el canvas, no hace nada
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: labelReal,
+                        data: dataReal,
+                        borderColor: colorReal,
+                        backgroundColor: colorReal.replace(')', ', 0.1)'), // Añade transparencia
+                        tension: 0.1,
+                        spanGaps: true,
+                        fill: true
+                    },
+                    {
+                        label: labelPromedio,
+                        data: dataPromedio,
+                        borderColor: 'rgba(150, 150, 150, 0.7)',
+                        borderDash: [5, 5],
+                        tension: 0.1,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: ejeYLabel }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- 5. Dibujamos los 3 gráficos ---
+    crearGrafico('graficoPeso', 'Peso del Niño (kg)', dataPesoReal, 'Peso Promedio (P50)', dataPesoPromedio, 'rgb(75, 192, 192)', 'Peso (kg)');
+    crearGrafico('graficoTalla', 'Talla del Niño (cm)', dataTallaReal, 'Talla Promedio (P50)', dataTallaPromedio, 'rgb(255, 99, 132)', 'Talla (cm)');
+    crearGrafico('graficoIMC', 'IMC del Niño', dataIMCReal, 'IMC Promedio (P50)', dataIMCPromedio, 'rgb(54, 162, 235)', 'Valor de IMC');
+});
+</script>
+{% endblock extra_js %}
