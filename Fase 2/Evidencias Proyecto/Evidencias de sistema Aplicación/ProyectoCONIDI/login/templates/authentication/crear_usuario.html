@@ -58,8 +58,24 @@
                                 <select name="rol_id" id="rol-select" class="form-select" required>
                                     <option value="" disabled {% if not form_data.rol_id %}selected{% endif %}>-- Seleccione un rol --</option>
                                     {% for rol in roles_para_crear %}
-                                        <option value="{{ rol.id }}" {% if form_data.rol_id == rol.id|stringformat:"s" %}selected{% endif %}>
+                                        <option value="{{ rol.id }}" data-rol-nombre="{{ rol.nombre_rol|lower }}" {% if form_data.rol_id == rol.id|stringformat:"s" %}selected{% endif %}>
                                             {{ rol.nombre_rol }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 animate-form-element" id="campo-especialidad" style="display: none; animation-delay: 0.5s;">
+                            <label for="especialidad-select" class="form-label">Asignar Especialidad</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-star-fill"></i></span>
+                                <select name="especialidad" id="especialidad-select" class="form-select">
+                                    <option value="" disabled selected>-- Seleccione una especialidad --</option>
+                                    {# Usamos los choices pasados desde la vista #}
+                                    {% for value, display in especialidad_choices %}
+                                        <option value="{{ value }}" {% if form_data.especialidad == value %}selected{% endif %}>
+                                            {{ display }}
                                         </option>
                                     {% endfor %}
                                 </select>
@@ -192,6 +208,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 confirmar.focus(); // Pone el foco en el campo de confirmación
             }
         });
+        // --- NUEVO SCRIPT PARA MOSTRAR/OCULTAR ESPECIALIDAD ---
+        const rolSelect = document.getElementById("rol-select");
+        const especialidadCampo = document.getElementById("campo-especialidad");
+        const especialidadSelect = document.getElementById("especialidad-select");
+
+        function toggleEspecialidad() {
+            // Obtenemos el TEXTO de la opción seleccionada (ej. "Profesional")
+            const selectedOption = rolSelect.options[rolSelect.selectedIndex];
+            const selectedText = selectedOption.dataset.rolNombre || ""; // Usamos el data-attribute
+            
+            if (selectedText === "profesional") { // Comparamos con minúsculas
+                especialidadCampo.style.display = "block"; // Muestra el campo
+                especialidadSelect.required = true; // Lo hace obligatorio
+            } else {
+                especialidadCampo.style.display = "none"; // Oculta el campo
+                especialidadSelect.required = false; // Lo hace no-obligatorio
+                especialidadSelect.value = ""; // Limpia la selección
+            }
+        }
+
+        // Ejecuta la función al cargar la página (por si hay datos de un error y "Profesional" ya está seleccionado)
+        toggleEspecialidad();
+
+        // Ejecuta la función cada vez que el rol cambia
+        rolSelect.addEventListener("change", toggleEspecialidad);
+        // --- FIN NUEVO SCRIPT ---
     }
 });
 </script>

@@ -47,6 +47,7 @@ def crear_usuario(request):
     contexto = {
         'roles_para_crear': Rol.objects.none(),
         'tutores_para_activar': Tutor.objects.none(),
+        'especialidad_choices': Profesional.ESPECIALIDAD_CHOICES
     }
 
     if current_user_rol == 'administrador':
@@ -63,6 +64,7 @@ def crear_usuario(request):
             nombre = request.POST.get('nombre_completo')
             email = request.POST.get('email')
             rol_id = request.POST.get('rol_id')
+            especialidad = request.POST.get('especialidad')
             nueva_clave = request.POST.get('nueva_clave')
 
             has_error = False
@@ -90,7 +92,7 @@ def crear_usuario(request):
                     rol=rol_obj, password=nueva_clave, clave_temporal=False
                 )
                 if rol_obj.nombre_rol == 'Profesional':
-                    Profesional.objects.create(rut=rut, nombre_completo=nombre, email=email, usuario=user)
+                    Profesional.objects.create(rut=rut, nombre_completo=nombre, email=email, usuario=user, especialidad=especialidad)
                 
                 messages.success(request, f"Usuario '{nombre}' creado con éxito.")
             except Exception as e:
@@ -131,6 +133,7 @@ def crear_usuario(request):
     contexto = {
         'roles_para_crear': Rol.objects.none(),
         'tutores_para_activar': Tutor.objects.none(),
+        'especialidad_choices': Profesional.ESPECIALIDAD_CHOICES,
     }
     
     if current_user_rol == 'administrador':
