@@ -1073,3 +1073,9 @@ def historial_envio_reportes(request):
         'historial': historial
     }
     return render(request, 'control/config/historial_envio_reportes.html', contexto)
+
+@login_required
+@rol_requerido(['Administrador', 'Profesional']) 
+def dashboard_bi(request):
+
+    return render(request, 'control/dashboard_bi.html')

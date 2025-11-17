@@ -44,5 +44,6 @@ urlpatterns = [
     path('configuracion/reportes/', views.reportes, name='reportes'),
     path('configuracion/reportes/historial/', views.historial_envio_reportes, name='historial_envio_reportes'),
 
-
+# --- RUTA NUEVA PARA EL DASHBOARD BI ---
+    path('dashboard/bi/', views.dashboard_bi, name='dashboard_bi'),
 ]
