@@ -868,7 +868,7 @@ def configurar_categorias_alergia(request):
             except CategoriaAlergia.DoesNotExist:
                 messages.error(request, 'La categoría que intentas eliminar no existe.')
         
-        return redirect('configurar_categorias_alergia') # <- Nombre actualizado
+        return redirect('control:configurar_categorias_alergia') # <- Nombre actualizado
 
     # Para la petición GET
     categorias = CategoriaAlergia.objects.all().order_by('nombre')
