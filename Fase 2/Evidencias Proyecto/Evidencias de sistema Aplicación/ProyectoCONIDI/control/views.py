@@ -25,6 +25,8 @@ import io
 
 
 
+# control/views.py
+
 @login_required
 def controles(request, nino_rut):
     nino = get_object_or_404(Nino.objects.select_related('comuna'), pk=nino_rut)
@@ -38,31 +40,32 @@ def controles(request, nino_rut):
         except Tutor.DoesNotExist:
              raise PermissionDenied
 
-    # --- LÓGICA POST (CON LA CORRECCIÓN) ---
+    # --- LÓGICA POST (CON VALIDACIÓN DE CONTRASEÑA) ---
     if request.method == 'POST' and request.user.rol.nombre_rol.lower() in ['administrador', 'profesional']:
-        # 1. Actualizar el estado (este campo <select> siempre tendrá un valor)
+        
+        # 1. VALIDACIÓN DE SEGURIDAD: Verificar contraseña del usuario actual
+        password_confirm = request.POST.get('password_confirm')
+        if not password_confirm or not user.check_password(password_confirm):
+            messages.error(request, 'La contraseña ingresada es incorrecta. No se han guardado los cambios de gestión.')
+            url_base = reverse('control:detalle_nino', kwargs={'nino_rut': nino.rut_nino})
+            return redirect(f"{url_base}#gestion-pane")
+
+        # 2. Si la contraseña es correcta, procedemos a guardar
         nino.estado_seguimiento = request.POST.get('estado_seguimiento')
         
-        # 2. Obtener la fecha de fallecimiento
+        # Lógica para sector (solo si no está vacío)
+        nuevo_sector = request.POST.get('sector')
+        if nuevo_sector:
+            nino.sector = nuevo_sector
+        
         fecha_fallecimiento_str = request.POST.get('fecha_fallecimiento')
         if fecha_fallecimiento_str:
             nino.fecha_fallecimiento = fecha_fallecimiento_str
         else:
             nino.fecha_fallecimiento = None
             
-        # 3. --- LÓGICA DE SECTOR CORREGIDA ---
-        #    Obtenemos el nuevo valor del formulario
-        nuevo_sector = request.POST.get('sector')
-        
-        #    Solo actualizamos el campo si el usuario escribió algo.
-        #    Si 'nuevo_sector' es un string vacío (''), este 'if' será Falso
-        #    y el valor original de 'nino.sector' no se tocará.
-        if nuevo_sector:
-            nino.sector = nuevo_sector
-        # --- FIN DE LA CORRECCIÓN ---
-
         nino.save()
-        messages.success(request, f'Los datos administrativos de {nino.nombre} han sido actualizados.')
+        messages.success(request, f'Cambios autorizados. Los datos administrativos de {nino.nombre} han sido actualizados.')
         
         url_base = reverse('control:detalle_nino', kwargs={'nino_rut': nino.rut_nino})
         return redirect(f"{url_base}#gestion-pane")

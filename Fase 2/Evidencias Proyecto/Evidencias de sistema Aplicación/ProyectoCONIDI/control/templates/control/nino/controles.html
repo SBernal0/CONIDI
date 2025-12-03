@@ -273,13 +273,13 @@
     {# --- PESTAÑA GESTIÓN (SOLO PARA PROFESIONAL/ADMIN) --- #}
     {% if request.user.rol.nombre_rol|lower in "administrador,profesional" %}
     <div class="tab-pane fade" id="gestion-pane" role="tabpanel" aria-labelledby="gestion-tab" tabindex="0">
-        
-        <div class="card summary-card mt-3">
-            <div class="card-header"><i class="bi bi-pencil-square me-2"></i>Editar Datos Administrativos</div>
+        <div class="card summary-card mt-3 border-danger"> <div class="card-header bg-danger text-white"><i class="bi bi-shield-lock-fill me-2"></i>Zona de Gestión Administrativa</div>
             <div class="card-body">
-                <p class="text-muted">
-                    Modifica el sector, el estado del seguimiento o registra la fecha de fallecimiento del niño.
-                </p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Atención:</strong> Está a punto de modificar datos sensibles del paciente (Estado, Fallecimiento). 
+                    Esta acción requiere confirmación de identidad.
+                </div>
                 
                 <form method="post" action="{% url 'control:detalle_nino' nino.rut_nino %}">
                     {% csrf_token %}
@@ -303,15 +303,22 @@
                             <input type="date" class="form-control" id="fecha_fallecimiento" name="fecha_fallecimiento" value="{{ nino.fecha_fallecimiento|date:'Y-m-d' }}">
                             <small class="form-text text-muted">Dejar en blanco si no aplica.</small>
                         </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="password_confirm" class="form-label fw-bold text-danger">Confirme su contraseña para guardar:</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required placeholder="Ingrese su contraseña actual">
+                            </div>
+                        </div>
                     </div>
                     <hr>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i> Guardar Cambios Administrativos
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-save me-1"></i> Autorizar y Guardar Cambios
                     </button>
                 </form>
             </div>
         </div>
-
     </div>
     {% endif %}
 
