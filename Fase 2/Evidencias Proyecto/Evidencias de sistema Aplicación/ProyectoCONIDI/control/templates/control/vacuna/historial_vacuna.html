@@ -12,7 +12,7 @@
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2><i class="bi bi-clock-history me-2"></i>Historial: {{ vacuna_aplicada.vacuna.nom_vacuna }}</h2>
-        <p class="text-muted mb-0">Niño/a: {{ vacuna_aplicada.nino.nombre }} {{ vacuna_aplicada.nino.ap_paterno }}</p>
+        <p class="text-muted mb-0">Niño/a: {{ vacuna_aplicada.nino.nombre }} {{ vacuna_aplicada.nino.ap_paterno }} {{ vacuna_aplicada.nino.ap_materno }} | RUT: {{ vacuna_aplicada.nino.rut_nino }}</p>
     </div>
     {# Botón Volver al detalle #}
     <a href="{% url 'control:ver_vacuna' vacuna_aplicada.id %}" class="btn btn-secondary">
