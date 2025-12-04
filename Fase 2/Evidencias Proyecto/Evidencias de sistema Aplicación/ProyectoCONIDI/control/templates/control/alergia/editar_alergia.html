@@ -9,13 +9,6 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="animate-fade-in-up mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'control:detalle_nino' nino.rut_nino %}#alergias-pane">Controles de {{ nino.nombre }}</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Editar Alergia: {{ registro.agente_especifico }}</li>
-    </ol>
-</nav>
 
 <div class="container">
     <div class="row justify-content-center">
@@ -29,7 +22,7 @@
                     </div>
                     <div>
                         <h2>Editar Registro de Alergia</h2>
-                        <p class="mb-0 text-muted">Niño/a: {{ nino.nombre }} {{ nino.ap_paterno }}</p>
+                        <p class="mb-0 text-muted">Niño/a: {{ nino.nombre }} {{ nino.ap_paterno }} | RUT: {{ nino.rut_nino }} </p>
                     </div>
                 </div>
 
